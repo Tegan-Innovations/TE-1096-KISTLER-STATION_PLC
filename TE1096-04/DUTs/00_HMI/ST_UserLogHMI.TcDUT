@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_UserLogHMI" Id="{0f9889f9-0a9c-42c8-9f85-183f674f27f4}">
+    <Declaration><![CDATA[TYPE ST_UserLogHMI :
+STRUCT
+	UserLog					: T_MaxSTring;
+	UserLogTime				: STRING;
+	UserLogDate				: STRING;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

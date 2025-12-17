@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_TerminalInfo" Id="{f05ac946-edef-4e81-9e63-548d44390645}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TerminalInfo
+VAR_INPUT
+	nTerminalState  : UINT;
+END_VAR
+VAR_OUTPUT
+	sTerminalState  : STRING;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF nTerminalState = 1 THEN 
+   sTerminalState := 'Initialization';
+ELSIF  nTerminalState = 2 THEN 
+   sTerminalState := 'PREOP';  
+ELSIF  nTerminalState = 3 THEN 
+   sTerminalState := 'BOOT'; 
+ELSIF  nTerminalState = 4 THEN 
+   sTerminalState := 'SAFEOP';   
+ELSIF  nTerminalState = 8 THEN 
+   sTerminalState := 'OPERATIONAL';
+ELSIF  nTerminalState = 16#0010 THEN 
+   sTerminalState := 'Slave signals error';   
+ELSIF  nTerminalState = 16#0020 THEN 
+   sTerminalState := 'Invalid vendorId, productCode... read';  
+ELSIF  nTerminalState = 16#0040 THEN 
+   sTerminalState := 'Initialization error occurred';   
+ELSIF  nTerminalState = 16#0080 THEN 
+   sTerminalState := 'Slave disabled';   
+ELSIF  nTerminalState = 16#0100 THEN 
+   sTerminalState := 'Slave not present';    
+ELSIF  nTerminalState = 16#0200 THEN 
+   sTerminalState := 'Slave signals link error';    
+ELSIF  nTerminalState = 16#0400 THEN 
+   sTerminalState := 'Slave signals missing link'; 
+ELSIF  nTerminalState = 16#0800 THEN 
+   sTerminalState := 'Slave signals unexpected link';
+ELSIF  nTerminalState = 16#1000 THEN 
+   sTerminalState := 'Communication port A';
+ELSIF  nTerminalState = 16#2000 THEN 
+   sTerminalState := 'Communication port B';
+ELSIF  nTerminalState = 16#4000 THEN 
+   sTerminalState := 'Communication port C';
+ELSIF  nTerminalState = 16#8000 THEN 
+   sTerminalState := 'Communication port D'; 	
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TerminalInfo">
+      <LineId Id="12" Count="35" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

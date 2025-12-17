@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Pulse" Id="{19dfe66a-2907-4d6a-8eed-c518c360aaa8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Pulse
+VAR_INPUT
+	bEnable		    :BOOL;
+	tPulseOn		:TIME;
+	tPulseOff		:TIME;
+//------------------------------------*
+END_VAR
+VAR
+	tonXO_On		:Tc2_Standard.TON;
+	tonXO_Off	    :Tc2_Standard.TON;
+//------------------------------------*
+END_VAR
+VAR_OUTPUT
+	bFlash			:BOOL;
+//----------------------------oldschoo1	
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Enable
+IF 	(bEnable AND NOT tonXO_Off.Q)		
+	THEN
+	tonXO_On.IN			:=TRUE;
+ELSE
+	tonXO_On.IN			:=FALSE;
+END_IF
+
+// Generate Pulse
+tonXO_On(
+	IN:= ,
+	PT:= tPulseOff,
+	Q=> ,
+	ET=>
+	);
+tonXO_Off(
+	IN:= tonXO_On.Q,
+	PT:= tPulseOn,
+	Q=> ,
+	ET=>
+	);
+	
+// Oscilator Output
+bFlash	:=	tonXO_On.Q;
+//-------------------------------oldschoo1]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Pulse">
+      <LineId Id="62" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="20" Count="3" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="24" Count="5" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="31" Count="6" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="66" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_AlarmHistory" Id="{8a705ee6-5efd-47df-bc69-e29c4c177467}">
+    <Declaration><![CDATA[TYPE ST_AlarmHistory :
+STRUCT
+	
+	sEventlog 	:T_MaxSTring;
+	sDate		:T_MaxSTring;
+	sTime		:T_MaxSTring;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

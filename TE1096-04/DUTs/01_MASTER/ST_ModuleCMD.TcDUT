@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_ModuleCMD" Id="{ff78f0ef-9fa8-4e6f-9d5c-03e88c7448b6}">
+    <Declaration><![CDATA[TYPE ST_ModuleCMD :
+STRUCT
+//Universal Module CMD Struct
+
+    bEnable       			:BOOL;	// Request module to activate devices
+	bExecute				:BOOL;	// Request module to execute CMD
+    bReset        			:BOOL;	// Request module to reset error or state
+    bAbort        			:BOOL;	// Emergency stop or cancel current task
+	
+	nTaskID       			:UINT;	// Request a Task by its ID	
+    nTargetState  			:UINT;	// State-machine target request
+    bManualMode   			:BOOL;	// Request Manual Mode(jog mode)
+	
+	bSetAction_1     		:REAL;	// Set Action
+	bSetAction_2     		:REAL;	// Set Action 
+	bSetAction_3     		:REAL;	// Set Action
+	bSetAction_4     		:REAL;	// Set Action
+	    
+    rSetpoint_1     		:REAL;	// Setpoint value
+	rSetpoint_2     		:REAL;	// Setpoint value 
+	rSetpoint_3     		:REAL;	// Setpoint value 
+	rSetpoint_4     		:REAL;	// Setpoint value 
+	
+	bFixtureGripper			:BOOL;
+	bGuideGripper			:BOOL;
+	
+	
+//-----------------------------------------------------------------------------oldschoo1
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

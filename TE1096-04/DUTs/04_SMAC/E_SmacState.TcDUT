@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_SmacState" Id="{4a55f17f-67d4-46ff-81b4-fba2075afe49}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SmacState :
+(
+	ABORTED				:=10,
+	RESET_ERROR			:=30,
+	HOMING				:=33,
+	AXIS_READY			:=40,
+	Cycle_Pick_Part		:=50,
+	Cycle_Screw			:=60,
+	ERROR				:=110,
+	MANUAL				:=120,
+	RECORD_CYCLE_DATA	:=140
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

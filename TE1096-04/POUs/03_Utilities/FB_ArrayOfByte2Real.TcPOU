@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ArrayOfByte2Real" Id="{e0beb1ad-2b59-4774-b717-e7d1d44fa3b5}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ArrayOfByte2Real //Little Endian
+VAR_INPUT
+	arrBytes 						:ARRAY[0..3]OF BYTE; //[0]=LSB,[3]=MSB
+END_VAR
+VAR_OUTPUT
+	rValue   						:REAL;
+END_VAR
+VAR
+	pBytes   						:POINTER TO BYTE;
+    pReal    						:POINTER TO REAL;
+END_VAR
+//-----------------------------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Type-punning via pointers
+pBytes := ADR(arrBytes[0]);
+pReal := pBytes;
+rValue := pReal^;
+//-----------------------------------------------------------------oldschoo1]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ArrayOfByte2Real">
+      <LineId Id="22" Count="2" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="29" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

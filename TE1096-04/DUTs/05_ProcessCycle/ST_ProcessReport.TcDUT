@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_ProcessReport" Id="{87a8ac4c-0dee-479f-acde-6fe9cad7fd18}">
+    <Declaration><![CDATA[TYPE ST_ProcessReport :
+STRUCT
+	
+
+	// Time && Date
+	sDate									:STRING;		// Record System Time&Date whenn proccess started
+	sTime									:STRING;	
+	
+	// Kistler
+	rKis_DistanceRecord						:REAL;   
+	rKis_ForceRecord						:REAL;     
+	rKis_HighestRecordedForce				:REAL;				// Maximum Force reached during the Press travel 
+	rKis_LowestRecordedForce				:REAL;				// Maximum Force reached during the Press travel
+	rKis_Settings_ForceUpperTreshold		:REAL;				// Setting value of the Upper Force Treshold for PASS/FAIL
+	rKis_Settings_ForceLowerTreshold		:REAL;				// Setting value of the Lower Force Treshold for PASS/FAIL
+	rKis_Settings_StartMeasurePoint			:REAL;				// Setting value of the Start Point of the Kistler travel
+	rKis_Settings_ReservoirBottomPoint		:REAL;				// Setting value of the Bottom Point of the Kistler travel
+	sKis_Result								:STRING;	
+	bKis_Pass								:BOOL;				// TRUE if it was a PASS
+	bKis_Fail								:BOOL;				// TRUE if it was a FAIL	
+	
+	
+	// Smac 
+	rSmac_MaxDistanceReached				:LREAL;
+	rSmac_NumberOfCycles					:LREAL;
+	rSmac_Settings_LinearVel				:LREAL;
+	rSmac_Settings_LinearTorque				:LREAL;
+	rSmac_Settings_RotativeVel				:LREAL;
+	rSmac_Settings_LinearAcc				:LREAL;
+	rSmac_Settings_RotativeAcc				:LREAL;
+	sSmac_Result							:STRING;
+	bSmac_Pass								:BOOL;					
+	bSmac_Fail								:BOOL;	
+	
+	
+	//-----------------------------------------------------------------------------------------------------------------------oldschoo1
+	
+	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

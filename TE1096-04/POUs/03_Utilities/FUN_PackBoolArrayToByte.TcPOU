@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FUN_PackBoolArrayToByte" Id="{b4b70a0d-48ed-44f1-9e25-9db0e8e7e3f3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION FUN_PackBoolArrayToByte 	:BYTE
+VAR_INPUT
+		 Input						:ARRAY[0..7]OF BOOL;
+END_VAR
+VAR
+		 idx						:INT;
+END_VAR
+//-----------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FUN_PackBoolArrayToByte := 0;
+
+FOR idx:= 0 TO 7 
+DO 
+FUN_PackBoolArrayToByte := FUN_PackBoolArrayToByte OR TO_BYTE(SHL(BOOL_TO_INT(Input[idx]), idx)); 
+END_FOR
+//--------------------------------------------------------------------------------------oldschoo1
+
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FUN_PackBoolArrayToByte">
+      <LineId Id="53" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="67" Count="1" />
+      <LineId Id="57" Count="3" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

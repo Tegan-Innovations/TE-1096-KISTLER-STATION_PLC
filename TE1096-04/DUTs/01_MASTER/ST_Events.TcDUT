@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Events" Id="{7ffd279c-03b2-4766-9d75-61304f950829}">
+    <Declaration><![CDATA[TYPE ST_Events :
+STRUCT
+	bImmediateFault				:BOOL;
+	bCycleStopFault				:BOOL;
+	bCycleStopRequest			:BOOL;
+
+	bEventTextsSet				:BOOL; //True after event texts are set 
+	aEventFlags					:ARRAY[0..127] OF BOOL;
+	aEventTimers				:ARRAY[0..127] OF TON;
+	aEventTexts					:ARRAY[0..127] OF T_MaxString;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

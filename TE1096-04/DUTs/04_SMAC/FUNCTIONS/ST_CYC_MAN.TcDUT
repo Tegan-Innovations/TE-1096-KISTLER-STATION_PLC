@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_CYC_MAN" Id="{4d21c3b1-768b-4e98-8a9e-43cea5cd4676}">
+    <Declaration><![CDATA[TYPE ST_CYC_MAN :
+STRUCT
+///////////////////////////////////////MANUAL//////////////////////////////////////////////////
+		bManual_fbSmacCycleMan 						: BOOL;
+//SETTINGS:(REMOVE VALUES ONCE MANUAL MODE IMPLEMENTED)
+		
+		nLinearVel									: DINT;//	:= 8;//8 mm/s
+		nLinearAcc									: DINT;//	:= 58000;//58000 mm2/s
+		nLinearSetPoint								: DINT;//	:= 50;//50 mm
+		nLinearTorque								: INT;//	:= 13;//14v
+	
+		nRotativeVel								: DINT;//	:= 77;//77mm
+		nRotativeAcc								: DINT;//	:= 58000;//58000mm2/s
+		nRotativeSetPoint							: DINT;//	:= -22000;//60cyc
+		nRotativeWorkPosition						: DINT	:= 450;	//80 grades
+		bSetValues									: BOOL;
+		bCycError									: BOOL;
+		
+		bCloseGuideGripper							: BOOL;
+		bCloseFixtureGripper						: BOOL;
+		
+		nScaledLinearVel							: DINT;
+		nScaledLinearAcc							: DINT;
+		nScaledLinearSetPoint						: DINT;
+		nScaledLinearTorque							: INT;
+	
+		nScaledRotativeVel							: DINT;
+		nScaledRotativeAcc							: DINT;	
+		nScaledRotativeSetPoint						: DINT;
+
+		
+///////////////////////////////////////CYCLE//////////////////////////////////////////////////	
+		//INPUTS:
+		bCycProcess									: BOOL;
+		bAutoCycleAcknowledge						: BOOL;
+		bAutoCycleRequest							: BOOL;
+		bResetAutoCycle								: BOOL;
+		bInitSecondPart								: BOOL;
+		//OUTPUTS:
+		bAutoCycleAcknowledgeRequest				: BOOL;
+		bCycleProcessDone							: BOOL;
+		bFirstPartDoneFlag							: BOOL;
+		bOpenGuideGripper							: BOOL;
+		
+///////////////////////////////////////REPORT//////////////////////////////////////////////////	
+		
+		nDistanceSetPoint							: DINT;
+		nDistanceTolerance							: DINT;
+		bPass										: BOOL;
+		bFail										: BOOL;
+		MaxDistanceReached							: DINT;
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_KistlerData_Temporary" Id="{88099858-8e46-4f4d-b6dd-423a2a22de8f}">
+    <Declaration><![CDATA[TYPE ST_KistlerData_Temporary :
+STRUCT
+
+//CMDs
+arrOutBits : ARRAY[0..199]OF ARRAY[0..7]OF BOOL;
+
+//Statuses
+arrInBits  : ARRAY[0..199]OF ARRAY[0..7]OF BOOL;
+
+//--------------------------------------oldschoo1
+
+END_STRUCT
+END_TYPE
+    
+    ]]></Declaration>
+  </DUT>
+</TcPlcObject>

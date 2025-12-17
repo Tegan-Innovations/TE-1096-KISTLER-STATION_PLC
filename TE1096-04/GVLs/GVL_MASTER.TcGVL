@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_MASTER" Id="{79bb5b00-3b25-4602-90e5-d13fd517e01d}">
+    <Declaration><![CDATA[VAR_GLOBAL
+
+	// PowerUP 
+	tonSystemPowerUP							:Tc2_Standard.TON;
+	tSystemPowerUP_Time							:TIME:=T#35S;
+	bSystemPoweringUP							:BOOL:=TRUE; //Global System PowerUP Flag
+	
+	bFirstRun									:BOOL:=TRUE;
+	tonFirstRun									: TON;
+	
+	sSystemDate									:STRING;
+	sSystemTime									:STRING;
+	
+	// Master m/c Status
+	stMachineStatus								:ST_MachineStatus;
+	stSafety									:ST_SafetyPLC;
+	stMasterCTRL								:ST_MasterCTRL;
+	
+	
+	//---------------------------------------------------------------------------------------------*
+											//I:
+	// CTRL Buttons: 
+	bStartButtonRisingEdge				        :BOOL;	// Start button
+	bStartButtonFallingEdge				        :BOOL;
+	bStopButtonRisingEdge						:BOOL;	// Stop button
+	bStopButtonFallingEdge						:BOOL;
+	bResetButtonRisingEdge						:BOOL;	// Reset button
+	bResetButtonFallingEdge						:BOOL;
+
+	// Master Input Sensors
+	bPuck_Present								:BOOL;	// Puck Fixture present - Sensor
+	bGearBox_Present   	 						:BOOL;	// GearBox present inside Fixture
+	bScrew_Present   	 						:BOOL;	// Screw present inside Fixture
+	bReservoir_Present   	 					:BOOL;	// Reservoar present inside Fixture
+
+											//Q:
+	//Cycle Indicator LED
+	bCycleIndicator_Green						:BOOL;	// Processing in progress
+	bCycleIndicator_Red							:BOOL;	// Processing compleeted
+	
+	bOpenGrippers								: BOOL;
+	
+	
+	//--------------------------------Alarms--------------------------------------------------------*
+	
+	stAlarms                        			: ARRAY [0..3] OF ST_Events;
+
+	//--------------------------------------------------------------------------------------oldschoo1
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

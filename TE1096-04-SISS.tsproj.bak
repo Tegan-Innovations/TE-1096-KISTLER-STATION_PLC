@@ -1,0 +1,3052 @@
+<?xml version="1.0"?>
+<TcSmProject xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.53" TcVersionFixed="true">
+	<DataTypes>
+		<DataType>
+			<Name GUID="{18071995-0000-0000-0000-000000000035}" TcBaseType="true" HideType="true">UINTARR2</Name>
+			<BitSize>32</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000000000005}">UINT</BaseType>
+			<ArrayInfo>
+				<LBound>0</LBound>
+				<Elements>2</Elements>
+			</ArrayInfo>
+			<Format Name="ArrayView" Preview="[%u, %u]">
+				<Printf>[%u, %u]</Printf>
+				<Parameter>[0]</Parameter>
+				<Parameter>[1]</Parameter>
+			</Format>
+			<Format Name="MixedView" Preview="%x [%u, %u]">
+				<Printf>0x%08x [%u, %u]</Printf>
+				<Parameter>.</Parameter>
+				<Parameter>[0]</Parameter>
+				<Parameter>[1]</Parameter>
+			</Format>
+			<Format Name="32bitView" Preview="%x (%u)">
+				<Printf>0x%08x (%u)</Printf>
+				<Parameter>.</Parameter>
+				<Parameter>.</Parameter>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{901C2423-655B-45CE-B7E3-21F174F0F99F}" Namespace="MC" TcBaseType="true">NCENCODERSTRUCT_IN2B</Name>
+			<BitSize>320</BitSize>
+			<SubItem>
+				<Name>nDataIn1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>64</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>72</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>80</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<Comment><![CDATA[Encoder Status 4 (automatically linked):
+0x01 (Bit 0) = IO data invalid (e.g. EtherCAT 'WcState')
+0x02 (Bit 1) = IO data input toggle (e.g. EtherCAT 'InputToggle')
+]]></Comment>
+				<BitSize>8</BitSize>
+				<BitOffs>88</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>96</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>128</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>160</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>192</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>224</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>232</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState7</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>240</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState8</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>248</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDcInputTime</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000009}">DINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>256</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn7</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<Comment><![CDATA[Drive Velocity Actual Value
+]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>288</BitOffs>
+			</SubItem>
+			<Relations>
+				<Relation>
+					<Type GUID="{55728D3F-7B02-4448-8096-580617CECBA3}">NCENCODERSTRUCT_IN</Type>
+					<MapEntry>
+						<BitSize>96</BitSize>
+					</MapEntry>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{9CC50AB2-5D79-4869-A3C2-1FA7761BAFEA}" Namespace="MC" TcBaseType="true">NCENCODERSTRUCT_OUT2</Name>
+			<BitSize>320</BitSize>
+			<SubItem>
+				<Name>nDataOut1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>64</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>72</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>80</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>88</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>96</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>128</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>160</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>192</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>224</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>232</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl7</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>240</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl8</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>248</BitOffs>
+			</SubItem>
+			<Relations>
+				<Relation>
+					<Type GUID="{5FE34D39-3B85-4458-8264-8C4874D8985C}">NCENCODERSTRUCT_OUT</Type>
+					<MapEntry>
+						<BitSize>96</BitSize>
+					</MapEntry>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{F95C7C69-0C87-46C4-9559-1285CCA5B23A}" Namespace="MC" TcBaseType="true">NCDRIVESTRUCT_IN2</Name>
+			<BitSize>320</BitSize>
+			<SubItem>
+				<Name>nDataIn1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>64</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>72</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>80</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<Comment><![CDATA[Drive Status 4 (automatically linked):
+0x01 (0000 0001) = IO data invalid (e.g. EtherCAT 'WcState')
+0x02 (0000 0010) = IO data input toggle (e.g. EtherCAT 'InputToggle')
+
+Drive Status 4 (manually linked):
+0x80 (1000 0000) = Fast axis stop (digital IO interrupt)
+]]></Comment>
+				<BitSize>8</BitSize>
+				<BitOffs>88</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>96</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>128</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>160</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataIn6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>192</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>224</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>232</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState7</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>240</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nState8</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<Comment><![CDATA[Digital Inputs 1..8
+]]></Comment>
+				<BitSize>8</BitSize>
+				<BitOffs>248</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDcOutputTime</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000009}">DINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>256</BitOffs>
+			</SubItem>
+			<Relations>
+				<Relation>
+					<Type GUID="{9AC463DC-3417-4DEA-AD2A-5FBD4C9C15AA}">NCDRIVESTRUCT_IN</Type>
+					<MapEntry>
+						<BitSize>96</BitSize>
+					</MapEntry>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{644DC4BD-3D15-4DCB-94C7-24F3A5D579AA}" Namespace="MC" TcBaseType="true">NCDRIVESTRUCT_OUT2</Name>
+			<BitSize>320</BitSize>
+			<SubItem>
+				<Name>nDataOut1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl1</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>64</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl2</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>72</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>80</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>88</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut3</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>96</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut4</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>128</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>160</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nDataOut6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000035}">UINTARR2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>192</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl5</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>224</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl6</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>232</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl7</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>240</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>nCtrl8</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000002}">USINT</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>248</BitOffs>
+			</SubItem>
+			<Relations>
+				<Relation>
+					<Type GUID="{595E16A9-7783-4B1C-A30C-48BA6EFCC859}">NCDRIVESTRUCT_OUT</Type>
+					<MapEntry>
+						<BitSize>96</BitSize>
+					</MapEntry>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{875D2B22-B7EB-497E-B933-0C004593CCF3}" Namespace="MC" TcBaseType="true" HideType="true" IecDeclaration="DWORD;">PLCTONC_AXIS_REF_CTRL</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>Enable</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>FeedEnablePlus</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>1</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>FeedEnableMinus</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>2</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>HomingSensor</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>5</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AcceptBlockedDrive</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>8</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PlcDebugFlag</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>30</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>NcDebugFlag</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>31</BitOffs>
+			</SubItem>
+			<Format Name="Short">
+				<Printf>%08x</Printf>
+			</Format>
+			<Format Name="Cpp">
+				<Printf>0x%08x</Printf>
+			</Format>
+			<Format Name="IEC">
+				<Printf>16#%08X</Printf>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC" TcBaseType="true">PLCTONC_AXIS_REF</Name>
+			<BitSize>1024</BitSize>
+			<SubItem>
+				<Name>ControlDWord</Name>
+				<Type GUID="{875D2B22-B7EB-497E-B933-0C004593CCF3}" Namespace="MC">PLCTONC_AXIS_REF_CTRL</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Override</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AxisModeRequest</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>64</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AxisModeDWord</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>96</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AxisModeLReal</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>128</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PositionCorrection</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>192</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtSetPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>256</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtSetVelo</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>320</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtSetAcc</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>384</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtSetDirection</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000009}">DINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>448</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtControllerOutput</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>512</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>GearRatio1</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>576</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>GearRatio2</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>640</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>GearRatio3</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>704</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>GearRatio4</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>768</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>MapState</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000030}">BOOL</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>832</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PlcCycleControl</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000001}">BYTE</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>840</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PlcCycleCount</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000001}">BYTE</Type>
+				<BitSize>8</BitSize>
+				<BitOffs>848</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtTorque</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>896</BitOffs>
+			</SubItem>
+			<Properties>
+				<Property>
+					<Name>NcStructType</Name>
+					<Value>1</Value>
+				</Property>
+			</Properties>
+			<Relations>
+				<Relation Priority="100">
+					<Type GUID="{60392271-8688-4F4C-B404-618DF106325D}"></Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{63A84524-72E3-41C8-BEAB-4CCE44690A13}"></Type>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{CBC83B73-B816-4597-A9E5-2B03263CA131}" Namespace="MC" TcBaseType="true" HideType="true" IecDeclaration="DWORD;">NCTOPLC_AXIS_REF_STATE</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>Operational</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Homed</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>1</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>NotMoving</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>2</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>InPositionArea</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>3</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>InTargetPosition</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>4</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Protected</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>5</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ErrorPropagationDelayed</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>6</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>HasBeenStopped</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>7</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>HasJob</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>8</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PositiveDirection</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>9</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>NegativeDirection</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>10</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>HomingBusy</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>11</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ConstantVelocity</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>12</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Compensating</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>13</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExtSetPointGenEnabled</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>14</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PhasingActive</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>15</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ExternalLatchValid</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>16</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>NewTargetPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>17</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>IsDriveLimitActive</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>18</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ContinuousMotion</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>19</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ControlLoopClosed</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>20</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamTableQueued</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>21</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamDataQueued</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>22</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamScalingPending</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>23</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CmdBuffered</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>24</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PTPmode</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>25</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SoftLimitMinExceeded</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>26</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SoftLimitMaxExceeded</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>27</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>DriveDeviceError</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>28</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>MotionCommandsLocked</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>29</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>IoDataInvalid</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>30</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Error</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>31</BitOffs>
+			</SubItem>
+			<Format Name="Short">
+				<Printf>%08x</Printf>
+			</Format>
+			<Format Name="Cpp">
+				<Printf>0x%08x</Printf>
+			</Format>
+			<Format Name="IEC">
+				<Printf>16#%08X</Printf>
+			</Format>
+			<Relations>
+				<Relation Priority="100">
+					<Type>{4C3FC5AC-D5AA-44C6-AC5A-159774BA0F6D}</Type>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{6BDEED54-7268-405F-A18B-665A0AE0FEE9}" Namespace="MC" TcBaseType="true" HideType="true" IecDeclaration="DWORD;">NCTOPLC_AXIS_REF_OPMODE</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>OpModePosAreaMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeTargetPosMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>1</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeLoop</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>2</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeMotionMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>3</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModePEHTimeMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>4</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeBacklashCompensation</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>5</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeDelayedErrorReaction</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>6</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeModulo</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>7</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeSimulationAxis</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>8</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeStopMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>12</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeOutputSmoothingFilter</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>13</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModePosLagMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>16</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeVeloLagMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>17</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeSoftLimitMinMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>18</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeSoftLimitMaxMonitoring</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>19</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModePosCorrection</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>20</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeAllowSlaveCommands</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>21</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeAllowExtSetAxisCommands</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>22</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ApplicationRequest</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>23</BitOffs>
+			</SubItem>
+		</DataType>
+		<DataType>
+			<Name GUID="{303D9411-849C-467F-8A4C-5C8CD0F3DD46}" Namespace="MC" TcBaseType="true" HideType="true">NCTOPLC_AXIS_REF_STATE2_FLAGS</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>AvoidingCollision</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<Format Name="Short">
+				<Printf>%08x</Printf>
+			</Format>
+			<Format Name="Cpp">
+				<Printf>0x%08x</Printf>
+			</Format>
+			<Format Name="IEC">
+				<Printf>16#%08X</Printf>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{669F3788-48FD-42CF-8A59-2DA946853FB6}" Namespace="MC" TcBaseType="true" HideType="true">NCTOPLC_AXIS_REF_STATE2</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>Value</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000007}">DWORD</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Flags</Name>
+				<Type GUID="{303D9411-849C-467F-8A4C-5C8CD0F3DD46}" Namespace="MC">NCTOPLC_AXIS_REF_STATE2_FLAGS</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<Format Name="Short">
+				<Printf>%08x</Printf>
+			</Format>
+			<Format Name="Cpp">
+				<Printf>0x%08x</Printf>
+			</Format>
+			<Format Name="IEC">
+				<Printf>16#%08X</Printf>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{F7B9FC50-054E-4547-B468-83A9E72D8064}" Namespace="MC" TcBaseType="true" HideType="true">NCTOPLC_AXIS_REF_STATE3_FLAGS</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>TouchProbe1InputState </Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>TouchProbe2InputState </Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>1</BitOffs>
+			</SubItem>
+			<Format Name="Short">
+				<Printf>%08x</Printf>
+			</Format>
+			<Format Name="Cpp">
+				<Printf>0x%08x</Printf>
+			</Format>
+			<Format Name="IEC">
+				<Printf>16#%08X</Printf>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{60E203BA-3CEE-4BB0-8728-643B1F529592}" Namespace="MC" TcBaseType="true" HideType="true">NCTOPLC_AXIS_REF_STATE3</Name>
+			<BitSize>32</BitSize>
+			<SubItem>
+				<Name>Value</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000007}">DWORD</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>Flags</Name>
+				<Type GUID="{F7B9FC50-054E-4547-B468-83A9E72D8064}" Namespace="MC">NCTOPLC_AXIS_REF_STATE3_FLAGS</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<Format Name="Short">
+				<Printf>%08x</Printf>
+			</Format>
+			<Format Name="Cpp">
+				<Printf>0x%08x</Printf>
+			</Format>
+			<Format Name="IEC">
+				<Printf>16#%08X</Printf>
+			</Format>
+		</DataType>
+		<DataType>
+			<Name GUID="{BA9D9D0F-1A4A-4A27-A19F-3032626A8491}" Namespace="MC" TcBaseType="true" HideType="true">NCTOPLC_AXIS_REF_CAMCOUPLINGSTATE</Name>
+			<BitSize>8</BitSize>
+			<SubItem>
+				<Name>CamActivationPending</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamDeactivationPending</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>1</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamActive</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>2</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamDataQueued</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>6</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamScalingPending</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000010}">BIT</Type>
+				<BitSize>1</BitSize>
+				<BitOffs>7</BitOffs>
+			</SubItem>
+		</DataType>
+		<DataType>
+			<Name GUID="{18071995-0000-0000-0000-000000000039}" TcBaseType="true" HideType="true">UINTARR8</Name>
+			<BitSize>128</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000000000005}">UINT</BaseType>
+			<ArrayInfo>
+				<LBound>0</LBound>
+				<Elements>8</Elements>
+			</ArrayInfo>
+		</DataType>
+		<DataType>
+			<Name GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC" TcBaseType="true">NCTOPLC_AXIS_REF</Name>
+			<BitSize>2048</BitSize>
+			<SubItem>
+				<Name>StateDWord</Name>
+				<Type GUID="{CBC83B73-B816-4597-A9E5-2B03263CA131}" Namespace="MC">NCTOPLC_AXIS_REF_STATE</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>0</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ErrorCode</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>32</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AxisState</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<Comment><![CDATA[Present State Of The Axis Movement (continuous axis):
+0  = INACTIVE:		axis has no job
+1  = RUNNING:		axis is executing a motion job
+2  = OVERRIDE_ZERO:	axis is executing a job but override is zero
+3  = PHASE_VELOCONST:	axis is moving at constant velocity
+4  = PHASE_ACCPOS:	axis is accelerating
+5  = PHASE_ACCNEG:	axis is decelerating
+Slaves only:
+11 = PREPHASE:		slave axis is in a motion pre-phase
+12 = SYNCHRONIZING:	slave axis is synchronizing
+13 = SYNCHRONOUS:	slave axis is moving synchronously
+External Setpoint Generation:
+41 = EXTSETGEN_MODE1:	external setpoint generation active
+42 = EXTSETGEN_MODE2:	internal and external setpoint gen. active
+]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>64</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AxisModeConfirmation</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>96</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>HomingState</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<Comment><![CDATA[Axis Homing Status:
+0: idle
+1: start homing
+2: searching home switch
+3: stopping on home switch
+4: moving off home switch
+5: searching sync pulse
+6: stopping after homing
+]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>128</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CoupleState</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<Comment><![CDATA[Axis Coupling Status:
+0: axis is a single axis (not coupled)
+1: axis is a master axis
+2: axis is master and slave
+3: axis is a slave axis
+]]></Comment>
+				<BitSize>32</BitSize>
+				<BitOffs>160</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SvbEntries</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>192</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SafEntries</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>224</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AxisId</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>256</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>OpModeDWord</Name>
+				<Type GUID="{6BDEED54-7268-405F-A18B-665A0AE0FEE9}" Namespace="MC">NCTOPLC_AXIS_REF_OPMODE</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>288</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>320</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ModuloActPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>384</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActiveControlLoopIndex</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+				<BitSize>16</BitSize>
+				<BitOffs>448</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ControlLoopIndex</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+				<BitSize>16</BitSize>
+				<BitOffs>464</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ModuloActTurns</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000009}">DINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>480</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActVelo</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>512</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>PosDiff</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>576</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SetPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>640</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SetVelo</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>704</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SetAcc</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>768</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>TargetPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>832</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ModuloSetPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>896</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ModuloSetTurns</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000009}">DINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>960</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CmdNo</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+				<BitSize>16</BitSize>
+				<BitOffs>992</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CmdState</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000005}">UINT</Type>
+				<BitSize>16</BitSize>
+				<BitOffs>1008</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SetJerk</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1024</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SetTorque</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1088</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActTorque</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1152</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>StateDWord2</Name>
+				<Type GUID="{669F3788-48FD-42CF-8A59-2DA946853FB6}" Namespace="MC">NCTOPLC_AXIS_REF_STATE2</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>1216</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>StateDWord3</Name>
+				<Type GUID="{60E203BA-3CEE-4BB0-8728-643B1F529592}" Namespace="MC">NCTOPLC_AXIS_REF_STATE3</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>1248</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>TouchProbeState</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000007}">DWORD</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>1280</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>TouchProbeCounter</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000007}">DWORD</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>1312</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamCouplingState</Name>
+				<Type GUID="{BA9D9D0F-1A4A-4A27-A19F-3032626A8491}" Namespace="MC">NCTOPLC_AXIS_REF_CAMCOUPLINGSTATE</Type>
+				<ArrayInfo>
+					<LBound>0</LBound>
+					<Elements>8</Elements>
+				</ArrayInfo>
+				<BitSize>64</BitSize>
+				<BitOffs>1344</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>CamCouplingTableID</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000039}">UINTARR8</Type>
+				<BitSize>128</BitSize>
+				<BitOffs>1408</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActTorqueDerivative</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1536</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>SetTorqueDerivative</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1600</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>AbsPhasingPos</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1664</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>TorqueOffset</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1728</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActPosWithoutPosCorrection</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1792</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>ActAcc</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1856</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>DcTimeStamp</Name>
+				<Type GUID="{18071995-0000-0000-0000-000000000008}">UDINT</Type>
+				<BitSize>32</BitSize>
+				<BitOffs>1920</BitOffs>
+			</SubItem>
+			<SubItem>
+				<Name>UserData</Name>
+				<Type GUID="{18071995-0000-0000-0000-00000000000E}">LREAL</Type>
+				<BitSize>64</BitSize>
+				<BitOffs>1984</BitOffs>
+			</SubItem>
+			<Properties>
+				<Property>
+					<Name>NcStructType</Name>
+					<Value>2</Value>
+				</Property>
+			</Properties>
+			<Relations>
+				<Relation Priority="100">
+					<Type GUID="{429B767E-373B-40AE-BFA5-E1C08B444DF3}">NCAXLESTRUCT_TOPLC</Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{E8DA524A-605F-4879-82E6-B86EF6986572}">NCAXLESTRUCT_TOPLC2</Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{B507963E-69F3-4B64-BB8C-2BD7A560976D}">NCAXLESTRUCT_TOPLC3</Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{F794B740-82D7-4637-848E-4F74A711D038}">NCAXLESTRUCT_TOPLC4</Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{40BD39B0-C3EA-4F74-9F4F-5F1982786F7C}"></Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{40BD39B2-C3EA-4F74-9F4F-5F1982786F7C}"></Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{8CDE0C45-AB9D-42DB-BC94-1CF7521AB268}"></Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{6A65C767-34E5-42BF-AD87-E1A503EAC7BE}"></Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{72F5AAAA-16DF-4ED3-8367-F6C8C3ADAE99}"></Type>
+				</Relation>
+				<Relation Priority="100">
+					<Type GUID="{10036166-C9D3-404B-BDD3-323034AAA7F4}"></Type>
+				</Relation>
+			</Relations>
+		</DataType>
+		<DataType>
+			<Name GUID="{2B6B47C9-DB58-8D37-72B9-9344E5A5275A}" IecBaseType="true" AutoDeleteType="true">ARRAY [0..199] OF BYTE</Name>
+			<BitSize>1600</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+			<ArrayInfo>
+				<LBound>0</LBound>
+				<Elements>200</Elements>
+			</ArrayInfo>
+		</DataType>
+		<DataType>
+			<Name GUID="{18071995-0000-0000-0000-000300000009}" IecBaseType="true" AutoDeleteType="true">ARRAY [0..8] OF BYTE</Name>
+			<BitSize>72</BitSize>
+			<BaseType GUID="{18071995-0000-0000-0000-000000000001}">BYTE</BaseType>
+			<ArrayInfo>
+				<LBound>0</LBound>
+				<Elements>9</Elements>
+			</ArrayInfo>
+		</DataType>
+	</DataTypes>
+	<Project ProjectGUID="{FE33B1FB-11BD-4C7F-A974-EC68B3A0B95D}" TargetNetId="172.18.233.151.1.1" Target64Bit="true" ShowHideConfigurations="#x346">
+		<System>
+			<Settings MaxCpus="4" NonWinCpus="1">
+				<Cpu CpuId="1"/>
+				<Cpu CpuId="2"/>
+				<Cpu CpuId="3"/>
+				<IoIdleTask Affinity="#x00000008"/>
+			</Settings>
+			<Licenses CacheOrCheckLicensesOnStartup="true">
+				<Target>
+					<ManualSelect>{796D380F-D49E-4C0C-A05F-500052FAC883}</ManualSelect>
+					<TargetSelect TargetId="4">{66689887-CCBD-452C-AC9A-039D997C6E66}</TargetSelect>
+					<TargetSelect TargetId="4">{520DE751-9DB6-47CB-8240-BD5C466E7E64}</TargetSelect>
+					<LicenseDevice DongleHardwareId="4" DongleDevice="#x03020002" DongleLevel="50" DongleSystemId="{4A1C4440-25C8-169B-2CE8-4791E1C97107}" DongleSerialNumber="000bt62l"/>
+				</Target>
+			</Licenses>
+			<Tasks>
+				<Task Id="6" Priority="5" CycleTime="20000" AmsPort="352" Affinity="#x00000002" AdtTasks="true">
+					<Name>PulseTask</Name>
+				</Task>
+				<Task Id="3" Priority="20" CycleTime="100000" AmsPort="350" AdtTasks="true">
+					<Name>PlcTask</Name>
+				</Task>
+			</Tasks>
+		</System>
+		<Motion>
+			<NC>
+				<SafTask Priority="4" CycleTime="20000" AmsPort="501" Affinity="#x00000002" IoAtBegin="true" SafTaskInfo="256">
+					<Name>NC-Task 1 SAF</Name>
+					<Vars VarGrpType="1" InsertType="1">
+						<Name>Inputs</Name>
+					</Vars>
+					<Vars VarGrpType="2" InsertType="1">
+						<Name>Outputs</Name>
+					</Vars>
+					<Image Id="3" AddrType="1" ImageType="1">
+						<Name>Image</Name>
+					</Image>
+				</SafTask>
+				<SvbTask Priority="8" CycleTime="100000" AmsPort="511" Affinity="#x00000002">
+					<Name>NC-Task 1 SVB</Name>
+				</SvbTask>
+				<Axis Id="1" CreateSymbols="true" AxisType="1">
+					<Name>Y_Axis</Name>
+					<AxisPara>
+						<Dynamic Acceleration="1231.5" Deceleration="1231.5" Jerk="3694.5"/>
+						<Velo RefSearch="8.21" RefSync="8.21" SlowManual="41.05" FastManual="246.3" Fast="821" Maximum="821"/>
+						<MotionControl Time="1"/>
+						<OtherSettings AllowMotionCmdToSlave="true" DataPersistence="true"/>
+					</AxisPara>
+					<Encoder Name="Enc" EncType="19">
+						<EncPara ScaleFactorNumerator="10" ScaleFactorDenominator="1048576" MaxCount="#xffffffff">
+							<SoftEndMinControl Enable="true" Range="4.3"/>
+							<SoftEndMaxControl Enable="true" Range="111"/>
+						</EncPara>
+						<Vars VarGrpType="1">
+							<Name>Inputs</Name>
+							<Var>
+								<Name>In</Name>
+								<Type GUID="{901C2423-655B-45CE-B7E3-21F174F0F99F}" Namespace="MC">NCENCODERSTRUCT_IN2B</Type>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn1</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn2</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn3</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn4</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn5</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn6</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn7</Name>
+									<Comment><![CDATA[Drive Velocity Actual Value
+]]></Comment>
+								</SubVar>
+							</Var>
+						</Vars>
+						<Vars VarGrpType="2">
+							<Name>Outputs</Name>
+							<Var>
+								<Name>Out</Name>
+								<Type GUID="{9CC50AB2-5D79-4869-A3C2-1FA7761BAFEA}" Namespace="MC">NCENCODERSTRUCT_OUT2</Type>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut1</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut2</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut3</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut4</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut5</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut6</Name>
+								</SubVar>
+							</Var>
+						</Vars>
+					</Encoder>
+					<Drive Name="Drive" DrvType="16">
+						<DrvPara MaxCount="#xffffffff" DriveControlDWord="#x00020000">
+							<Analog VeloReferenz="903.1" VeloScale="32" TorqueSetpointScale="10" ScaleFactorActTorque="0.1"/>
+							<TimeComp TaskDelayCycles="1"/>
+						</DrvPara>
+						<Vars VarGrpType="1">
+							<Name>Inputs</Name>
+							<Var>
+								<Name>In</Name>
+								<Type GUID="{F95C7C69-0C87-46C4-9559-1285CCA5B23A}" Namespace="MC">NCDRIVESTRUCT_IN2</Type>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn1</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn2</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn3</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn4</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn5</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataIn6</Name>
+								</SubVar>
+							</Var>
+						</Vars>
+						<Vars VarGrpType="2">
+							<Name>Outputs</Name>
+							<Var>
+								<Name>Out</Name>
+								<Type GUID="{644DC4BD-3D15-4DCB-94C7-24F3A5D579AA}" Namespace="MC">NCDRIVESTRUCT_OUT2</Type>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut1</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut2</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut3</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut4</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut5</Name>
+								</SubVar>
+								<SubVar TypeFormatIndex="2">
+									<Name>nDataOut6</Name>
+								</SubVar>
+							</Var>
+						</Vars>
+					</Drive>
+					<Controller Name="Ctrl" CtrType="1">
+						<CtrPara PriorControlFactor="1">
+							<PosDiffControl Range="1.3" Time="0.5"/>
+							<Observer BandWidth="20"/>
+						</CtrPara>
+					</Controller>
+					<Vars VarGrpType="1" InsertType="1">
+						<Name>Inputs</Name>
+						<Var>
+							<Name>FromPlc</Name>
+							<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+						</Var>
+					</Vars>
+					<Vars VarGrpType="2" InsertType="1">
+						<Name>Outputs</Name>
+						<Var>
+							<Name>ToPlc</Name>
+							<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+						</Var>
+					</Vars>
+				</Axis>
+			</NC>
+		</Motion>
+		<Plc>
+			<Project GUID="{A0E46EB5-997A-4D23-B03A-0138169395EF}" Name="TE1096-04" PrjFilePath="TE1096-04\TE1096-04.plcproj" TmcFilePath="TE1096-04\TE1096-04.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="TE1096-04\TE1096-04.tmc" TmcHash="{330AAF9C-51EC-AF14-1634-697306EAE8C4}">
+					<Name>TE1096-04 Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+					<Vars VarGrpType="1" ContextId="1" AreaNo="16">
+						<Name>PlcTask Inputs</Name>
+						<Var>
+							<Name>Y_Master_Y_Axis.refY_Axis.NcToPlc</Name>
+							<Type GUID="{25521FAA-EA5F-4C7F-8864-BBCCDACD2E98}" Namespace="MC">NCTOPLC_AXIS_REF</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inStatusWordLinear</Name>
+							<Comment><![CDATA[/////////////////////////////INPUTS///////////////////////////////////]]></Comment>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inModeOfOperationLinear</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inCurrentPositionLinear</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inErrorIDLinear</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inCurrentValueLinear</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inStatusWordRotative</Name>
+							<Comment><![CDATA[CHECK TABLE IN MANUAL]]></Comment>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inModeOfOperationRotative</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inCurrentPositionRotative</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inErrorIDRotative</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inCurrentValueRotative</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.inCurrentMacro</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEK1100State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL6070State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isSafetyRunning</Name>
+							<Comment><![CDATA[ VirtualCh - TwinSAFE running]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isSafetyFB_Error</Name>
+							<Comment><![CDATA[ VirtualCh - TwinSAFE modules Feedback Error]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isSafetyCom_Error</Name>
+							<Comment><![CDATA[ VirtualCh - TwinSAFE Communication error	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isSafety_OK</Name>
+							<Comment><![CDATA[ VirtualCh - All safety gear OK]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isEStop_OK</Name>
+							<Comment><![CDATA[ VirtualCh - E-Stop OK]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isDoorClosed</Name>
+							<Comment><![CDATA[ VirtualCh - Door Closed]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isDoorLocked</Name>
+							<Comment><![CDATA[ VirtualCh - Door Locked]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isLightBeam_NotCrossed</Name>
+							<Comment><![CDATA[ VirtualCh - SICK Safety LightBeam - Not crosed]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isLightBeam_OK</Name>
+							<Comment><![CDATA[ VirtualCh - SICK Safety LightBeam - Muted]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.isTwoHands_SIGNAL</Name>
+							<Comment><![CDATA[ VirtualCh - TwoHands - Both Buttons activated]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iE_Stop_Ch1</Name>
+							<Comment><![CDATA[ Channel 1 - E-Stop ch1]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL6910State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iE_Stop_Ch2</Name>
+							<Comment><![CDATA[ Channel 2 - E-Stop ch2                               	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iResetButton</Name>
+							<Comment><![CDATA[ Channel 3 - Reset Button	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iDoorInterlock_Ch1</Name>
+							<Comment><![CDATA[ Channel 4 - Door Closed ch1]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iDoorInterlock_Ch2</Name>
+							<Comment><![CDATA[ Channel 5 - Door Closed ch2	                                	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iDoorInterlock_FB</Name>
+							<Comment><![CDATA[ Channel 6 - Door Feedback Sig.]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iIndraDrive_Contactor_FB</Name>
+							<Comment><![CDATA[ Channel 7 - Kistler drive Safety Contactor Feedback]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iSmacSTO_FB</Name>
+							<Comment><![CDATA[ Channel 8 - SMACK Safe Torque OFF Feedback]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL1918_1State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iTouchBtn_1_NC</Name>
+							<Comment><![CDATA[ Channel 1 - Safety Touch Button 1 ]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iTouchBtn_2_NC</Name>
+							<Comment><![CDATA[ Channel 2 - Safety Touch Button 2                               	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iTouchBtn_1_NO</Name>
+							<Comment><![CDATA[ Channel 3 - Safety Touch Button 1]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iTouchBtn_2_NO</Name>
+							<Comment><![CDATA[ Channel 4 - Safety Touch Button 2]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPilz2_FB</Name>
+							<Comment><![CDATA[ Channel 5 - Pilz Safety Relay 2 Feedback]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iAxis_1_SafetyRelayFB</Name>
+							<Comment><![CDATA[ Channel 6 - AXIS 1 Safety Relay Feedback]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iSafetyBeam_Signal</Name>
+							<Comment><![CDATA[ Channel 7 - SICK Safety LightBeam Signal]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL1918_2State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL2904_1State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iStartButton</Name>
+							<Comment><![CDATA[ Channel 01 - Start Button ]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL2904_2State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iStopButton</Name>
+							<Comment><![CDATA[ Channel 02 - Stop Button]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPSU_1_OK</Name>
+							<Comment><![CDATA[ Channel 03 - Power Supply Unit 1 OK]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPSU_2_OK</Name>
+							<Comment><![CDATA[ Channel 04 - Power Supply Unit 2 OK]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPSU_3_OK</Name>
+							<Comment><![CDATA[ Channel 05 - Power Supply Unit 3 OK]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iKistlerCTRL_FB1</Name>
+							<Comment><![CDATA[ Channel 09 - Kistler CTRL - Feedback Signal 1	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iKistlerCTRL_FB2</Name>
+							<Comment><![CDATA[ Channel 10 - Kistler CTRL - Feedback Signal 2	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iKistlerCTRL_FB3</Name>
+							<Comment><![CDATA[ Channel 11 - Kistler CTRL - Feedback Signal 3	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iSmacCTRL_FB1</Name>
+							<Comment><![CDATA[ Channel 13 - SMAC CTRL - Feedback Signal 1	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iSmacCTRL_FB2</Name>
+							<Comment><![CDATA[ Channel 14 - SMAC CTRL - Feedback Signal 2	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iSmacCTRL_FB3</Name>
+							<Comment><![CDATA[ Channel 15 - SMAC CTRL - Feedback Signal 3]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPuck_PresentSensor</Name>
+							<Comment><![CDATA[ Channel 01 - Puck Fixture present Sensor]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL1809_1State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPartA_PresentSensor</Name>
+							<Comment><![CDATA[ Channel 02 - Part A present inside Fixture]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPartB_PresentSensor</Name>
+							<Comment><![CDATA[ Channel 03 - Part B present inside Fixture]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iGripperA_ClosedSensor</Name>
+							<Comment><![CDATA[ Channel 04 - Gripper A Closed Position Sensor]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iGripperB_ClosedSensor</Name>
+							<Comment><![CDATA[ Channel 05 - Gripper B Closed Position Sensor]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPartC_PresentSensor</Name>
+							<Comment><![CDATA[ Channel 06 - Part C present inside Fixture]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL1809_2State</Name>
+							<Comment><![CDATA[ Terminal INFO Data]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL2809State</Name>
+							<Comment><![CDATA[ Terminal INFO Data]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL9576State</Name>
+							<Comment><![CDATA[ Terminal INFO Data]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL7211State</Name>
+							<Comment><![CDATA[ Terminal INFO Data]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iStatusBytes</Name>
+							<Comment><![CDATA[Status]]></Comment>
+							<Type GUID="{2B6B47C9-DB58-8D37-72B9-9344E5A5275A}">ARRAY [0..199] OF BYTE</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nKistlermaXYmosState</Name>
+							<Comment><![CDATA[ Terminal INFO Data]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+					</Vars>
+					<Vars VarGrpType="2" ContextId="1" AreaNo="17">
+						<Name>PlcTask Outputs</Name>
+						<Var>
+							<Name>Y_Master_Y_Axis.refY_Axis.PlcToNc</Name>
+							<Type GUID="{96B75FEB-2D84-43BE-A3EC-D9A681F27D52}" Namespace="MC">PLCTONC_AXIS_REF</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnControlWordLinear</Name>
+							<Comment><![CDATA[/////////////////////////////OUTPUTS///////////////////////////////////]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnModeOfOperationLinear</Name>
+							<Comment><![CDATA[CHECK TABLE IN MANUAL]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetPointLinear</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetVelocityLinear</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetAcceleraionLinear</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetMaxiumTorqueLinear</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnControlWordRotative</Name>
+							<Comment><![CDATA[CHECK TABLE IN MANUAL]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnModeOfOperationRotative</Name>
+							<Comment><![CDATA[CHECK TABLE IN MANUAL]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetPointRotative</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetVelocityRotative</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetAcceleraionRotative</Name>
+							<Type>DINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetMaxiumTorqueRotative</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_MODULES.stSmacIO.qnSetMacroNumber</Name>
+							<Type>INT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qsSafetyRun</Name>
+							<Comment><![CDATA[ VirtualCh - Start Safety CMD]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qsSafetyErrorAck</Name>
+							<Comment><![CDATA[ VirtualCh - Safety Error Acknowledge]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qsTwoHandsMonitoring</Name>
+							<Comment><![CDATA[ VirtualCh - 2Hands needed to trigger Proccessing ]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qsLightBeam_MutingActive</Name>
+							<Comment><![CDATA[ VirtualCh - SICK Safety LightBeam - Muting active]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qsLockDoorCMD</Name>
+							<Comment><![CDATA[ VirtualCh - CMD to lock the Door]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qPilz1_Coil</Name>
+							<Comment><![CDATA[ Channel 1 - PSR1 Pilz Coil                                	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qIndraDrive_EStop</Name>
+							<Comment><![CDATA[ Channel 2 - Kistler drive Safety Contactor E-Stop Sig.]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qPilz2_EStop</Name>
+							<Comment><![CDATA[ Channel 3 - PSR2 Pilz E-Stop Sig.]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qDoorInterlock_CMD</Name>
+							<Comment><![CDATA[ Channel 4 - Door Lock Solenoid]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qSmacSTO_Ch1</Name>
+							<Comment><![CDATA[ Channel 1 - SMAC SafeTorque OFF - Input 1]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qSmacSTO_Ch2</Name>
+							<Comment><![CDATA[ Channel 2 - SMAC SafeTorque OFF - Input 2	                                	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qAxis_1_SafetyRelayCoil</Name>
+							<Comment><![CDATA[ Channel 4 - AXIS 1 Safety Relay Coil]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qStartButton_LED</Name>
+							<Comment><![CDATA[ Channel 01 - Start Button Indicator LED]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qResetButton_LED</Name>
+							<Comment><![CDATA[ Channel 02 - Stop Button Indicator LED]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qGripperA_Close</Name>
+							<Comment><![CDATA[ Channel 03 - Gripper A Close CMD		]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qGripperA_Open</Name>
+							<Comment><![CDATA[ Channel 04 - Gripper A Open CMD]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qGripperB_Close</Name>
+							<Comment><![CDATA[ Channel 05 - Gripper B Close CMD		]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qGripperB_Open</Name>
+							<Comment><![CDATA[ Channel 06 - Gripper B Open CMD]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qCycleIndicator_RedLED</Name>
+							<Comment><![CDATA[ Channel 07 - Cycle Indicator LED - Red]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qCycleIndicator_GreenLED</Name>
+							<Comment><![CDATA[ Channel 08 - Cycle Indicator LED - Green]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qKistlerCTRL_Sig1</Name>
+							<Comment><![CDATA[ Channel 09 - Kistler CTRL Signal 1]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qKistlerCTRL_Sig2</Name>
+							<Comment><![CDATA[ Channel 10 - Kistler CTRL Signal 2]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qKistlerCTRL_Sig3</Name>
+							<Comment><![CDATA[ Channel 11 - Kistler CTRL Signal 3]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qKistlerCTRL_Sig4</Name>
+							<Comment><![CDATA[ Channel 12 - Kistler CTRL Signal 4	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qSmacCTRL_Sig1</Name>
+							<Comment><![CDATA[ Channel 13 - Smac CTRL Signal 1	]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qSmacCTRL_Sig2</Name>
+							<Comment><![CDATA[ Channel 14 - Smac CTRL Signal 2]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qSmacCTRL_Sig3</Name>
+							<Comment><![CDATA[ Channel 15 - Smac CTRL Signal 3]]></Comment>
+							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.qControlBytes</Name>
+							<Comment><![CDATA[CMDs]]></Comment>
+							<Type GUID="{2B6B47C9-DB58-8D37-72B9-9344E5A5275A}">ARRAY [0..199] OF BYTE</Type>
+						</Var>
+					</Vars>
+					<UnrestoredVarLinks ImportTime="2025-07-05T19:57:38">
+						<OwnerA Name="InputDst" Prefix="TIPC^TE1096-04^TE1096-04 Instance" Type="1">
+							<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 3 (EL6910)">
+								<Link VarA="GVL_IO.iSafetyComError" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="StandardInputs^TwinSafeGroup1.05_ComError_19" Size="1" RestoreInfo="ANotFound"/>
+								<Link VarA="GVL_IO.iSafetyFBError" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="StandardInputs^TwinSafeGroup1.04_FedbackError_18" Size="1" RestoreInfo="ANotFound"/>
+								<Link VarA="GVL_IO.iSafetyRunning" TypeA="BOOL" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="StandardInputs^TwinSafeGroup1.03_InRunMode_17" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+						<OwnerA Name="OutputSrc" Prefix="TIPC^TE1096-04^TE1096-04 Instance" Type="2">
+							<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 3 (EL6910)">
+								<Link VarA="GVL_IO.qSafetyErrorAck" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="StandardOutputs^TwinSafeGroup1.02_ErrorAck_1" Size="1" RestoreInfo="ANotFound"/>
+								<Link VarA="GVL_IO.qSafetyRun" TypeA="BOOL" InOutA="1" GuidA="{18071995-0000-0000-0000-000000000030}" VarB="StandardOutputs^TwinSafeGroup1.01_RUN_3" Size="1" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<UnrestoredVarLinks ImportTime="2025-10-01T14:26:16">
+						<OwnerA Name="InputDst" Prefix="TIPC^TE1096-04^TE1096-04 Instance" Type="1">
+							<OwnerB Name="TIID^Device 2 (TC3 EIP Scanner)^VLC-2-EIP">
+								<Link VarA="GVL_TEST.Test2" TypeA="UINT" InOutA="0" GuidA="{18071995-0000-0000-0000-000000000005}" VarB="Inputs^State" RestoreInfo="ANotFound"/>
+							</OwnerB>
+						</OwnerA>
+					</UnrestoredVarLinks>
+					<Contexts>
+						<Context>
+							<Id>0</Id>
+							<Name>PulseTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010060</OTCID>
+							</ManualConfig>
+							<Priority>5</Priority>
+							<CycleTime>2000000</CycleTime>
+						</Context>
+						<Context>
+							<Id>1</Id>
+							<Name>PlcTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010030</OTCID>
+							</ManualConfig>
+							<Priority>20</Priority>
+							<CycleTime>10000000</CycleTime>
+						</Context>
+					</Contexts>
+					<TaskPouOids>
+						<TaskPouOid Prio="5" OTCID="#x08502001"/>
+						<TaskPouOid Prio="20" OTCID="#x08502002"/>
+					</TaskPouOids>
+				</Instance>
+			</Project>
+		</Plc>
+		<Safety>
+			<Project GUID="{B8093A75-BDAE-4D9D-9E3D-84158792FA6B}" Name="TE1096-04-TwinSAFE" PrjFilePath="TE1096-04-TwinSAFE\TE1096-04-TwinSAFE.splcProj" TmcFilePath="TE1096-04-TwinSAFE\TE1096-04-TwinSAFE.tmc" GeneralArchiveSettings="#x000f" TargetArchiveSettings="#x0007" FileArchiveSettings="#x000e">
+				<Instance Id="#x01010010" KeepUnrestoredLinks="2">
+					<Name>TE1096-04-TwinSAFE Instance</Name>
+					<TmcDesc GUID="{72A6D5B8-E98C-4604-8B90-09D1F8AB38A9}">
+						<Name>Safety</Name>
+						<InitSequence>PO</InitSequence>
+						<Contexts>
+							<Context>
+								<Id>1</Id>
+								<Name>Default</Name>
+							</Context>
+						</Contexts>
+					</TmcDesc>
+				</Instance>
+			</Project>
+		</Safety>
+		<Io>
+			<Device File="EtherCAT Master.xti" Id="1"/>
+			<Device Id="2" DevType="133" AmsPort="28674" AmsNetId="172.18.233.151.3.1" RemoteName="Device 2 (TC3 EIP Scanner)">
+				<Name>Device 2 (TC3 EIP Scanner)</Name>
+				<AddressInfo>
+					<Pnp>
+						<DeviceDesc>EtherNET (TwinCAT-Intel PCI Ethernet Adapter (Gigab</DeviceDesc>
+						<DeviceName>\DEVICE\{E3F82980-F5B7-4C35-9BED-EB6BD352D5A1}</DeviceName>
+						<DeviceData>000105980b49</DeviceData>
+					</Pnp>
+				</AddressInfo>
+				<Image Id="5" AddrType="1" ImageType="3">
+					<Name>Image</Name>
+				</Image>
+				<Box Id="15" BoxType="9134">
+					<Name>VLC-2-EIP</Name>
+					<Comment><![CDATA[<INFO>
+192.168.7.180, VLC-2-EIP (ProdCode: 58072, Rev: 2.94, Mac: 00:03:19:45:01:01)
+</INFO>
+<EDS>
+C:\TwinCAT\3.1\Config\Io\EtherNetIP\VLC-2-EIP.eds
+</EDS>
+]]></Comment>
+					<ImageId>263</ImageId>
+					<Vars VarGrpType="1">
+						<Name>Inputs</Name>
+						<Var>
+							<Name>State</Name>
+							<Comment><![CDATA[0x8000 = Remote Node has no connections
+0x4000 = Remote Node is not reachable
+0x2000 = TCP Client: initialization failed
+0x1000 = UDP Client: initialization failed
+0x0X00 = reserved
+0x0001 = 1st Connection disconnected
+0x0002 = 2nd Connection disconnected
+0x0004 = 3rd Connection disconnected
+   ...
+0x0080 = 8th Connection disconnected
+]]></Comment>
+							<Type>UINT</Type>
+						</Var>
+					</Vars>
+					<Vars VarGrpType="2">
+						<Name>Outputs</Name>
+						<Var>
+							<Name>Ctrl</Name>
+							<Type>UINT</Type>
+						</Var>
+					</Vars>
+					<EthernetIp NewSlavePara="0f000000564c432d322d45495000000000000000000000000000000000000000000000002b000000a2050000d8e20000025e00000101451900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b407a8c000000000000000000000800001001e000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" EdsFilePath="VLC-2-EIP.eds">
+						<MasterConnection Id="1" ConnectionPara="00000055aaffffffffffd5802b00000000000000000000002b80d5ffaa550000000000000000000000000000000000000000000055aaffaa5500000000000055aaffd5802b0000000000002b80d5ffffd5802b0000000055aaffffaa55000000000000000055aaffffd5802b00000000000000002b80d5ffffffaa550000000000000000000055aad5802b00000000002b80d5d5802b00000000000055aaffd5d5d5ffffaa55000000000000000000000000002b80d5ffd5d5d5ffaa5500000000000000000000000055aaffd5802b55aaffffaa5500000000000000000000000055aaffffaa5500000000000055aaffd58080aaffffd5802b0000000000000000002b80d5ffaa5500000000000000000000000000000000000000002b80d5d5802b0000000000000055aaffd5802b00000000000000002b80d5ffd5802b00000055aaffffaa550000000000000000002b80d5ffd5802b00000000002b80d5ffd5802b0000000000000000000000000000000000000000000000000055aaffaa55000000000055aaffd5805580d5ffaa55000000" AssemblyPara="010000a00100000001000000000000000000000064000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000000000000000200000096000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000001000000000000000200000000000000000000000000000000000000970000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000800200424972c962c640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" ConnectionType="-2147483587" ConnPathType="1">
+							<Name>Connection 1 (Input/Output)</Name>
+							<ImageId>86</ImageId>
+							<Vars VarGrpType="1" InsertType="1">
+								<Name>Inputs</Name>
+								<Var>
+									<Name>I_StatusWord_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>16</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_ModeofOperationDisplay_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>48</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_PositionActualVal_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>80</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_FollowingError_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>112</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_CurrentVal_1</Name>
+									<Type>INT</Type>
+									<BitOffs>144</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_StatusWord_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>160</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_ModeofOperationDisplay_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>192</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_PositionActualVal_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>224</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_FollowingError_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>256</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_CurrentVal_2</Name>
+									<Type>INT</Type>
+									<BitOffs>288</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_MacroCallIndicator</Name>
+									<Type>INT</Type>
+									<BitOffs>304</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_GPR101</Name>
+									<Type>DINT</Type>
+									<BitOffs>320</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_GPR102</Name>
+									<Type>DINT</Type>
+									<BitOffs>352</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_GPR121</Name>
+									<Type>DINT</Type>
+									<BitOffs>384</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_GPR122</Name>
+									<Type>DINT</Type>
+									<BitOffs>416</BitOffs>
+								</Var>
+								<Var>
+									<Name>I_DInput</Name>
+									<Type>SINT</Type>
+									<BitOffs>448</BitOffs>
+								</Var>
+								<Var>
+									<Name>noname0_arrBYTE</Name>
+									<Type GUID="{18071995-0000-0000-0000-000300000009}">ARRAY [0..8] OF BYTE</Type>
+									<BitOffs>456</BitOffs>
+								</Var>
+							</Vars>
+							<Vars VarGrpType="2" InsertType="1">
+								<Name>Outputs</Name>
+								<Var>
+									<Name>O_ControlWord_1</Name>
+									<Type>UINT</Type>
+									<BitOffs>16</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ModesofOperation_1</Name>
+									<Type>UINT</Type>
+									<BitOffs>32</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_Setpoint_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>48</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ProfileVelocity_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>80</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ProfileAcceleration_1</Name>
+									<Type>DINT</Type>
+									<BitOffs>112</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_MaximumTorque_1</Name>
+									<Type>INT</Type>
+									<BitOffs>144</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ControlWord_2</Name>
+									<Type>UINT</Type>
+									<BitOffs>160</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ModesofOperation_2</Name>
+									<Type>UINT</Type>
+									<BitOffs>176</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_Setpoint_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>192</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ProfileVelocity_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>224</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_ProfileAcceleration_2</Name>
+									<Type>DINT</Type>
+									<BitOffs>256</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_MaximumTorque_2</Name>
+									<Type>INT</Type>
+									<BitOffs>288</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_MacroNumber</Name>
+									<Type>INT</Type>
+									<BitOffs>304</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_GPR103</Name>
+									<Type>DINT</Type>
+									<BitOffs>320</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_GPR104</Name>
+									<Type>DINT</Type>
+									<BitOffs>352</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_GPR123</Name>
+									<Type>DINT</Type>
+									<BitOffs>384</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_GPR124</Name>
+									<Type>DINT</Type>
+									<BitOffs>416</BitOffs>
+								</Var>
+								<Var>
+									<Name>O_DOutput</Name>
+									<Type>SINT</Type>
+									<BitOffs>448</BitOffs>
+								</Var>
+								<Var>
+									<Name>noname0_arrBYTE</Name>
+									<Type GUID="{18071995-0000-0000-0000-000300000009}">ARRAY [0..8] OF BYTE</Type>
+									<BitOffs>456</BitOffs>
+								</Var>
+							</Vars>
+						</MasterConnection>
+					</EthernetIp>
+				</Box>
+				<Ethernet DeviceDesc="EtherNET (TwinCAT-Intel PCI Ethernet Adapter (Gigabit) #2)" TaskPort="350"/>
+				<EtherNetIPMasterDev m_EthIpMasterDevPar="020000004465766963652032202854433320454950205363616e6e6572290000000000000c0000006c00000089180000030100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020105980b49c807a8c000ffffff0107a8c00000800001001e000100000053030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000">
+					<ExpMsgInfo SymInfo="ETHIP.Test6">040000000400000001000000204000000000000001000000000000000000000000000000c400f179530300000000000000000000050000005465737436</ExpMsgInfo>
+					<ExpMsgInfo SymInfo="ETHIP.Test7">040000000400000001000000204000000a00000001000000000000000000000000000000c400f179530300000000000000000000050000005465737437</ExpMsgInfo>
+				</EtherNetIPMasterDev>
+			</Device>
+		</Io>
+		<SymbolWatch>
+			<Variable>TIID^EtherCAT Master^Box 13 (maXYmos)^Inputs0^1 Byte In (20)</Variable>
+		</SymbolWatch>
+	</Project>
+	<Mappings>
+		<MappingInfo Identifier="{00000000-2002-0850-0120-500841000403}" Id="#x02030030"/>
+		<MappingInfo Identifier="{00000000-2002-0850-0120-500850000403}" Id="#x02030070"/>
+		<MappingInfo Identifier="{00000000-0010-0304-3000-040310000403}" Id="#x02030010"/>
+		<MappingInfo Identifier="{00000000-0020-0304-3000-040322000403}" Id="#x02030040"/>
+		<MappingInfo Identifier="{08502002-0020-0304-0020-500820000403}" Id="#x02030050" Watchdog="00000000000000000000000000000000"/>
+		<MappingInfo Identifier="{05000010-2002-0850-3000-040301205008}" Id="#x02030060" Watchdog="14000000040000000400000004000000"/>
+		<MappingInfo Identifier="{03040040-0040-0304-4000-040340000403}" Id="#x02030020" Watchdog="04000000040000000400000004000000"/>
+		<OwnerA Name="TINC^NC-Task 1 SAF^Axes^Y_Axis">
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 12 (EL7211-0010)">
+				<Link VarA="Drive^Inputs^In^nDcOutputTime" VarB="InfoData^DcOutputShift"/>
+				<Link VarA="Drive^Inputs^In^nState1" VarB="DRV Statusword^Statusword"/>
+				<Link VarA="Drive^Inputs^In^nState2" VarB="DRV Statusword^Statusword" Size="8" OffsB="8"/>
+				<Link VarA="Drive^Inputs^In^nState4" VarB="WcState^InputToggle" Size="1" OffsA="1"/>
+				<Link VarA="Drive^Inputs^In^nState4" VarB="WcState^WcState"/>
+				<Link VarA="Drive^Outputs^Out^nCtrl1" VarB="DRV Controlword^Controlword"/>
+				<Link VarA="Drive^Outputs^Out^nCtrl2" VarB="DRV Controlword^Controlword" Size="8" OffsB="8"/>
+				<Link VarA="Drive^Outputs^Out^nDataOut2" VarB="DRV Target velocity^Target velocity"/>
+				<Link VarA="Enc^Inputs^In^nDataIn1" VarB="FB Position^Position"/>
+				<Link VarA="Enc^Inputs^In^nDcInputTime" VarB="InfoData^DcInputShift"/>
+				<Link VarA="Enc^Inputs^In^nState4" VarB="WcState^InputToggle" Size="1" OffsA="1"/>
+				<Link VarA="Enc^Inputs^In^nState4" VarB="WcState^WcState"/>
+			</OwnerB>
+		</OwnerA>
+		<OwnerA Name="TIPC^TE1096-04^TE1096-04 Instance">
+			<OwnerB Name="TIID^Device 2 (TC3 EIP Scanner)^VLC-2-EIP">
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inCurrentMacro" VarB="Connection 1 (Input/Output)^Inputs^I_MacroCallIndicator"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inCurrentPositionLinear" VarB="Connection 1 (Input/Output)^Inputs^I_PositionActualVal_1"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inCurrentPositionRotative" VarB="Connection 1 (Input/Output)^Inputs^I_PositionActualVal_2"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inCurrentValueLinear" VarB="Connection 1 (Input/Output)^Inputs^I_CurrentVal_1"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inCurrentValueRotative" VarB="Connection 1 (Input/Output)^Inputs^I_CurrentVal_2"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inErrorIDLinear" VarB="Connection 1 (Input/Output)^Inputs^I_FollowingError_1"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inErrorIDRotative" VarB="Connection 1 (Input/Output)^Inputs^I_FollowingError_2"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inModeOfOperationLinear" VarB="Connection 1 (Input/Output)^Inputs^I_ModeofOperationDisplay_1"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inModeOfOperationRotative" VarB="Connection 1 (Input/Output)^Inputs^I_ModeofOperationDisplay_2"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inStatusWordLinear" VarB="Connection 1 (Input/Output)^Inputs^I_StatusWord_1"/>
+				<Link VarA="PlcTask Inputs^GVL_MODULES.stSmacIO.inStatusWordRotative" VarB="Connection 1 (Input/Output)^Inputs^I_StatusWord_2"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnControlWordLinear" VarB="Connection 1 (Input/Output)^Outputs^O_ControlWord_1"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnControlWordRotative" VarB="Connection 1 (Input/Output)^Outputs^O_ControlWord_2"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnModeOfOperationLinear" VarB="Connection 1 (Input/Output)^Outputs^O_ModesofOperation_1"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnModeOfOperationRotative" VarB="Connection 1 (Input/Output)^Outputs^O_ModesofOperation_2"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetAcceleraionLinear" VarB="Connection 1 (Input/Output)^Outputs^O_ProfileAcceleration_1"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetAcceleraionRotative" VarB="Connection 1 (Input/Output)^Outputs^O_ProfileAcceleration_2"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetMacroNumber" VarB="Connection 1 (Input/Output)^Outputs^O_MacroNumber"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetMaxiumTorqueLinear" VarB="Connection 1 (Input/Output)^Outputs^O_MaximumTorque_1"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetMaxiumTorqueRotative" VarB="Connection 1 (Input/Output)^Outputs^O_MaximumTorque_2"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetPointLinear" VarB="Connection 1 (Input/Output)^Outputs^O_Setpoint_1"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetPointRotative" VarB="Connection 1 (Input/Output)^Outputs^O_Setpoint_2"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetVelocityLinear" VarB="Connection 1 (Input/Output)^Outputs^O_ProfileVelocity_1"/>
+				<Link VarA="PlcTask Outputs^GVL_MODULES.stSmacIO.qnSetVelocityRotative" VarB="Connection 1 (Input/Output)^Outputs^O_ProfileVelocity_2"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Box 13 (maXYmos)">
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (0)"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (1)" Size="8" OffsA="8"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (10)" Size="8" OffsA="80"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (100)" Size="8" OffsA="800"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (101)" Size="8" OffsA="808"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (102)" Size="8" OffsA="816"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (103)" Size="8" OffsA="824"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (104)" Size="8" OffsA="832"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (105)" Size="8" OffsA="840"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (106)" Size="8" OffsA="848"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (107)" Size="8" OffsA="856"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (108)" Size="8" OffsA="864"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (109)" Size="8" OffsA="872"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (11)" Size="8" OffsA="88"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (110)" Size="8" OffsA="880"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (111)" Size="8" OffsA="888"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (112)" Size="8" OffsA="896"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (113)" Size="8" OffsA="904"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (114)" Size="8" OffsA="912"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (115)" Size="8" OffsA="920"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (116)" Size="8" OffsA="928"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (117)" Size="8" OffsA="936"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (118)" Size="8" OffsA="944"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (119)" Size="8" OffsA="952"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (12)" Size="8" OffsA="96"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (120)" Size="8" OffsA="960"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (121)" Size="8" OffsA="968"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (122)" Size="8" OffsA="976"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (123)" Size="8" OffsA="984"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (124)" Size="8" OffsA="992"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (125)" Size="8" OffsA="1000"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (126)" Size="8" OffsA="1008"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (127)" Size="8" OffsA="1016"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (128)" Size="8" OffsA="1024"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (129)" Size="8" OffsA="1032"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (13)" Size="8" OffsA="104"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (130)" Size="8" OffsA="1040"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (131)" Size="8" OffsA="1048"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (132)" Size="8" OffsA="1056"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (133)" Size="8" OffsA="1064"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (134)" Size="8" OffsA="1072"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (135)" Size="8" OffsA="1080"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (136)" Size="8" OffsA="1088"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (137)" Size="8" OffsA="1096"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (138)" Size="8" OffsA="1104"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (139)" Size="8" OffsA="1112"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (14)" Size="8" OffsA="112"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (140)" Size="8" OffsA="1120"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (141)" Size="8" OffsA="1128"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (142)" Size="8" OffsA="1136"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (143)" Size="8" OffsA="1144"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (144)" Size="8" OffsA="1152"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (145)" Size="8" OffsA="1160"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (146)" Size="8" OffsA="1168"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (147)" Size="8" OffsA="1176"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (148)" Size="8" OffsA="1184"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (149)" Size="8" OffsA="1192"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (15)" Size="8" OffsA="120"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (150)" Size="8" OffsA="1200"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (151)" Size="8" OffsA="1208"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (152)" Size="8" OffsA="1216"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (153)" Size="8" OffsA="1224"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (154)" Size="8" OffsA="1232"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (155)" Size="8" OffsA="1240"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (156)" Size="8" OffsA="1248"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (157)" Size="8" OffsA="1256"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (158)" Size="8" OffsA="1264"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (159)" Size="8" OffsA="1272"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (16)" Size="8" OffsA="128"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (160)" Size="8" OffsA="1280"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (161)" Size="8" OffsA="1288"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (162)" Size="8" OffsA="1296"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (163)" Size="8" OffsA="1304"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (164)" Size="8" OffsA="1312"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (165)" Size="8" OffsA="1320"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (166)" Size="8" OffsA="1328"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (167)" Size="8" OffsA="1336"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (168)" Size="8" OffsA="1344"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (169)" Size="8" OffsA="1352"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (17)" Size="8" OffsA="136"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (170)" Size="8" OffsA="1360"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (171)" Size="8" OffsA="1368"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (172)" Size="8" OffsA="1376"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (173)" Size="8" OffsA="1384"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (174)" Size="8" OffsA="1392"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (175)" Size="8" OffsA="1400"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (176)" Size="8" OffsA="1408"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (177)" Size="8" OffsA="1416"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (178)" Size="8" OffsA="1424"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (179)" Size="8" OffsA="1432"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (18)" Size="8" OffsA="144"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (180)" Size="8" OffsA="1440"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (181)" Size="8" OffsA="1448"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (182)" Size="8" OffsA="1456"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (183)" Size="8" OffsA="1464"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (184)" Size="8" OffsA="1472"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (185)" Size="8" OffsA="1480"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (186)" Size="8" OffsA="1488"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (187)" Size="8" OffsA="1496"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (188)" Size="8" OffsA="1504"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (189)" Size="8" OffsA="1512"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (19)" Size="8" OffsA="152"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (190)" Size="8" OffsA="1520"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (191)" Size="8" OffsA="1528"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (192)" Size="8" OffsA="1536"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (193)" Size="8" OffsA="1544"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (194)" Size="8" OffsA="1552"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (195)" Size="8" OffsA="1560"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (196)" Size="8" OffsA="1568"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (197)" Size="8" OffsA="1576"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (198)" Size="8" OffsA="1584"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (199)" Size="8" OffsA="1592"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (2)" Size="8" OffsA="16"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (20)" Size="8" OffsA="160"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (21)" Size="8" OffsA="168"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (22)" Size="8" OffsA="176"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (23)" Size="8" OffsA="184"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (24)" Size="8" OffsA="192"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (25)" Size="8" OffsA="200"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (26)" Size="8" OffsA="208"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (27)" Size="8" OffsA="216"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (28)" Size="8" OffsA="224"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (29)" Size="8" OffsA="232"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (3)" Size="8" OffsA="24"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (30)" Size="8" OffsA="240"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (31)" Size="8" OffsA="248"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (32)" Size="8" OffsA="256"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (33)" Size="8" OffsA="264"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (34)" Size="8" OffsA="272"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (35)" Size="8" OffsA="280"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (36)" Size="8" OffsA="288"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (37)" Size="8" OffsA="296"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (38)" Size="8" OffsA="304"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (39)" Size="8" OffsA="312"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (4)" Size="8" OffsA="32"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (40)" Size="8" OffsA="320"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (41)" Size="8" OffsA="328"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (42)" Size="8" OffsA="336"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (43)" Size="8" OffsA="344"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (44)" Size="8" OffsA="352"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (45)" Size="8" OffsA="360"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (46)" Size="8" OffsA="368"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (47)" Size="8" OffsA="376"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (48)" Size="8" OffsA="384"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (49)" Size="8" OffsA="392"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (5)" Size="8" OffsA="40"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (50)" Size="8" OffsA="400"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (51)" Size="8" OffsA="408"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (52)" Size="8" OffsA="416"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (53)" Size="8" OffsA="424"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (54)" Size="8" OffsA="432"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (55)" Size="8" OffsA="440"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (56)" Size="8" OffsA="448"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (57)" Size="8" OffsA="456"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (58)" Size="8" OffsA="464"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (59)" Size="8" OffsA="472"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (6)" Size="8" OffsA="48"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (60)" Size="8" OffsA="480"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (61)" Size="8" OffsA="488"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (62)" Size="8" OffsA="496"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (63)" Size="8" OffsA="504"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (64)" Size="8" OffsA="512"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (65)" Size="8" OffsA="520"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (66)" Size="8" OffsA="528"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (67)" Size="8" OffsA="536"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (68)" Size="8" OffsA="544"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (69)" Size="8" OffsA="552"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (7)" Size="8" OffsA="56"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (70)" Size="8" OffsA="560"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (71)" Size="8" OffsA="568"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (72)" Size="8" OffsA="576"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (73)" Size="8" OffsA="584"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (74)" Size="8" OffsA="592"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (75)" Size="8" OffsA="600"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (76)" Size="8" OffsA="608"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (77)" Size="8" OffsA="616"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (78)" Size="8" OffsA="624"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (79)" Size="8" OffsA="632"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (8)" Size="8" OffsA="64"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (80)" Size="8" OffsA="640"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (81)" Size="8" OffsA="648"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (82)" Size="8" OffsA="656"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (83)" Size="8" OffsA="664"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (84)" Size="8" OffsA="672"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (85)" Size="8" OffsA="680"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (86)" Size="8" OffsA="688"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (87)" Size="8" OffsA="696"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (88)" Size="8" OffsA="704"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (89)" Size="8" OffsA="712"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (9)" Size="8" OffsA="72"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (90)" Size="8" OffsA="720"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (91)" Size="8" OffsA="728"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (92)" Size="8" OffsA="736"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (93)" Size="8" OffsA="744"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (94)" Size="8" OffsA="752"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (95)" Size="8" OffsA="760"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (96)" Size="8" OffsA="768"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (97)" Size="8" OffsA="776"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (98)" Size="8" OffsA="784"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStatusBytes" VarB="Inputs0^1 Byte In (99)" Size="8" OffsA="792"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.nKistlermaXYmosState" VarB="InfoData^State"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (0)"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (1)" Size="8" OffsA="8"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (10)" Size="8" OffsA="80"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (100)" Size="8" OffsA="800"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (101)" Size="8" OffsA="808"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (102)" Size="8" OffsA="816"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (103)" Size="8" OffsA="824"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (104)" Size="8" OffsA="832"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (105)" Size="8" OffsA="840"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (106)" Size="8" OffsA="848"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (107)" Size="8" OffsA="856"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (108)" Size="8" OffsA="864"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (109)" Size="8" OffsA="872"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (11)" Size="8" OffsA="88"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (110)" Size="8" OffsA="880"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (111)" Size="8" OffsA="888"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (112)" Size="8" OffsA="896"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (113)" Size="8" OffsA="904"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (114)" Size="8" OffsA="912"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (115)" Size="8" OffsA="920"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (116)" Size="8" OffsA="928"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (117)" Size="8" OffsA="936"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (118)" Size="8" OffsA="944"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (119)" Size="8" OffsA="952"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (12)" Size="8" OffsA="96"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (120)" Size="8" OffsA="960"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (121)" Size="8" OffsA="968"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (122)" Size="8" OffsA="976"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (123)" Size="8" OffsA="984"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (124)" Size="8" OffsA="992"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (125)" Size="8" OffsA="1000"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (126)" Size="8" OffsA="1008"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (127)" Size="8" OffsA="1016"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (128)" Size="8" OffsA="1024"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (129)" Size="8" OffsA="1032"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (13)" Size="8" OffsA="104"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (130)" Size="8" OffsA="1040"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (131)" Size="8" OffsA="1048"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (132)" Size="8" OffsA="1056"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (133)" Size="8" OffsA="1064"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (134)" Size="8" OffsA="1072"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (135)" Size="8" OffsA="1080"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (136)" Size="8" OffsA="1088"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (137)" Size="8" OffsA="1096"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (138)" Size="8" OffsA="1104"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (139)" Size="8" OffsA="1112"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (14)" Size="8" OffsA="112"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (140)" Size="8" OffsA="1120"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (141)" Size="8" OffsA="1128"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (142)" Size="8" OffsA="1136"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (143)" Size="8" OffsA="1144"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (144)" Size="8" OffsA="1152"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (145)" Size="8" OffsA="1160"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (146)" Size="8" OffsA="1168"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (147)" Size="8" OffsA="1176"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (148)" Size="8" OffsA="1184"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (149)" Size="8" OffsA="1192"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (15)" Size="8" OffsA="120"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (150)" Size="8" OffsA="1200"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (151)" Size="8" OffsA="1208"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (152)" Size="8" OffsA="1216"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (153)" Size="8" OffsA="1224"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (154)" Size="8" OffsA="1232"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (155)" Size="8" OffsA="1240"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (156)" Size="8" OffsA="1248"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (157)" Size="8" OffsA="1256"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (158)" Size="8" OffsA="1264"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (159)" Size="8" OffsA="1272"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (16)" Size="8" OffsA="128"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (160)" Size="8" OffsA="1280"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (161)" Size="8" OffsA="1288"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (162)" Size="8" OffsA="1296"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (163)" Size="8" OffsA="1304"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (164)" Size="8" OffsA="1312"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (165)" Size="8" OffsA="1320"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (166)" Size="8" OffsA="1328"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (167)" Size="8" OffsA="1336"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (168)" Size="8" OffsA="1344"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (169)" Size="8" OffsA="1352"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (17)" Size="8" OffsA="136"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (170)" Size="8" OffsA="1360"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (171)" Size="8" OffsA="1368"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (172)" Size="8" OffsA="1376"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (173)" Size="8" OffsA="1384"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (174)" Size="8" OffsA="1392"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (175)" Size="8" OffsA="1400"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (176)" Size="8" OffsA="1408"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (177)" Size="8" OffsA="1416"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (178)" Size="8" OffsA="1424"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (179)" Size="8" OffsA="1432"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (18)" Size="8" OffsA="144"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (180)" Size="8" OffsA="1440"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (181)" Size="8" OffsA="1448"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (182)" Size="8" OffsA="1456"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (183)" Size="8" OffsA="1464"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (184)" Size="8" OffsA="1472"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (185)" Size="8" OffsA="1480"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (186)" Size="8" OffsA="1488"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (187)" Size="8" OffsA="1496"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (188)" Size="8" OffsA="1504"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (189)" Size="8" OffsA="1512"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (19)" Size="8" OffsA="152"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (190)" Size="8" OffsA="1520"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (191)" Size="8" OffsA="1528"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (192)" Size="8" OffsA="1536"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (193)" Size="8" OffsA="1544"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (194)" Size="8" OffsA="1552"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (195)" Size="8" OffsA="1560"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (196)" Size="8" OffsA="1568"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (197)" Size="8" OffsA="1576"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (198)" Size="8" OffsA="1584"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (199)" Size="8" OffsA="1592"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (2)" Size="8" OffsA="16"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (20)" Size="8" OffsA="160"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (21)" Size="8" OffsA="168"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (22)" Size="8" OffsA="176"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (23)" Size="8" OffsA="184"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (24)" Size="8" OffsA="192"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (25)" Size="8" OffsA="200"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (26)" Size="8" OffsA="208"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (27)" Size="8" OffsA="216"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (28)" Size="8" OffsA="224"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (29)" Size="8" OffsA="232"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (3)" Size="8" OffsA="24"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (30)" Size="8" OffsA="240"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (31)" Size="8" OffsA="248"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (32)" Size="8" OffsA="256"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (33)" Size="8" OffsA="264"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (34)" Size="8" OffsA="272"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (35)" Size="8" OffsA="280"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (36)" Size="8" OffsA="288"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (37)" Size="8" OffsA="296"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (38)" Size="8" OffsA="304"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (39)" Size="8" OffsA="312"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (4)" Size="8" OffsA="32"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (40)" Size="8" OffsA="320"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (41)" Size="8" OffsA="328"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (42)" Size="8" OffsA="336"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (43)" Size="8" OffsA="344"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (44)" Size="8" OffsA="352"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (45)" Size="8" OffsA="360"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (46)" Size="8" OffsA="368"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (47)" Size="8" OffsA="376"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (48)" Size="8" OffsA="384"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (49)" Size="8" OffsA="392"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (5)" Size="8" OffsA="40"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (50)" Size="8" OffsA="400"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (51)" Size="8" OffsA="408"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (52)" Size="8" OffsA="416"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (53)" Size="8" OffsA="424"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (54)" Size="8" OffsA="432"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (55)" Size="8" OffsA="440"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (56)" Size="8" OffsA="448"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (57)" Size="8" OffsA="456"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (58)" Size="8" OffsA="464"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (59)" Size="8" OffsA="472"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (6)" Size="8" OffsA="48"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (60)" Size="8" OffsA="480"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (61)" Size="8" OffsA="488"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (62)" Size="8" OffsA="496"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (63)" Size="8" OffsA="504"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (64)" Size="8" OffsA="512"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (65)" Size="8" OffsA="520"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (66)" Size="8" OffsA="528"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (67)" Size="8" OffsA="536"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (68)" Size="8" OffsA="544"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (69)" Size="8" OffsA="552"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (7)" Size="8" OffsA="56"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (70)" Size="8" OffsA="560"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (71)" Size="8" OffsA="568"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (72)" Size="8" OffsA="576"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (73)" Size="8" OffsA="584"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (74)" Size="8" OffsA="592"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (75)" Size="8" OffsA="600"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (76)" Size="8" OffsA="608"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (77)" Size="8" OffsA="616"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (78)" Size="8" OffsA="624"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (79)" Size="8" OffsA="632"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (8)" Size="8" OffsA="64"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (80)" Size="8" OffsA="640"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (81)" Size="8" OffsA="648"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (82)" Size="8" OffsA="656"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (83)" Size="8" OffsA="664"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (84)" Size="8" OffsA="672"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (85)" Size="8" OffsA="680"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (86)" Size="8" OffsA="688"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (87)" Size="8" OffsA="696"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (88)" Size="8" OffsA="704"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (89)" Size="8" OffsA="712"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (9)" Size="8" OffsA="72"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (90)" Size="8" OffsA="720"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (91)" Size="8" OffsA="728"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (92)" Size="8" OffsA="736"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (93)" Size="8" OffsA="744"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (94)" Size="8" OffsA="752"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (95)" Size="8" OffsA="760"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (96)" Size="8" OffsA="768"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (97)" Size="8" OffsA="776"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (98)" Size="8" OffsA="784"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qControlBytes" VarB="Outputs0^1 Byte Out (99)" Size="8" OffsA="792"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEK1100State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 10 (EL2809-0015)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL2809State" VarB="InfoData^State"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qCycleIndicator_GreenLED" VarB="Channel 8^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qCycleIndicator_RedLED" VarB="Channel 7^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qGripperA_Close" VarB="Channel 3^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qGripperA_Open" VarB="Channel 4^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qGripperB_Close" VarB="Channel 5^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qGripperB_Open" VarB="Channel 6^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qKistlerCTRL_Sig1" VarB="Channel 9^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qKistlerCTRL_Sig2" VarB="Channel 10^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qKistlerCTRL_Sig3" VarB="Channel 11^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qKistlerCTRL_Sig4" VarB="Channel 12^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qResetButton_LED" VarB="Channel 2^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qSmacCTRL_Sig1" VarB="Channel 13^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qSmacCTRL_Sig2" VarB="Channel 14^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qSmacCTRL_Sig3" VarB="Channel 15^Output"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qStartButton_LED" VarB="Channel 1^Output"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 11 (EL9576)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL9576State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 12 (EL7211-0010)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL7211State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 2 (EL6070-0033)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL6070State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 3 (EL6910)">
+				<Link VarA="PlcTask Inputs^GVL_IO.isDoorClosed" VarB="StandardInputs^Standard Out Var 21"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isDoorLocked" VarB="StandardInputs^Standard Out Var 23"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isEStop_OK" VarB="StandardInputs^Standard Out Var 20"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isLightBeam_NotCrossed" VarB="StandardInputs^Standard Out Var 25"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isLightBeam_OK" VarB="StandardInputs^Standard Out Var 26"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isSafetyCom_Error" VarB="StandardInputs^Standard Out Var 19"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isSafetyFB_Error" VarB="StandardInputs^Standard Out Var 18"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isSafetyRunning" VarB="StandardInputs^Standard Out Var 17"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isSafety_OK" VarB="StandardInputs^Standard Out Var 30"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.isTwoHands_SIGNAL" VarB="StandardInputs^Standard Out Var 28"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL6910State" VarB="InfoData^State"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qsLightBeam_MutingActive" VarB="StandardOutputs^Standard In Var 24"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qsLockDoorCMD" VarB="StandardOutputs^Standard In Var 22"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qsSafetyErrorAck" VarB="StandardOutputs^Standard In Var 1"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qsSafetyRun" VarB="StandardOutputs^Standard In Var 3"/>
+				<Link VarA="PlcTask Outputs^GVL_IO.qsTwoHandsMonitoring" VarB="StandardOutputs^Standard In Var 27"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 4 (EL1918)">
+				<Link VarA="PlcTask Inputs^GVL_IO.iDoorInterlock_Ch1" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 4.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iDoorInterlock_Ch2" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 5.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iDoorInterlock_FB" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 6.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iE_Stop_Ch1" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 1.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iE_Stop_Ch2" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 2.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iIndraDrive_Contactor_FB" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 7.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iResetButton" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 3.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iSmacSTO_FB" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 8.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL1918_1State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 5 (EL1918)">
+				<Link VarA="PlcTask Inputs^GVL_IO.iAxis_1_SafetyRelayFB" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 6.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPilz2_FB" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 5.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iSafetyBeam_Signal" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 7.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iTouchBtn_1_NC" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 1.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iTouchBtn_1_NO" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 3.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iTouchBtn_2_NC" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 2.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iTouchBtn_2_NO" VarB="Module 1 (FSOE)^FSoE Inputs^FSOE^FSIN Module 4.Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL1918_2State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 6 (EL2904)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL2904_1State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 7 (EL2904)">
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL2904_2State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 8 (EL1809)">
+				<Link VarA="PlcTask Inputs^GVL_IO.iKistlerCTRL_FB1" VarB="Channel 9^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iKistlerCTRL_FB2" VarB="Channel 10^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iKistlerCTRL_FB3" VarB="Channel 11^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPSU_1_OK" VarB="Channel 3^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPSU_2_OK" VarB="Channel 4^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPSU_3_OK" VarB="Channel 5^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iSmacCTRL_FB1" VarB="Channel 13^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iSmacCTRL_FB2" VarB="Channel 14^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iSmacCTRL_FB3" VarB="Channel 15^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStartButton" VarB="Channel 1^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iStopButton" VarB="Channel 2^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL1809_1State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TIID^EtherCAT Master^Term 1 (EK1100)^Term 9 (EL1809)">
+				<Link VarA="PlcTask Inputs^GVL_IO.iGripperA_ClosedSensor" VarB="Channel 4^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iGripperB_ClosedSensor" VarB="Channel 5^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPartA_PresentSensor" VarB="Channel 2^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPartB_PresentSensor" VarB="Channel 3^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.iPuck_PresentSensor" VarB="Channel 1^Input"/>
+				<Link VarA="PlcTask Inputs^GVL_IO.nEL1809_2State" VarB="InfoData^State"/>
+			</OwnerB>
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Y_Axis">
+				<Link VarA="PlcTask Inputs^Y_Master_Y_Axis.refY_Axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^Y_Master_Y_Axis.refY_Axis.PlcToNc" VarB="Inputs^FromPlc"/>
+			</OwnerB>
+		</OwnerA>
+	</Mappings>
+</TcSmProject>

@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Smac" Id="{4f33836b-0190-44cf-8240-2d883000bb35}">
+    <Declaration><![CDATA[TYPE ST_Smac :
+STRUCT
+
+	// Set Action
+	bSet_PickScrew							:BOOL;											
+	bSet_ScrewItIn							:BOOL;
+	
+	// Grippers CTRL
+	bGripperA_Close							:BOOL;	// Channel 03 - Gripper A Close CMD		
+	bGripperA_Open							:BOOL;	// Channel 04 - Gripper A Open CMD
+	bGripperB_Close							:BOOL;	// Channel 05 - Gripper B Close CMD		
+	bGripperB_Open							:BOOL;	// Channel 06 - Gripper B Open CMD
+
+	// Grippers Feedback Sensors
+	bGripperA_ClosedSensor					:BOOL;	// Channel 04 - Gripper A Closed Position Sensor
+	bGripperB_ClosedSensor					:BOOL;	// Channel 05 - Gripper B Closed Position Sensor	
+	
+
+
+//--------------------------------------------------------------------------------------------------oldschoo1
+	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

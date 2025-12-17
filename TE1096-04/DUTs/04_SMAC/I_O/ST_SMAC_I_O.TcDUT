@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_SMAC_I_O" Id="{036ad70c-b65d-472a-9f30-1c839a22ffab}">
+    <Declaration><![CDATA[TYPE ST_SMAC_I_O :
+STRUCT
+
+////////////////////////////////INPUTS///////////////////////////////////
+
+inStatusWordLinear							AT %I*				: DINT; //CHECK TABLE IN MANUAL
+inModeOfOperationLinear						AT %I*				: DINT;
+inCurrentPositionLinear						AT %I*				: DINT;
+inErrorIDLinear								AT %I*				: DINT;
+inCurrentValueLinear						AT %I*				: INT;
+
+inStatusWordRotative						AT %I*				: DINT; //CHECK TABLE IN MANUAL
+inModeOfOperationRotative					AT %I*				: DINT;
+inCurrentPositionRotative					AT %I*				: DINT;
+inErrorIDRotative							AT %I*				: DINT;
+inCurrentValueRotative						AT %I*				: INT;
+
+inCurrentMacro								AT %I*				: INT;
+
+
+
+////////////////////////////////OUTPUTS///////////////////////////////////
+
+qnControlWordLinear							AT %Q*				: UINT; //CHECK TABLE IN MANUAL
+qnModeOfOperationLinear						AT %Q*				: UINT; //CHECK TABLE IN MANUAL
+qnSetPointLinear							AT %Q*				: DINT;
+qnSetVelocityLinear							AT %Q*				: DINT;
+qnSetAcceleraionLinear						AT %Q*      		: DINT;
+qnSetMaxiumTorqueLinear						AT %Q*				: INT;
+
+qnControlWordRotative						AT %Q*				: UINT; //CHECK TABLE IN MANUAL
+qnModeOfOperationRotative					AT %Q*				: UINT; //CHECK TABLE IN MANUAL
+qnSetPointRotative							AT %Q*				: DINT;
+qnSetVelocityRotative						AT %Q*				: DINT;
+qnSetAcceleraionRotative					AT %Q*      		: DINT;
+qnSetMaxiumTorqueRotative					AT %Q*				: INT;
+
+qnSetMacroNumber							AT %Q*				: INT;
+
+////////////////////////////////////////////////////////////////////////////
+
+sStatus					: ARRAY [0..20] OF STRING;
+sModeOfOperation		: ARRAY [0..11] OF STRING;
+sControlWord			: ARRAY [0..6] OF STRING; 	
+ 
+
+
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

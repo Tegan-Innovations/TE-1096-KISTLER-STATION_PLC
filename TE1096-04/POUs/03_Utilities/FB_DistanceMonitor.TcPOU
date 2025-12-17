@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="FB_DistanceMonitor" Id="{9e936d62-7dce-4faa-bb84-f1e62fd24846}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_DistanceMonitor
+VAR_INPUT
+    StartSignal   : BOOL;   // Signal indicating the start of the measurement cycle
+    EndSignal     : BOOL;   // Signal indicating the end of the measurement cycle
+	DistanceMaxSetpoint : BOOL;
+    DistanceInput : REAL;   // Current distance reading
+	fDistanceSetpoint: REAL;
+END_VAR
+
+VAR_OUTPUT
+    MaxDistance   : REAL;   // Maximum distance during the cycle
+    IsMeasuring   : BOOL;   // Flag indicating if the measurement cycle is active
+	bDistancePass : BOOL;
+	bDistanceFail : BOOL;
+END_VAR
+
+VAR
+    CurrentMax    : REAL;   // Variable to hold the current maximum value during the cycle
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// When StartSignal is triggered, initialize the measuring process
+
+
+IF StartSignal AND NOT IsMeasuring THEN
+    CurrentMax := DistanceInput; // Initialize the first measurement as the maximum
+    IsMeasuring := TRUE;         // Set the measuring flag
+	bDistancePass := FALSE;
+	bDistanceFail := FALSE;
+END_IF
+
+// Monitor the maximum distance while the cycle is active
+IF IsMeasuring THEN
+    IF DistanceInput > CurrentMax THEN
+        CurrentMax := DistanceInput;  // Update the maximum distance if a higher value is found
+    END_IF
+END_IF
+
+// When EndSignal is triggered, finalize the measurement cycle and store the maximum value
+IF EndSignal AND IsMeasuring THEN
+    MaxDistance := CurrentMax;  // Store the maximum distance measured in the cycle
+	IF MaxDistance > fDistanceSetpoint THEN
+		bDistancePass		:= TRUE;
+	ELSE bDistanceFail		:= TRUE;
+	END_IF
+    IsMeasuring := FALSE;       // Reset the measuring flag for the next cycle
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_DistanceMonitor">
+      <LineId Id="45" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="49" Count="11" />
+      <LineId Id="83" Count="1" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="81" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

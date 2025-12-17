@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_IO" Id="{d3cbf3f9-6bac-41c3-8dda-156847d2cfbc}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+
+	fbTerminalInfo												:ARRAY[0..20] OF FB_TerminalInfo;
+	//-----------------------------------------------------------------------------------------------------------------------oldschoo1
+   	// TERMINAL 1 _ EK1100 - EtherCAT Coupler
+
+	nEK1100State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEK1100Status												:STRING(200);
+	
+	//-------------------------------------------------------------------------------------------------------------------------License
+	// TERMINAL 2 _ EL6070-0033	- License Key Terminal for TC3
+	
+	nEL6070State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL6070Status												:STRING(200);
+
+	
+(**************************************************** Safety - I/O *****************************************************************)	
+	//-------------------------------------------------------------------------------------------------------------------------SAFETY
+	// TERMINAL 3 _ EL6910 - Safety PLC - Virtual Channels
+	
+		//Q
+	qsSafetyRun                          	AT %Q*          	:BOOL;  // VirtualCh - Start Safety CMD
+	qsSafetyErrorAck						AT %Q* 				:BOOL;	// VirtualCh - Safety Error Acknowledge
+
+	qsTwoHandsMonitoring                    AT %Q*          	:BOOL;  // VirtualCh - 2Hands needed to trigger Proccessing 
+	qsLightBeam_MutingActive				AT %Q*				:BOOL;	// VirtualCh - SICK Safety LightBeam - Muting active
+	qsLockDoorCMD							AT %Q*				:BOOL;	// VirtualCh - CMD to lock the Door
+	
+	
+		//I
+	isSafetyRunning                         AT %I*          	:BOOL;  // VirtualCh - TwinSAFE running
+	isSafetyFB_Error	 					AT %I*				:BOOL;	// VirtualCh - TwinSAFE modules Feedback Error
+	isSafetyCom_Error 						AT %I*	 			:BOOL;	// VirtualCh - TwinSAFE Communication error	
+	isSafety_OK								AT %I*				:BOOL;	// VirtualCh - All safety gear OK
+    isEStop_OK	                         	AT %I*          	:BOOL;  // VirtualCh - E-Stop OK
+	isDoorClosed							AT %I*				:BOOL;	// VirtualCh - Door Closed
+	isDoorLocked							AT %I*				:BOOL;	// VirtualCh - Door Locked
+	isLightBeam_NotCrossed					AT %I*				:BOOL;	// VirtualCh - SICK Safety LightBeam - Not crosed
+	isLightBeam_OK							AT %I*				:BOOL;	// VirtualCh - SICK Safety LightBeam - Muted
+	isTwoHands_SIGNAL						AT %I*				:BOOL;	// VirtualCh - TwoHands - Both Buttons activated
+
+		//Status*
+	nEL6910State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL6910Status												:STRING(200);
+
+	
+	//---IN--------------------------------------------------------------------------------------------------------------------------I
+	// TERMINAL 4 _ EL1918 - 8 Channel Digital Safety Inputs
+	
+	iE_Stop_Ch1								AT %I*				:BOOL;	// Channel 1 - E-Stop ch1
+	iE_Stop_Ch2								AT %I*				:BOOL;	// Channel 2 - E-Stop ch2                               	
+	iResetButton							AT %I*				:BOOL;	// Channel 3 - Reset Button	
+	iDoorInterlock_Ch1						AT %I*				:BOOL;	// Channel 4 - Door Closed ch1
+	iDoorInterlock_Ch2						AT %I*				:BOOL;	// Channel 5 - Door Closed ch2	                                	
+	iDoorInterlock_FB						AT %I*				:BOOL;	// Channel 6 - Door Feedback Sig.
+	iIndraDrive_Contactor_FB				AT %I*				:BOOL;	// Channel 7 - Kistler drive Safety Contactor Feedback
+	iSmacSTO_FB								AT %I*				:BOOL;	// Channel 8 - SMACK Safe Torque OFF Feedback
+	
+		//Status*
+	nEL1918_1State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL1918Status												:STRING(200);
+	
+	
+	//---IN--------------------------------------------------------------------------------------------------------------------------I
+	// TERMINAL 5 _ EL1918 - 8 Channel Digital Safety Inputs
+	
+	iTouchBtn_1_NC							AT %I*				:BOOL;	// Channel 1 - Safety Touch Button 1 
+	iTouchBtn_2_NC							AT %I*				:BOOL;	// Channel 2 - Safety Touch Button 2                               	
+	iTouchBtn_1_NO							AT %I*				:BOOL;	// Channel 3 - Safety Touch Button 1
+	iTouchBtn_2_NO							AT %I*				:BOOL;	// Channel 4 - Safety Touch Button 2
+	iPilz2_FB								AT %I*				:BOOL;	// Channel 5 - Pilz Safety Relay 2 Feedback
+	iAxis_1_SafetyRelayFB					AT %I*				:BOOL;	// Channel 6 - AXIS 1 Safety Relay Feedback
+	iSafetyBeam_Signal						AT %I*				:BOOL;	// Channel 7 - SICK Safety LightBeam Signal
+																		// Channel 8 - Spare
+
+		//Status*                      	
+	nEL1918_2State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL1918_2Status												:STRING(200);
+	
+	
+	//---OUT-------------------------------------------------------------------------------------------------------------------------Q
+	// TERMINAL 6 _ ELEL2904 - 4 Channel Digital Safety Outputs
+	
+	qPilz1_Coil								AT %Q*				:BOOL;	// Channel 1 - PSR1 Pilz Coil                                	
+	qIndraDrive_EStop						AT %Q*				:BOOL;	// Channel 2 - Kistler drive Safety Contactor E-Stop Sig.
+	qPilz2_EStop							AT %Q*				:BOOL;	// Channel 3 - PSR2 Pilz E-Stop Sig.
+	qDoorInterlock_CMD						AT %Q*				:BOOL;	// Channel 4 - Door Lock Solenoid
+	
+		//Status*
+	nEL2904_1State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL2904_1Status												:STRING(200);
+	
+	
+	//---OUT-------------------------------------------------------------------------------------------------------------------------Q
+	// TERMINAL 7 _ ELEL2904 - 4 Channel Digital Safety Outputs
+	
+	qSmacSTO_Ch1							AT %Q* 				:BOOL;	// Channel 1 - SMAC SafeTorque OFF - Input 1
+	qSmacSTO_Ch2							AT %Q* 				:BOOL;	// Channel 2 - SMAC SafeTorque OFF - Input 2	                                	
+																		// Channel 3 - Spare
+	qAxis_1_SafetyRelayCoil					AT %Q* 				:BOOL;	// Channel 4 - AXIS 1 Safety Relay Coil
+
+		//Status* 
+	nEL2904_2State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL2904_2Status												:STRING(200);
+
+	
+	
+	
+(**************************************************** PLC - I/O *********************************************************************)
+										
+	//---IN-------------------------------------------------------------------------------------------------------------------PLC I/O
+	// TERMINAL 8 _ EL1809 - 16 Channel Digital Input Terminal
+	
+	iStartButton							AT %I*				:BOOL;	// Channel 01 - Start Button 
+	iStopButton   	 						AT %I*				:BOOL;	// Channel 02 - Stop Button
+	iPSU_1_OK								AT %I*	 			:BOOL;	// Channel 03 - Power Supply Unit 1 OK
+	iPSU_2_OK								AT %I*	 			:BOOL;	// Channel 04 - Power Supply Unit 2 OK
+	iPSU_3_OK								AT %I*	 			:BOOL;	// Channel 05 - Power Supply Unit 3 OK
+																		// Channel 06 - Spare
+																		// Channel 07 - Spare
+																		// Channel 08 - Spare
+	iKistlerCTRL_FB1						AT %I*	 			:BOOL;	// Channel 09 - Kistler CTRL - Feedback Signal 1	
+	iKistlerCTRL_FB2						AT %I*	 			:BOOL;	// Channel 10 - Kistler CTRL - Feedback Signal 2	
+	iKistlerCTRL_FB3						AT %I*	 			:BOOL;	// Channel 11 - Kistler CTRL - Feedback Signal 3	
+																		// Channel 12 - Spare   
+	iSmacCTRL_FB1							AT %I*	 			:BOOL;	// Channel 13 - SMAC CTRL - Feedback Signal 1	
+	iSmacCTRL_FB2							AT %I*	 			:BOOL;	// Channel 14 - SMAC CTRL - Feedback Signal 2	
+	iSmacCTRL_FB3							AT %I*	 			:BOOL;	// Channel 15 - SMAC CTRL - Feedback Signal 3
+																		// Channel 16 - Spare 
+
+		//Status*	
+	nEL1809_1State							AT %I*				:UINT;	// Terminal INFO Data	
+	sEL1809_1Status												:STRING(200);
+	
+
+	//---IN--------------------------------------------------------------------------------------------------------------------------I
+	// TERMINAL 9 _ EL1809 - 16 Channel Digital Input Terminal
+	
+	iPuck_PresentSensor						AT %I*				:BOOL;	// Channel 01 - Puck Fixture present Sensor
+	iPartA_PresentSensor   	 				AT %I*				:BOOL;	// Channel 02 - Part A present inside Fixture
+	iPartB_PresentSensor   	 				AT %I*				:BOOL;	// Channel 03 - Part B present inside Fixture
+	iGripperA_ClosedSensor					AT %I*	 			:BOOL;	// Channel 04 - Gripper A Closed Position Sensor
+	iGripperB_ClosedSensor					AT %I*	 			:BOOL;	// Channel 05 - Gripper B Closed Position Sensor
+	iPartC_PresentSensor   	 				AT %I*				:BOOL;	// Channel 06 - Part C present inside Fixture
+																		// Channel 07 - Spare
+																		// Channel 08 - Spare
+																		// Channel 09 - Spare
+																		// Channel 10 - Spare
+																		// Channel 11 - Spare
+																		// Channel 12 - Spare
+																		// Channel 13 - Spare
+																		// Channel 14 - Spare
+																		// Channel 15 - Spare
+																		// Channel 16 - Spare
+
+		//Status*	
+	nEL1809_2State							AT %I*				:UINT;	// Terminal INFO Data
+	sEL1809_2Status												:STRING(200);
+	
+	
+	//---OUT-------------------------------------------------------------------------------------------------------------------------Q
+	// TERMINAL 10 _ EL2809	- 16 Channel Digital Output Terminal
+	
+	qStartButton_LED						AT %Q*				:BOOL;	// Channel 01 - Start Button Indicator LED
+	qResetButton_LED						AT %Q* 				:BOOL;	// Channel 02 - Stop Button Indicator LED
+	qGripperA_Close							AT %Q*	 			:BOOL;	// Channel 03 - Gripper A Close CMD		
+	qGripperA_Open							AT %Q*	 			:BOOL;	// Channel 04 - Gripper A Open CMD
+	qGripperB_Close							AT %Q*	 			:BOOL;	// Channel 05 - Gripper B Close CMD		
+	qGripperB_Open							AT %Q*	 			:BOOL;	// Channel 06 - Gripper B Open CMD
+	qCycleIndicator_RedLED					AT %Q*	 			:BOOL;	// Channel 07 - Cycle Indicator LED - Red
+	qCycleIndicator_GreenLED				AT %Q*	 			:BOOL;	// Channel 08 - Cycle Indicator LED - Green
+	qKistlerCTRL_Sig1						AT %Q*	 			:BOOL;	// Channel 09 - Kistler CTRL Signal 1
+	qKistlerCTRL_Sig2						AT %Q*	 			:BOOL;	// Channel 10 - Kistler CTRL Signal 2
+	qKistlerCTRL_Sig3						AT %Q*	 			:BOOL;	// Channel 11 - Kistler CTRL Signal 3
+	qKistlerCTRL_Sig4						AT %Q*	 			:BOOL;	// Channel 12 - Kistler CTRL Signal 4	
+	qSmacCTRL_Sig1							AT %Q*	 			:BOOL;	// Channel 13 - Smac CTRL Signal 1	
+	qSmacCTRL_Sig2							AT %Q*	 			:BOOL;	// Channel 14 - Smac CTRL Signal 2
+	qSmacCTRL_Sig3							AT %Q*	 			:BOOL;	// Channel 15 - Smac CTRL Signal 3
+																		// Channel 16 - Spare
+		//Status*
+	nEL2809State							AT %I*				:UINT;	// Terminal INFO Data
+	sEL2809Status												:STRING(200);
+
+
+(***************************************************************************************************************************************)
+	
+	//---------------------------------------------------------------------------------------------------------------------------DRIVE
+	// TERMINAL 11 _ EL9576 - Brake Chopper Terminal
+
+		//Status*
+	nEL9576State							AT %I*				:UINT;	// Terminal INFO Data
+	sEL9576Status												:STRING(200);
+	
+	//---------------------------------------------------------------------------------------------------------------------------DRIVE
+	// TERMINAL 12 _ EL7211-0010 - Servo Motor Drive
+	
+		//Status*
+	nEL7211State							AT %I*				:UINT;	// Terminal INFO Data
+	sEL7211Status												:STRING(200);	
+
+	
+(**************************************************** EtherCAT **********************************************************************)
+	
+	//-------------------------------------------------------------------------------------------------------------------------KISTLER
+	// BOX 13 _ maXYnos - Drive and Force Sensor for Kistler Press
+	
+	iStatusBytes                           AT %I*          		:ARRAY [0..199] OF BYTE;	//Status
+	qControlBytes                          AT %Q*          		:ARRAY [0..199] OF BYTE;	//CMDs
+	
+		//Status*
+	nKistlermaXYmosState				   AT %I*		   		:UINT;	// Terminal INFO Data
+	sKistlermaXYmosStatus								   		:STRING(200);	
+
+	//----------------------------------------------------------------------------------------------------------------------------SMAC
+	// BOX 14 _ SMAC - Linear amd Rotative axis for screw part
+	
+	
+	//------------------------------------------------------------------------------------------------------------------------------128
+
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

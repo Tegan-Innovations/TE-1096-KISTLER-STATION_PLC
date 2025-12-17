@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_KistlerErrorID" Id="{32b885dd-a087-44d7-9786-7f06edf2ea42}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_KistlerErrorID :
+(
+	NO_ERROR				:=0,
+	COMUNICATION_ERROR		:=10,
+	ENABLE_DRIVE_ERROR		:=20,
+	PROCESS_ERROR			:=30,
+	ACTION_TIMEOUT_ERROR	:=40
+	
+	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

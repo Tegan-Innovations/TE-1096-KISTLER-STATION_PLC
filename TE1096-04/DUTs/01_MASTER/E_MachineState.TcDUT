@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_MachineState" Id="{0543df30-bb72-4d07-965b-09e7b426bb89}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_MachineState :
+( // Enum: State of the m/c
+	
+	SYSTEM_POWER_UP			:=0,
+	IMMEDIATE_STOPPED		:=100,
+	SYSTEM_INITIALISING		:=110,
+	SYSTEM_READY_TO_START	:=120,
+	SYSTEM_AUTO_CYCLE		:=130,
+	SYSTEM_STANDBY			:=140,
+	STOPPING				:=150,
+	CYCLE_STOPPED			:=160,
+	MANUAL_MODE				:=170,
+	IMMEDIATE_FAULT			:=190,
+	CYCLE_STOP_FAULT		:=200
+	
+	//-----------------------------------------------------------------------------------------------------------------------oldschoo1
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

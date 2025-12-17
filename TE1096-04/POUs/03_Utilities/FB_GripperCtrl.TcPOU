@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_GripperCtrl" Id="{8d7a70bf-818b-4d26-bc5f-665d377e6ae1}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_GripperCtrl
+VAR_INPUT
+	
+	bCloseGrip					:BOOL;
+	bClosedSensor				:BOOL;
+
+END_VAR
+VAR_OUTPUT
+	
+	bOpen_Sig					:BOOL;
+	bClose_Sig					:BOOL;
+	bTimeout					:BOOL;
+
+END_VAR
+VAR
+	tonOpenPulse				:Tc2_Standard.TON:=(PT:=T#1S);
+	tonClosePulse				:Tc2_Standard.TON:=(PT:=T#1S);
+	tonResetSignal				:ARRAY [1..2] OF Tc2_Standard.TON;
+	tonTimeout					:Tc2_Standard.TON:=(PT:=T#3S);
+	
+END_VAR
+//-------------------------------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Timers
+		 tonOpenPulse (IN:= NOT bCloseGrip);
+		tonClosePulse (IN:= bCloseGrip);
+		
+	tonResetSignal[1] (IN:= NOT bCloseGrip,PT:=T#100MS);
+	tonResetSignal[2] (IN:= bCloseGrip,PT:=T#100MS);
+	
+		   tonTimeout (IN:= bClose_Sig AND NOT bClosedSensor);
+
+// Logic
+IF NOT bCloseGrip THEN //-----------------------------------------------KEEP_OPEN
+
+								bClose_Sig 		:= FALSE;
+						
+						IF tonResetSignal[1].Q 
+							THEN	
+								bOpen_Sig 		:= TRUE;
+						END_IF							
+ELSE //----------------------------------------------------------------CLOSE_GRIP
+	
+								bOpen_Sig 		:= FALSE;
+						
+							IF tonResetSignal[2].Q 
+							THEN	
+								bClose_Sig 		:= TRUE;
+						END_IF										
+END_IF
+bTimeout := tonTimeout.Q; //----------------------------------------------TIMEOUT
+
+//-----------------------------------------------------------------------oldschoo1]]></ST>
+    </Implementation>
+    <LineIds Name="FB_GripperCtrl">
+      <LineId Id="38" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="112" Count="2" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="118" Count="1" />
+      <LineId Id="33" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

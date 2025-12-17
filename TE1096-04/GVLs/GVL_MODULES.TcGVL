@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_MODULES" Id="{4562a374-c4ed-493f-b1dc-badc31abc05e}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	
+
+	// Y-Axis
+	stY_Axis			:ST_Y_Axis;
+	
+	CMD_Axis			:ST_ModuleCMD;
+	Axis_STATUS			:ST_ModuleStatus;
+	
+	// Kistler
+	stKistler			:ST_Kistler;
+
+	CMD_Kistler			:ST_ModuleCMD;
+	Kistler_STATUS		:ST_ModuleStatus;
+	
+	// Smac
+	stSmacIO			: ST_SMAC_I_O; //It suppose to be in GVL_IO
+	stSmac				: ST_Smac;
+	
+	CMD_Smac			:ST_ModuleCMD;
+	Smac_STATUS			:ST_ModuleStatus;	
+	
+	
+//--------------------------------------------oldschoo1	
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

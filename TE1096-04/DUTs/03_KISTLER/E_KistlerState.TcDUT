@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_KistlerState" Id="{14d875ff-ed1d-4d86-94f8-b031aa5ed9b4}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_KistlerState :
+(
+	ABORTED				:=10,
+	ENABLE_PLC_CTRL		:=11,
+	SELECT_MP			:=12,
+	ENABLE_DRIVE		:=20,
+	RESET_ERROR			:=30,
+	GOTO_HOME_POS		:=33,
+	SET_PARAMETERS		:=40,
+	PRESS_READY			:=50,
+	PRESS_CYCLE			:=60,
+	WAIT_CYCLE_DONE		:=70,
+	RECORD_CYCLE_DATA	:=80,
+	JOG_MODE			:=100,
+	ERROR				:=110,
+	MANUAL				:=120
+	
+//------------------------------oldschoo1
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

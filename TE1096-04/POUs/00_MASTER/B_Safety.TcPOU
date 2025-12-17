@@ -1,0 +1,277 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="B_Safety" Id="{0238401b-b573-42bb-8cd5-6530e8e9cd25}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM B_Safety
+VAR
+
+
+	bFirstRun						:BOOL:=TRUE;
+	tonDelaySafetyRun				:Tc2_Standard.TON;
+	
+	
+	bFirstSafetyErrorAck 			:BOOL;
+	bSafetyErrorAck					:BOOL;	
+	rTriggSafetyErrorAck  			:Tc2_Standard.R_TRIG;	
+	tonDelayErrorAck				:Tc2_Standard.TON;
+	tonSafetyErrorAckPulse			:Tc2_Standard.TON;
+
+
+//-----------------------------------------------------oldschoo1
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Call for Actions:
+a_Run_And_ErrorAck();
+b_Cmd_SafetyDevices();
+//----------------------oldschoo1]]></ST>
+    </Implementation>
+    <Action Name="a_Run_And_ErrorAck" Id="{a5ebbf0c-b05a-450f-84ff-fb03d6d0bd1d}">
+      <Implementation>
+        <ST><![CDATA[// Run Safety PLC && ErrorAck: --------------------------------------------*
+(**************************************************************************)
+
+
+// Delay RUN on PowerUP
+tonDelaySafetyRun(IN:=bFirstRun, 
+				  PT:=tSystemPowerUP_Time);
+
+IF tonDelaySafetyRun.Q 
+	THEN
+		GVL_MASTER.stSafety.bRunSafety 		:= TRUE;	
+		bFirstRun 							:= FALSE;
+		bFirstSafetyErrorAck 				:= TRUE;
+END_IF
+
+// Delay ErrorAck
+tonDelayErrorAck(IN:=bFirstSafetyErrorAck, 
+				 PT:=T#500MS);
+
+
+// Trigger ErrorAck: ------------------------------------------------------*
+rTriggSafetyErrorAck(CLK:=tonDelayErrorAck.Q OR 
+						  bResetButtonRisingEdge);
+
+IF rTriggSafetyErrorAck.Q 
+	THEN
+		bFirstSafetyErrorAck 	:= FALSE;
+		bSafetyErrorAck 		:= TRUE;
+END_IF
+
+
+// Send Pulse for ErrorAck: -----------------------------------------------*
+tonSafetyErrorAckPulse(IN:=bSafetyErrorAck, PT:=T#500MS);
+
+IF bSafetyErrorAck 
+							THEN
+								GVL_MASTER.stSafety.bAckSafetyError := TRUE;
+END_IF
+
+IF tonSafetyErrorAckPulse.Q 
+							THEN
+								GVL_MASTER.stSafety.bAckSafetyError := FALSE;
+								bSafetyErrorAck 					:= FALSE;
+END_IF
+
+
+//------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="b_Cmd_SafetyDevices" Id="{6c7e84d1-811e-4092-b397-9ee6505e46b5}">
+      <Implementation>
+        <ST><![CDATA[// atm dev && test only 
+	// map to:  stMachineStatus.bAutoCycle;  when done with dev/testing
+	// map to:  stMachineStatus.bAutoCycle AND NOT stMachineStatus.bProcessCycle; //to allow operator to insert/take out the Pack fixture
+  // map to:  stMachineStatus.bAutoCycle;  when done with dev/testing
+IF stMachineStatus.bProcessCycle AND NOT Y_Master_Y_Axis.refY_Axis.Status.Moving THEN
+	stSafety.bLightBeam_MuteCMD 	:= FALSE;
+ELSE stSafety.bLightBeam_MuteCMD 	:= TRUE;
+END_IF
+	//stSafety.bLightBeam_MuteCMD 	:= TRUE;
+
+IF stMachineStatus.bAutoCycle THEN
+	stSafety.bTwoHands_MonitorCMD 	:= TRUE;
+	stSafety.bLockDoor_CMD 			:= TRUE;
+ELSE stSafety.bTwoHands_MonitorCMD 	:= FALSE;
+	stSafety.bLockDoor_CMD 			:= FALSE;
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="z_HardwareHealth" Id="{89330967-5b90-416d-9ea6-6cfa40a9514d}">
+      <Implementation>
+        <ST><![CDATA[//to be finnished
+
+(*
+   	// TERMINAL 1 _ EK1100 - EtherCAT Coupler
+
+	nEK1100State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEK1100Status											:	STRING(200);
+	
+
+	// TERMINAL 2 _ EL6070-0033	- License Key Terminal for TC3
+	
+	nEL6070State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL6070Status											:	STRING(200);
+
+
+	// TERMINAL 3 _ EL6910 - Safety PLC - Virtual Channels
+	
+
+	nEL6910State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL6910Status											:	STRING(200);
+
+
+	// TERMINAL 4 _ EL1918 - 8 Channel Digital Safety Inputs
+	
+
+	nEL1918_1State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL1918Status											:	STRING(200);
+	
+
+	// TERMINAL 5 _ EL1918 - 8 Channel Digital Safety Inputs
+                     	
+	nEL1918_2State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL1918_2Status											:	STRING(200);
+	
+
+	// TERMINAL 6 _ ELEL2904 - 4 Channel Digital Safety Outputs
+
+
+	nEL2904_1State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL2904_1Status											:	STRING(200);
+	
+
+	// TERMINAL 7 _ ELEL2904 - 4 Channel Digital Safety Outputs
+
+		//Status* 
+	nEL2904_2State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL2904_2Status											:	STRING(200);
+
+
+	// TERMINAL 8 _ EL1809 - 16 Channel Digital Input Terminal
+	
+		//Status*	
+	nEL1809_1State							AT %I*			:	UINT;	// Terminal INFO Data	
+	sEL1809_1Status											:	STRING(200);
+	
+	iPSU_1_OK								AT %I*	 		: 	BOOL;	// Channel 03 - Power Supply Unit 1 OK
+	iPSU_2_OK								AT %I*	 		: 	BOOL;	// Channel 04 - Power Supply Unit 2 OK
+	iPSU_3_OK								AT %I*	 		: 	BOOL;	// Channel 05 - Power Supply Unit 3 OK	
+	
+	
+
+	// TERMINAL 9 _ EL1809 - 16 Channel Digital Input Terminal
+
+	nEL1809_2State							AT %I*			:	UINT;	// Terminal INFO Data
+	sEL1809_2Status											:	STRING(200);
+	
+	// TERMINAL 10 _ EL2809	- 16 Channel Digital Output Terminal
+	
+
+	nEL2809State							AT %I*			:	UINT;	// Terminal INFO Data
+	sEL2809Status											:	STRING(200);
+
+
+	// TERMINAL 11 _ EL9576 - Brake Chopper Terminal
+
+	nEL9576State							AT %I*			:	UINT;	// Terminal INFO Data
+	sEL9576Status											:	STRING(200);
+	
+
+	// TERMINAL 12 _ EL7211-0010 - Servo Motor Drive
+
+	nEL7211State							AT %I*			:	UINT;	// Terminal INFO Data
+	sEL7211Status											:	STRING(200);	
+
+
+	// BOX 13 _ maXYnos - Drive and Force Sensor
+
+	nKistlermaXYmosState				   AT %I*		   :	UINT;	// Terminal INFO Data
+	sKistlermaXYmosStatus								   :	STRING(200);	
+	
+	//--------------------------------------------------------------------------------------------------------------------------oldschoo1
+*)]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="B_Safety">
+      <LineId Id="206" Count="2" />
+      <LineId Id="74" Count="0" />
+    </LineIds>
+    <LineIds Name="B_Safety.a_Run_And_ErrorAck">
+      <LineId Id="33" Count="2" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="3" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="5" Count="3" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="18" Count="3" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="23" Count="3" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="28" Count="1" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="30" Count="0" />
+    </LineIds>
+    <LineIds Name="B_Safety.b_Cmd_SafetyDevices">
+      <LineId Id="2" Count="2" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="B_Safety.z_HardwareHealth">
+      <LineId Id="145" Count="1" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="3" Count="10" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="19" Count="3" />
+      <LineId Id="24" Count="6" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="35" Count="3" />
+      <LineId Id="40" Count="6" />
+      <LineId Id="48" Count="6" />
+      <LineId Id="58" Count="2" />
+      <LineId Id="65" Count="2" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="139" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="142" Count="1" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="81" Count="3" />
+      <LineId Id="87" Count="1" />
+      <LineId Id="103" Count="3" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="113" Count="5" />
+      <LineId Id="120" Count="3" />
+      <LineId Id="127" Count="1" />
+      <LineId Id="133" Count="4" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

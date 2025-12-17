@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="FB_Chart" Id="{ac2c7207-0838-4f0e-abb9-6013f14619bc}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Chart
+VAR_INPUT
+    StartSignal : BOOL;           // Signal to start capturing data
+    EndSignal   : BOOL;           // Signal to stop capturing data
+    DistanceInput : REAL;         // Incoming distance value
+    ForceInput    : REAL;         // Incoming force value
+	h:INT;						  //Index History persitent
+END_VAR
+
+VAR_OUTPUT
+    DatosOut : ARRAY[1..1,1..100] OF Stpoint;  // Output array with captured data
+  	bFinished  : BOOL;                     // TRUE when finished
+END_VAR
+
+VAR
+	IsCapturing : BOOL;                     // TRUE while capturing
+    Timer : TON;                   // Internal timer
+	d:INT;
+    ind : INT := 1;              // Internal index (start from 1)
+	Endcycletg : R_TRIG;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[	Endcycletg(CLK:=EndSignal);
+// Start the timer only when StartSignal is TRUE and EndSignal is FALSE
+Timer(IN := IsCapturing, PT := T#40ms);
+
+// Main logic
+
+
+IF StartSignal (*AND NOT EndSignal*) THEN
+	FOR D := 1 TO 100 DO
+        DatosOut[1, d].x := 0.0;  // Poner la coordenada X a 0
+        DatosOut[1, d].y := 0.0;  // Poner la coordenada Y a 0
+    END_FOR
+	
+	ind:=1;
+    IsCapturing := TRUE;
+    bFinished := FALSE;
+END_IF 
+
+IF IsCapturing AND NOT EndSignal AND NOT StartSignal THEN
+    IF Timer.Q AND ind <= 199 THEN
+        // Store current values in the array
+        DatosOut[1,ind].x := DistanceInput;
+        DatosOut[1,ind].y := ForceInput;
+	
+        ind := ind + 1;
+
+        // Reset the timer for the next 1-second interval
+        Timer(IN := FALSE);  // Stop
+        Timer(IN := TRUE);   // Restart
+    END_IF
+
+
+ELSIF Endcycletg.Q OR ind > 199 THEN
+    // Stop capturing when signal is given or array is full
+    IsCapturing := FALSE;
+ 
+	ind:=1;
+    // Stop the timer
+    Timer(IN := FALSE);
+END_IF
+
+bFinished:=Endcycletg.Q;]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Chart">
+      <LineId Id="86" Count="0" />
+      <LineId Id="54" Count="3" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="98" Count="2" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="59" Count="2" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="62" Count="4" />
+      <LineId Id="68" Count="5" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="74" Count="8" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="147" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

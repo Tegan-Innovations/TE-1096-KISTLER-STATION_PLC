@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_SmacInitialization" Id="{7a0c5a36-2f20-476a-b928-b4e9f70f2b83}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_SmacInitialization
+VAR_INPUT
+	
+	bEnable										: BOOL;
+	bAcknowledge								: BOOL;
+	bReset										: BOOL;
+	bFunctionRequest							: BOOL;
+
+END_VAR
+VAR_OUTPUT
+	
+	bFunctionEnabled							: BOOL;
+	bPhasingProcessDone							: BOOL;
+	bHomingProcessDone							: BOOL;
+	bAcknowledgeRequest							: BOOL;
+	bHomeError									: BOOL;
+	bPhasingError								: BOOL;
+
+END_VAR
+VAR
+	nFunctionState								: DINT;
+	sFunctionState								: STRING;
+	tonCaseDelay								: ARRAY[0..10] OF TON;
+	rTrigCase									: ARRAY[0..10] OF R_TRIG;
+END_VAR
+VAR_IN_OUT
+	nStatusWord									: DINT;
+	nControlWord								: UINT;
+	nModeOfOperation							: UINT;
+	nCurrentModeOfOperation						: DINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ACT_TimTrig();
+IF bEnable THEN
+	ACT_INIT();
+	bFunctionEnabled 		:= TRUE;
+ELSE bFunctionEnabled 		:= FALSE;
+END_IF
+
+]]></ST>
+    </Implementation>
+    <Action Name="ACT_INIT" Id="{9c18c434-c7ea-4c0a-8b6e-d27ab1c51f2e}">
+      <Implementation>
+        <ST><![CDATA[IF nStatusWord.13 THEN //ERROR
+	nFunctionState := 5000;
+ELSIF bReset THEN
+	nFunctionState 					:= 0;
+END_IF
+
+CASE nFunctionState OF
+	
+0://Reset Values
+bPhasingProcessDone				:= FALSE;
+bHomingProcessDone				:= FALSE;
+bAcknowledgeRequest				:= FALSE;
+bHomeError						:= FALSE;
+bPhasingError					:= FALSE;
+
+IF bEnable AND NOT nStatusWord.15 AND NOT nStatusWord.16 AND NOT nStatusWord.17 THEN //STATUS 0 := MOTOR READY
+	nFunctionState 				:= 15;
+END_IF
+15:
+IF tonCaseDelay[8].Q THEN
+	nFunctionState 				:= 20;
+END_IF
+20://home
+sFunctionState 					:= 'Waiting Request';
+IF rTrigCase[1].Q AND NOT nStatusWord.8 THEN
+	nFunctionState 				:= 100;
+ELSIF rTrigCase[1].Q AND  nStatusWord.8 THEN
+nFunctionState 				:= 200;
+END_IF
+
+100://PHASING
+sFunctionState 					:= 'Phasing Process';
+IF tonCaseDelay[0].Q THEN
+	nFunctionState 				:= 110;
+END_IF
+110://Resetting control word
+nControlWord					:= 10;
+nModeOfOperation				:= 7;
+IF tonCaseDelay[1].Q AND (nCurrentModeOfOperation = 7) THEN
+	nFunctionState 				:= 120;
+END_IF
+120://Setting control word
+nControlWord					:= 1;
+IF tonCaseDelay[2].Q  THEN
+	nFunctionState 				:= 130;
+END_IF
+130://Phase done or error
+IF tonCaseDelay[3].Q AND nStatusWord.8 THEN //STATUS 8 := PHASE DONE
+	nFunctionState 				:= 200;
+	bPhasingProcessDone 		:= TRUE;
+ELSIF tonCaseDelay[3].Q AND nStatusWord.9 THEN //STATUS 8 := PHASE FAULT
+	bPhasingError				:= TRUE;
+	nFunctionState 				:= 5000;
+END_IF
+
+
+200: //HOMING
+sFunctionState 					:= 'Homing Process';
+IF tonCaseDelay[4].Q THEN
+	nFunctionState 				:= 210;
+END_IF
+210://Resetting control word
+nControlWord					:= 10;
+nModeOfOperation				:= 6;
+IF tonCaseDelay[5].Q AND (nCurrentModeOfOperation = 6) THEN
+	nFunctionState 				:= 220;
+END_IF
+220://Setting control word
+nControlWord					:= 1;
+IF tonCaseDelay[6].Q THEN
+	nFunctionState 				:= 230;
+END_IF
+230://Phase done or error
+IF tonCaseDelay[7].Q AND nStatusWord.6 THEN //STATUS 8 := HOME DONE
+	bHomingProcessDone	 		:= TRUE;
+	nFunctionState 				:= 300;
+ELSIF tonCaseDelay[7].Q AND nStatusWord.7 THEN //STATUS 8 := HOME FAULT
+	nFunctionState 				:= 5000;
+	bHomeError					:= TRUE;
+END_IF
+300://Process done, waiting acknowledge
+sFunctionState 					:= 'Process done, Waiting for acknowledge';
+bAcknowledgeRequest				:= TRUE;
+IF bAcknowledge	THEN
+	bAcknowledgeRequest			:= FALSE;
+	nFunctionState 				:= 0;
+END_IF
+5000:
+sFunctionState 					:= 'Error';
+nModeOfOperation				:= 5;
+IF bReset THEN
+	nControlWord				:= 1;
+ELSE nControlWord				:= 10;
+END_IF
+IF NOT nStatusWord.13 THEN
+	nFunctionState 				:= 0;
+END_IF
+
+
+END_CASE
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_TimTrig" Id="{c429add1-b05f-4812-aa52-d21cc22536e2}">
+      <Implementation>
+        <ST><![CDATA[////////////////////////////////////////////TON///////////////////////////////////////////////////////
+	tonCaseDelay[0](IN :=(nFunctionState = 100),PT := T#100MS);
+	tonCaseDelay[1](IN :=(nFunctionState = 110),PT := T#100MS);
+	tonCaseDelay[2](IN :=(nFunctionState = 120),PT := T#100MS);
+	tonCaseDelay[3](IN :=(nFunctionState = 130),PT := T#100MS);
+	tonCaseDelay[4](IN :=(nFunctionState = 200),PT := T#100MS);
+	tonCaseDelay[5](IN :=(nFunctionState = 210),PT := T#100MS);
+	tonCaseDelay[6](IN :=(nFunctionState = 220),PT := T#100MS);
+	tonCaseDelay[7](IN :=(nFunctionState = 230),PT := T#100MS);
+	tonCaseDelay[8](IN :=(nFunctionState = 15), PT := T#100MS);
+	tonCaseDelay[9](IN :=, PT := T#100MS);
+	
+	
+////////////////////////////////////////////TRIGGER///////////////////////////////////////////////////////
+	rTrigCase[1](CLK := bFunctionRequest);]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_SmacInitialization">
+      <LineId Id="252" Count="5" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SmacInitialization.ACT_INIT">
+      <LineId Id="2" Count="3" />
+      <LineId Id="9" Count="4" />
+      <LineId Id="103" Count="3" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="24" Count="7" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="33" Count="61" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="95" Count="6" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_SmacInitialization.ACT_TimTrig">
+      <LineId Id="2" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="3" Count="2" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="11" Count="2" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

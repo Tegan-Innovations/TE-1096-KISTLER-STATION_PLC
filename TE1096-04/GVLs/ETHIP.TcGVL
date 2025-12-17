@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="ETHIP" Id="{44e215af-4181-42ab-9bca-4859512770ed}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	Test6							AT %MB0				:DINT;
+	Test7							AT %MB10			:DINT;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Byte_To_Bits" Id="{4d2beece-be0e-4664-83e9-391d566aefbb}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Byte_To_Bits
+VAR_INPUT
+    fbReal2Byte : ARRAY[0..3] OF BYTE; // Array de bytes de entrada
+END_VAR
+
+VAR_OUTPUT
+    Result : ARRAY[0..31] OF BOOL; // Array para almacenar los bits
+END_VAR
+
+VAR
+    byteIndex : INT;      // Índice para iterar sobre los bytes
+    bitIndex : INT;       // Índice para iterar sobre los bits dentro de cada byte
+    shiftAmount : INT;    // Desplazamiento de bits
+    shiftMask : BYTE;     // Máscara para cada bit
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Iterar sobre cada byte en fbRealPosition2Byte
+FOR byteIndex := 0 TO 3 DO
+    // Iterar sobre los 8 bits de cada byte
+    FOR bitIndex := 0 TO 7 DO
+        shiftAmount := 7 - bitIndex; // Shift a la izquierda para obtener los bits de 7 a 0
+        shiftMask := LREAL_TO_BYTE( EXPT(2, shiftAmount));  // Generar la máscara de 2^shiftAmount
+        
+        // Extraer cada bit y almacenarlo en arrOutBits
+        Result[byteIndex * 8 + bitIndex] := (fbReal2Byte[byteIndex] AND shiftMask) <> 0;
+    END_FOR
+END_FOR
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Byte_To_Bits">
+      <LineId Id="35" Count="10" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

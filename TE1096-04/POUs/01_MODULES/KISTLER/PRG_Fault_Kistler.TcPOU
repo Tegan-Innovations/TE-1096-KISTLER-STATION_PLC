@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PRG_Fault_Kistler" Id="{8c713892-4b28-4b19-9460-bed5e2dcf97c}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Fault_Kistler
+VAR
+	i					: INT;
+	bTest				: BOOL;
+END_VAR
+VAR_IN_OUT
+  aAlarms  : ARRAY[0..3] OF ST_Events;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ACT_FaultTrig();
+
+(************************************** Faults reset **********************************************)
+IF   bResetButtonRisingEdge THEN 
+	FOR i := 0 TO 127 DO
+		GVL_MASTER.stAlarms[2].aEventFlags[i] := FALSE;
+	END_FOR
+END_IF
+//===============================================================
+//Initialize event texts on first scan
+IF NOT GVL_MASTER.stAlarms[2].bEventTextsSet THEN
+	SetEventTexts();
+	GVL_MASTER.stAlarms[2].bEventTextsSet := TRUE;
+END_IF
+
+
+(***************************************************************************************************)
+//Immediate fault
+GVL_MASTER.stAlarms[2].bImmediateFault := FALSE;
+FOR i := 0 TO 32DO
+	GVL_MASTER.stAlarms[2].bImmediateFault := GVL_MASTER.stAlarms[2].bImmediateFault OR GVL_MASTER.stAlarms[2].aEventFlags[i];
+END_FOR
+
+//Cycle stop fault
+GVL_MASTER.stAlarms[2].bCycleStopFault := FALSE;
+FOR i := 33 TO 79 DO
+	GVL_MASTER.stAlarms[2].bCycleStopFault := GVL_MASTER.stAlarms[2].bCycleStopFault OR GVL_MASTER.stAlarms[2].aEventFlags[i];
+END_FOR
+
+//Cycle stop REQUEST
+GVL_MASTER.stAlarms[2].bCycleStopRequest := FALSE;
+FOR i := 80 TO 99 DO
+	GVL_MASTER.stAlarms[2].bCycleStopRequest := GVL_MASTER.stAlarms[2].bCycleStopRequest OR GVL_MASTER.stAlarms[2].aEventFlags[i];
+END_FOR
+]]></ST>
+    </Implementation>
+    <Action Name="ACT_FaultTrig" Id="{2c0f7db9-21dd-4316-9c9f-f83a5cb4b748}">
+      <Implementation>
+        <ST><![CDATA[//Station 2 - Kistler Alarm
+GVL_MASTER.stAlarms[2].aEventTimers[1]
+(IN := K_Master_Kistler.stReceived.bAlarm AND NOT stMachineStatus.bImmediateFault AND NOT stMachineStatus.bInitialising , PT := T#500MS);
+IF  GVL_MASTER.stAlarms[2].aEventTimers[1].Q THEN 
+	GVL_MASTER.stAlarms[2].aEventFlags[1] := TRUE;
+	bTest	:= TRUE;
+END_IF
+//Station 2 - Kistler Warning
+GVL_MASTER.stAlarms[2].aEventTimers[2]
+(IN := K_Master_Kistler.stReceived.bWarning AND NOT stMachineStatus.bImmediateFault AND NOT stMachineStatus.bInitialising , PT := T#500MS);
+IF GVL_MASTER.stAlarms[2].aEventTimers[2].Q THEN 
+	GVL_MASTER.stAlarms[2].aEventFlags[2] := TRUE;
+	bTest := TRUE;
+END_IF
+
+//Station 2 - Kistler Homing Time Out
+GVL_MASTER.stAlarms[2].aEventTimers[3]
+(IN := (K_Master_Kistler.eState = E_KistlerState.GOTO_HOME_POS),PT:= T#30S );
+IF GVL_MASTER.stAlarms[2].aEventTimers[80].Q  THEN 
+	GVL_MASTER.stAlarms[2].aEventFlags[80] := TRUE;
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="SetEventTexts" Id="{74b38f1d-eb10-4ad1-b262-925a64d09223}">
+      <Declaration><![CDATA[METHOD SetEventTexts : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Immediate Faults
+GVL_MASTER.stAlarms[2].aEventTexts[1] := 'Station 2 - Kistler Alarm';
+GVL_MASTER.stAlarms[2].aEventTexts[2] := 'Station 2 - Kistler Warning';
+GVL_MASTER.stAlarms[2].aEventTexts[3] := 'Station 2 - Kistler Homing Time Out';
+GVL_MASTER.stAlarms[2].aEventTexts[4] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[5] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[6] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[7] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[8] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[9] := ''; 
+GVL_MASTER.stAlarms[2].aEventTexts[10] := ''; 
+GVL_MASTER.stAlarms[2].aEventTexts[11] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[12] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[13] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[14] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[15] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[16] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[17] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[18] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[19] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[20] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[21] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[22] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[28] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[29] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[30] := '';
+
+//Cycle Stop Requests
+
+GVL_MASTER.stAlarms[2].aEventTexts[80] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[81] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[82] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[84] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[85] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[86] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[87] := ''; 
+GVL_MASTER.stAlarms[2].aEventTexts[88] := '';
+GVL_MASTER.stAlarms[2].aEventTexts[89] := '';
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="PRG_Fault_Kistler">
+      <LineId Id="13" Count="33" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Fault_Kistler.ACT_FaultTrig">
+      <LineId Id="93" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="97" Count="0" />
+      <LineId Id="102" Count="1" />
+      <LineId Id="98" Count="1" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="91" Count="1" />
+      <LineId Id="78" Count="2" />
+      <LineId Id="82" Count="2" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Fault_Kistler.SetEventTexts">
+      <LineId Id="6" Count="0" />
+      <LineId Id="8" Count="30" />
+      <LineId Id="40" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

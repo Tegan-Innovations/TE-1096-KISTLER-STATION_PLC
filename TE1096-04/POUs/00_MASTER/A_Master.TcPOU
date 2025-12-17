@@ -1,0 +1,523 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="A_Master" Id="{bd8e4b1e-d504-48a9-bac3-34dbdf6704f4}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM A_Master
+VAR
+
+	// Buttons One-Shot Triggers:
+	rtrigStartButton					:Tc2_Standard.R_TRIG;
+	ftrigStartButton					:Tc2_Standard.F_TRIG;
+	rtrigResetButton					:Tc2_Standard.R_TRIG;
+	ftrigResetButton					:Tc2_Standard.F_TRIG;	
+	rtrigStopButton					    :Tc2_Standard.R_TRIG;
+	ftrigStopButton					    :Tc2_Standard.F_TRIG;
+
+	
+	//Write Persistent Data 
+	fbWritePersistent					:Tc2_Utilities.FB_WritePersistentData;
+	tonWritePeristentTrig				:Tc2_Standard.TON;
+	bWritePersistentTrigger				:BOOL;	
+	bWritePersistentError				:BOOL;
+	bWritePersistentBusy				:BOOL;
+	bWritePersistentErrID				:UDINT;
+	tWritePersistentPeriod				:TIME := T#1M;	
+	
+	//----------------------------------------------------------------oldschoo1
+	fbEventLogger						:	FB_EventLog;
+	i                       :INT; //Int to handle user log index	
+	k						:INT; //Int to handle user log index
+	j						:INT;
+	l						:INT;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// System PowerUP CTRL
+tonSystemPowerUP(IN:=bSystemPoweringUP, PT:=tSystemPowerUP_Time);
+IF tonSystemPowerUP.Q THEN 
+bSystemPoweringUP:=FALSE;
+ END_IF
+
+tonFirstRun( IN := bFirstRun, PT := T#1S);
+
+
+// Call Module's Actions:
+			a_Map_Inputs();
+	   b_Map_CtrlButtons();
+	   
+		  d_Call_Modules();
+		  
+		   f_Map_Outputs();
+	   g_Map_StatusLamps();
+  h_Write_PersistentData();
+ 			j_ManualMode();
+  
+//-------------------------oldschoo1
+
+fbEventLogger(	bEnable       	:= PRG_MasterSystemTime.bReadyToRead AND NOT bSystemPoweringUP,
+			    sDateTime     	:= PRG_MasterSystemTime.sDateTimeSpaces,
+			    aEventFlags   	:= GVL_HMI.aEventFlags,
+			    aEventTexts   	:= GVL_HMI.aEventTexts,
+			    aActiveEvents 	:= GVL_HMI.aActiveEvents,
+			    aEventLog     	:= GVL_HMI.aEventLog,
+				siDate			:= GVL_MASTER.sSystemDate,
+				siTime			:= GVL_MASTER.sSystemTime,
+				soDate			:= GVL_HMI.aDateLog,
+				soTime			:= GVL_HMI.aTimeLog
+);
+
+IF GVL_UTILITIES.bFlash250Hz THEN
+FOR j := 0 TO 39 DO
+	
+GVL_HMI.stActiveEventsHMI[j].sActiveEvents := GVL_HMI.aActiveEvents[j];
+END_FOR
+FOR l:=0 TO 250 DO
+	
+	GVL_HMI.stAlarmHistory[l].sEventlog 	:= GVL_HMI.aEventLog[l];
+	GVL_HMI.stAlarmHistory[l].sDate		:= GVL_HMI.aDateLog[l];
+	GVL_HMI.stAlarmHistory[l].sTime		:= GVL_HMI.aTimeLog[l];
+END_FOR
+ELSE 
+	
+j:=0; 
+l:=0;
+END_IF]]></ST>
+    </Implementation>
+    <Action Name="a_Map_Inputs" Id="{197e0ebe-f91f-4144-bbed-a7377fbbe787}">
+      <Implementation>
+        <ST><![CDATA[// Safety Inputs
+GVL_MASTER.stSafety.bSafety_OK						:= GVL_IO.isSafety_OK;
+GVL_MASTER.stSafety.bDoorClosed						:= GVL_IO.isDoorClosed;
+GVL_MASTER.stSafety.bDoorLocked						:= GVL_IO.isDoorLocked;
+GVL_MASTER.stSafety.bEStop_OK						:= GVL_IO.isEStop_OK;
+GVL_MASTER.stSafety.bLightBeam_Crossed				:= NOT GVL_IO.isLightBeam_NotCrossed;
+GVL_MASTER.stSafety.bTwoHands_Signal				:= GVL_IO.isTwoHands_SIGNAL;
+
+
+
+// Master Machine CTRL Inputs
+GVL_MASTER.bPuck_Present							:= GVL_IO.iPuck_PresentSensor;
+GVL_MASTER.bReservoir_Present						:= GVL_IO.iPartA_PresentSensor;
+GVL_MASTER.bScrew_Present							:= GVL_IO.iPartB_PresentSensor;
+GVL_MASTER.bGearBox_Present							:= GVL_IO.iPartC_PresentSensor;
+
+
+
+// Y-Axis Inputs
+GVL_MODULES.stY_Axis.bAxis_1_SafetyRelayFB			:= GVL_IO.iAxis_1_SafetyRelayFB;
+
+
+
+// Kistler Inputs
+GVL_MODULES.stKistler.st_TelegramDataIn				:= GVL_IO.iStatusBytes;
+GVL_MODULES.stKistler.bKistlerCTRL_FB1				:= GVL_IO.iKistlerCTRL_FB1;						
+GVL_MODULES.stKistler.bKistlerCTRL_FB2				:= GVL_IO.iKistlerCTRL_FB2;						 
+GVL_MODULES.stKistler.bKistlerCTRL_FB3				:= GVL_IO.iKistlerCTRL_FB3;							
+
+
+
+// Smac Inputs
+GVL_MODULES.stSmac.bGripperA_ClosedSensor			:= GVL_IO.iGripperA_ClosedSensor;
+GVL_MODULES.stSmac.bGripperB_ClosedSensor			:= GVL_IO.iGripperB_ClosedSensor;
+
+
+//----------------------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="b_Map_CtrlButtons" Id="{bb2c314f-2f9f-4b34-a2d7-bff4c9336f33}">
+      <Implementation>
+        <ST><![CDATA[
+//Start button
+rtrigStartButton(CLK:= GVL_IO.iStartButton,	Q=>bStartButtonRisingEdge);
+ftrigStartButton(CLK:= GVL_IO.iStartButton,	Q=>bStartButtonFallingEdge);
+
+// Stop button
+rtrigStopButton(CLK:= NOT GVL_IO.iStopButton,  Q=>bStopButtonRisingEdge);
+ftrigStopButton(CLK:= NOT GVL_IO.iStopButton,  Q=>bStopButtonFallingEdge);
+
+// Reset button
+rtrigResetButton(CLK:= GVL_IO.iResetButton, 	Q=>bResetButtonRisingEdge);
+ftrigResetButton(CLK:= GVL_IO.iResetButton, 	Q=>bResetButtonFallingEdge);
+
+
+//-------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="c_Read_Statuses" Id="{82a8d1dd-2087-40e9-a1bf-2dcde5194972}">
+      <Implementation>
+        <ST><![CDATA[//Handshake In
+Y_Master_Y_Axis(STATUS => GVL_MODULES.Axis_STATUS);
+K_Master_Kistler(STATUS => GVL_MODULES.Kistler_STATUS);
+S_Master_SMAC(STATUS => GVL_MODULES.Smac_STATUS);
+//--------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="d_Call_Modules" Id="{d59654d5-a643-47f5-bf4b-9b6dbb2466da}">
+      <Implementation>
+        <ST><![CDATA[// Call Modules Masters: ----------------------------------------*
+
+			B_Safety();				// Safety PLC Module
+							
+	 c_Read_Statuses();
+	  C_Machine_Ctrl();				// Master Module MachineCTRL
+	 	e_Write_Cmds();
+					
+	 Y_Master_Y_Axis();				// Module for Y-Axis
+   	   S_Master_SMAC();				// Module for Smac
+	K_Master_Kistler();				// Module for Kistler	
+   
+//-------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="e_Write_Cmds" Id="{784f91b4-7272-4179-91fb-9a67e2781444}">
+      <Implementation>
+        <ST><![CDATA[//Handshake Out
+Y_Master_Y_Axis(CMD := GVL_MODULES.CMD_Axis);
+K_Master_Kistler(CMD := GVL_MODULES.CMD_Kistler);
+S_Master_SMAC(CMD := GVL_MODULES.CMD_Smac);
+//-----------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="f_Map_Outputs" Id="{80c55987-9b74-4f60-bc13-ffde7146848d}">
+      <Implementation>
+        <ST><![CDATA[
+// Safety Outputs
+GVL_IO.qsSafetyRun								:= GVL_MASTER.stSafety.bRunSafety;
+GVL_IO.qsSafetyErrorAck							:= GVL_MASTER.stSafety.bAckSafetyError;
+GVL_IO.qsLockDoorCMD 							:= GVL_MASTER.stSafety.bLockDoor_CMD;
+GVL_IO.qsLightBeam_MutingActive					:= GVL_MASTER.stSafety.bLightBeam_MuteCMD;
+GVL_IO.qsTwoHandsMonitoring						:= GVL_MASTER.stSafety.bTwoHands_MonitorCMD;
+
+
+
+// Master Machine CTRL Outputs
+GVL_IO.qGripperA_Close							:= GVL_MODULES.stSmac.bGripperA_Close;
+GVL_IO.qGripperA_Open							:= GVL_MODULES.stSmac.bGripperA_Open;
+GVL_IO.qGripperB_Close							:= GVL_MODULES.stSmac.bGripperB_Close;
+GVL_IO.qGripperB_Open							:= GVL_MODULES.stSmac.bGripperB_Open;
+//GVL_IO.qCycleIndicator_GreenLED					:= GVL_MASTER.bCycleIndicator_Green;
+//GVL_IO.qCycleIndicator_RedLED					:= GVL_MASTER.bCycleIndicator_Red;
+
+
+
+// Y-Axis Outputs - 
+
+
+
+
+// Kistler Outputs
+GVL_IO.qControlBytes 							:= GVL_MODULES.stKistler.st_TelegramDataOut;
+GVL_IO.qKistlerCTRL_Sig1						:= GVL_MODULES.stKistler.bKistlerCTRL_Sig1;
+GVL_IO.qKistlerCTRL_Sig2						:= GVL_MODULES.stKistler.bKistlerCTRL_Sig2;
+GVL_IO.qKistlerCTRL_Sig3						:= GVL_MODULES.stKistler.bKistlerCTRL_Sig3;
+GVL_IO.qKistlerCTRL_Sig4						:= GVL_MODULES.stKistler.bKistlerCTRL_Sig4;
+
+
+
+// Smac Outputs
+GVL_IO.qGripperA_Open							:= GVL_MODULES.stSmac.bGripperA_Open;
+GVL_IO.qGripperA_Close							:= GVL_MODULES.stSmac.bGripperA_Close;	
+GVL_IO.qGripperB_Open							:= GVL_MODULES.stSmac.bGripperB_Open;
+GVL_IO.qGripperB_Close							:= GVL_MODULES.stSmac.bGripperB_Close;
+
+//---------------------------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="g_Map_StatusLamps" Id="{360f6d9a-ca43-429e-82cb-bcaa758a6c8d}">
+      <Implementation>
+        <ST><![CDATA[
+// Reset Button LED Lamp
+GVL_IO.qResetButton_LED := bFlash2Hz AND (stMachineStatus.bImmediateStopped OR 
+								   		  stMachineStatus.bImmediateFault 	OR 
+								          stMachineStatus.bCycleStopped 	OR
+		   			 			          stMachineStatus.bCycleStopFault 	OR 
+								          stMachineStatus.bInitialising);
+
+		   
+// Start Button LED Lamp
+GVL_IO.qStartButton_LED := (stMachineStatus.bReadyToStart AND bFlash1Hz_7030) OR stMachineStatus.bAutoCycle;
+
+(*
+// Cycle Indicator LED Lamp
+GVL_MASTER.bCycleIndicator_Green			:= stMachineStatus.bProcessCycle;
+GVL_MASTER.bCycleIndicator_Red 				:= stMachineStatus.bAutoCycle AND NOT stMachineStatus.bProcessCycle; 
+					
+	*)				
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="h_Write_PersistentData" Id="{935fcb97-6522-48af-8ddf-ee1b01935492}">
+      <Implementation>
+        <ST><![CDATA[tonWritePeristentTrig(IN := NOT bWritePersistentTrigger, 
+					  PT := tWritePersistentPeriod, 
+					  Q   => bWritePersistentTrigger);
+
+fbWritePersistent(	NETID 	:= '', 
+					PORT 	:= 851,
+					START 	:= bWritePersistentTrigger,
+					Mode 	:= E_PersistentMode.SPDM_2PASS,
+					BUSY 	=> bWritePersistentBusy, 
+					ERR 	=> bWritePersistentError,
+					ERRID 	=> bWritePersistentErrID);
+					
+//----------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="i_TerminalInfo" Id="{ad2881e6-f1aa-40c8-817f-9ef173460e64}">
+      <Implementation>
+        <ST><![CDATA[
+// TERMINAL 1 _ EK1100 - EtherCAT Coupler
+GVL_IO.fbTerminalInfo[1](nTerminalState := GVL_IO.nEK1100State, 
+sTerminalState => GVL_IO.sEK1100Status);
+// TERMINAL 2 _ EL6070-0033	- License Key Terminal for TC3
+GVL_IO.fbTerminalInfo[2](nTerminalState := GVL_IO.nEL6070State, 
+sTerminalState => GVL_IO.sEL6070Status);
+// TERMINAL 3 _ EL6910 - Safety PLC - Virtual Channels
+GVL_IO.fbTerminalInfo[3](nTerminalState := GVL_IO.nEL6910State, 
+sTerminalState => GVL_IO.sEL6910Status);
+//TERMINAL 4 _ EL1918 - 8 Channel Digital Safety Inputs
+GVL_IO.fbTerminalInfo[4](nTerminalState := GVL_IO.nEL1918_1State, 
+sTerminalState => GVL_IO.sEL1918Status);
+// TERMINAL 5 _ EL1918 - 8 Channel Digital Safety Inputs
+GVL_IO.fbTerminalInfo[5](nTerminalState := GVL_IO.nEL1918_2State, 
+sTerminalState => GVL_IO.sEL1918_2Status);
+// TERMINAL 6 _ ELEL2904 - 4 Channel Digital Safety Outputs
+GVL_IO.fbTerminalInfo[6](nTerminalState := GVL_IO.nEL2904_1State, 
+sTerminalState => GVL_IO.sEL2904_1Status);
+// TERMINAL 7 _ ELEL2904 - 4 Channel Digital Safety Outputs
+GVL_IO.fbTerminalInfo[7](nTerminalState := GVL_IO.nEL2904_2State, 
+sTerminalState => GVL_IO.sEL2904_2Status);
+// TERMINAL 8 _ EL1809 - 16 Channel Digital Input Terminal
+GVL_IO.fbTerminalInfo[8](nTerminalState := GVL_IO.nEL1809_1State, 
+sTerminalState => GVL_IO.sEL1809_1Status);
+// TERMINAL 9 _ EL1809 - 16 Channel Digital Input Terminal
+GVL_IO.fbTerminalInfo[9](nTerminalState := GVL_IO.nEL1809_2State, 
+sTerminalState => GVL_IO.sEL1809_2Status);
+// TERMINAL 10 _ EL2809	- 16 Channel Digital Output Terminal
+GVL_IO.fbTerminalInfo[10](nTerminalState := GVL_IO.nEL2809State, 
+sTerminalState => GVL_IO.sEL2809Status);
+// TERMINAL 11 _ EL9576 - Brake Chopper Terminal
+GVL_IO.fbTerminalInfo[11](nTerminalState := GVL_IO.nEL9576State, 
+sTerminalState => GVL_IO.sEL9576Status);
+// TERMINAL 12 _ EL7211-0010 - Servo Motor Drive
+GVL_IO.fbTerminalInfo[12](nTerminalState := GVL_IO.nEL7211State, 
+sTerminalState => GVL_IO.sEL7211Status);
+// BOX 13 _ maXYnos - Drive and Force Sensor for Kistler Press
+GVL_IO.fbTerminalInfo[13](nTerminalState := GVL_IO.nKistlermaXYmosState, 
+sTerminalState => GVL_IO.sKistlermaXYmosStatus);
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="j_ManualMode" Id="{133cd35f-5fde-4a55-93c4-8067ca830846}">
+      <Implementation>
+        <ST><![CDATA[IF	 GVL_MASTER.stMachineStatus.bReadyToStart THEN
+	GVL_HMI.bEnableManualMode := TRUE;
+ELSE GVL_HMI.bEnableManualMode := FALSE;
+END_IF
+
+
+GVL_HMI.rtrigManualMode(CLK:= GVL_HMI.nRegionMain=10 AND NOT GVL_HMI.rtrigManualModeOff[1].Q AND NOT GVL_HMI.rtrigManualModeOff[2].Q AND NOT GVL_HMI.rtrigManualModeOff[3].Q AND NOT GVL_HMI.rtrigManualModeOff[4].Q );
+GVL_HMI.rtrigManualModeOff[1](CLK:=GVL_Master.stMachineStatus.bManualMode AND (GVL_HMI.nRegionMain <> 10));
+GVL_HMI.rtrigManualModeOff[2](CLK:= rtrigStopButton.Q);
+GVL_HMI.rtrigManualModeOff[3](CLK:= NOT GVL_Master.stMasterCTRL.bNoMachineImmediateFault );
+GVL_HMI.rtrigManualModeOff[4](CLK := GVL_HMI.bManualModeOff[1], Q => GVL_HMI.bManualModeOff[2]);
+
+IF GVL_HMI.rtrigManualMode.Q THEN 
+	GVL_Master.stMasterCTRL.bManualModeRequest := TRUE;
+	GVL_HMI.bManualModeOff[1] := FALSE;
+ELSIF  GVL_HMI.rtrigManualModeOFF[1].Q OR  GVL_HMI.rtrigManualModeOFF[2].Q OR 
+		GVL_HMI.rtrigManualModeOFF[3].Q THEN
+		GVL_HMI.nRegionMain		:= 1;
+	GVL_Master.stMasterCTRL.bManualModeRequest := FALSE ;
+	GVL_HMI.bManualModeOff[1] := TRUE;
+	
+	
+ELSE GVL_HMI.bManualModeOff[1] := FALSE;
+	
+END_IF
+
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="A_Master">
+      <LineId Id="522" Count="0" />
+      <LineId Id="519" Count="0" />
+      <LineId Id="523" Count="0" />
+      <LineId Id="654" Count="0" />
+      <LineId Id="653" Count="0" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="527" Count="0" />
+      <LineId Id="526" Count="0" />
+      <LineId Id="520" Count="0" />
+      <LineId Id="450" Count="2" />
+      <LineId Id="487" Count="0" />
+      <LineId Id="453" Count="0" />
+      <LineId Id="488" Count="0" />
+      <LineId Id="454" Count="2" />
+      <LineId Id="651" Count="0" />
+      <LineId Id="615" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="558" Count="0" />
+      <LineId Id="616" Count="9" />
+      <LineId Id="557" Count="0" />
+      <LineId Id="681" Count="15" />
+      <LineId Id="680" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.a_Map_Inputs">
+      <LineId Id="36" Count="0" />
+      <LineId Id="311" Count="4" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="342" Count="0" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="347" Count="2" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="319" Count="0" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="299" Count="0" />
+      <LineId Id="301" Count="0" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="321" Count="0" />
+      <LineId Id="356" Count="0" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="351" Count="0" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="334" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.b_Map_CtrlButtons">
+      <LineId Id="10" Count="0" />
+      <LineId Id="2" Count="2" />
+      <LineId Id="7" Count="2" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.c_Read_Statuses">
+      <LineId Id="16" Count="3" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.d_Call_Modules">
+      <LineId Id="27" Count="8" />
+      <LineId Id="37" Count="2" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.e_Write_Cmds">
+      <LineId Id="2" Count="2" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.f_Map_Outputs">
+      <LineId Id="56" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="35" Count="1" />
+      <LineId Id="3" Count="1" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="60" Count="2" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="63" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="3" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="30" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.g_Map_StatusLamps">
+      <LineId Id="12" Count="0" />
+      <LineId Id="2" Count="1" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="15" Count="2" />
+    </LineIds>
+    <LineIds Name="A_Master.h_Write_PersistentData">
+      <LineId Id="2" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="3" Count="6" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="10" Count="1" />
+    </LineIds>
+    <LineIds Name="A_Master.i_TerminalInfo">
+      <LineId Id="1" Count="0" />
+      <LineId Id="7" Count="4" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="33" Count="2" />
+      <LineId Id="18" Count="0" />
+    </LineIds>
+    <LineIds Name="A_Master.j_ManualMode">
+      <LineId Id="2" Count="15" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="20" Count="6" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

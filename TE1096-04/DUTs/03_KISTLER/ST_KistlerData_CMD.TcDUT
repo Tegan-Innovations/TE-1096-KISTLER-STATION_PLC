@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_KistlerData_CMD" Id="{52c0823b-c630-470c-8ee4-753de8e38848}">
+    <Declaration><![CDATA[TYPE ST_KistlerData_CMD :
+STRUCT	
+(*********************************Telegram Data***************************************)	
+
+//Byte 0 - Basic Control CMDs
+	  bStart          					:BOOL;	// 0.0 START – pulse to trigger cycle
+	  bTareY          					:BOOL;	// 0.1 TARE-Y
+	  bZeroX          					:BOOL;	// 0.2 ZERO-X
+	  bSTestX        					:BOOL;	// 0.3 S-TEST-X
+	  bSTestY        					:BOOL;	// 0.4 S-TEST-Y
+	  _r0_5          					:BOOL;	// 0.5 reserved
+	  bMasterMeas     					:BOOL;	// 0.6 MASTER-MEAS
+	  bIncZero        					:BOOL;	// 0.7 INC-ZERO
+	
+//Byte 1 - Login 
+	  bAckAdminGlobal 					:BOOL;	// 1.0 ACK-ADMIN-GLOBAL
+	  bAckAdmin		 					:BOOL;	// 1.1 ACK-ADMIN
+	  _r1_2        						:BOOL;	// 1.2 reserved
+	  bAccess         					:BOOL;	// 1.3 ACCESS
+	  bAuto           					:BOOL;	// 1.4 AUTO
+	  bStatReset      					:BOOL;	// 1.5 STAT-RESET
+	  bStatDisable    					:BOOL;	// 1.6 STAT-DISABLE
+	  bTareExtY       					:BOOL;	// 1.7 TARE-EXTENDED-Y
+	
+//Byte 2 - Measurement PRG Selection
+	  mpNumber        					:ARRAY[0..6]OF BOOL;//MP Number
+	  _r2_7           					:BOOL;	// 2.7 reserved
+	
+//Byte 3 – Reserved
+	  _byte3							:BYTE;	// reserved
+//Byte 4 – Configurable Input Signals
+	  _byte4							:BYTE;	// reserved
+//Byte 5 – Reserved
+	  _byte5							:BYTE;	// reserved
+//Byte 6 – Reserved
+	  _byte6							:BYTE;	// reserved
+//Byte 7 – Reserved
+	  _byte7							:BYTE;	// reserved
+//Byte 3 – Reserved
+	  _byte8							:BYTE;	// reserved
+	
+//Byte 9 – Drive/Sequence CMDs
+	  bDriveEnable    					:BOOL;	// 9.0 DRIVE-ENABLE
+	  bRunSequence    					:BOOL;	// 9.1 RUN-SEQUENCE
+	  bDriveToHome    					:BOOL;	// 9.2 DRIVE-TO-HOMEPOS
+	  bDriveToRef     					:BOOL;	// 9.3 DRIVE-TO-REFPOS
+	  bJogFwd         					:BOOL;	// 9.4 JOG-FW
+	  bJogBack        					:BOOL;	// 9.5 JOG-BW
+	  bContinueWait   					:BOOL;	// 9.6 CONTINUE-FROM-WAIT
+	  bBrakeTest      					:BOOL;	// 9.7 MANUAL-BRAKE-TEST
+	
+//Byte 10 – Extended Stop Request
+	  _r10_0to2       					:ARRAY[0..2]OF BOOL;
+	  bSeqExtStopReq  					:BOOL;	// 10.3 SEQ-EXT-STOP-REQ
+	  _r10_4to7       					:ARRAY[4..7]OF BOOL;
+	
+//Byte 11 – Reserved
+	  _byte11            				:BYTE;	// reserved
+	
+//Byte 12 – Current Sequence Flags
+	  bCurrSeqMain    					:BOOL;	// 12.0 CURRENT-SEQUENCE-0
+	  bCurrSeqSub     					:BOOL;	// 12.1 CURRENT-SEQUENCE-1
+	  _r12_2to7       					:ARRAY[2..7]OF BOOL;
+	
+//Byte 13 – Reserved
+	  _byte13            				:BYTE;	// reserved
+	
+//Byte 14 – Page Control (0…127)
+	  pageControl     					:BYTE;	// 14.0…14.6 CFG-MP
+	
+//Bytes 15…19 – Fieldbus Config Bits
+	  _r15            					:BYTE;
+	  cfgAddress      					:BYTE;	// 16.0…16.7 CFG-ADDRESS
+	  cfgLength       					:BYTE;	// 17.0…17.7 CFG-LENGTH
+	  cfgSelectPage   					:BYTE;	// 18.0…18.2 SELECT-PAGE
+	  saveToMP_Strobe 					:BYTE;	// 19.0…19.7 SAVE/STROBE etc.
+	  
+(************************************************************************************)
+	
+(*************************************Payload****************************************)
+
+//Bytes 20…199 – Free Payload
+	  spare           					:ARRAY[20..199]OF BYTE;
+	  
+//---------------------------------------------------------------------------oldschoo1
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

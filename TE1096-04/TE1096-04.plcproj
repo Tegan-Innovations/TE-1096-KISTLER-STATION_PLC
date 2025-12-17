@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <FileVersion>1.0.0.0</FileVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{a0e46eb5-997a-4d23-b03a-0138169395ef}</ProjectGuid>
+    <SubObjectsSortedByName>True</SubObjectsSortedByName>
+    <DownloadApplicationInfo>true</DownloadApplicationInfo>
+    <WriteProductVersion>true</WriteProductVersion>
+    <GenerateTpy>false</GenerateTpy>
+    <Name>TE1096_04</Name>
+    <ProgramVersion>3.1.4024.0</ProgramVersion>
+    <Application>{aa769cc3-c75f-4ce8-8641-eaec07e9a4d3}</Application>
+    <TypeSystem>{7e363970-926b-4a54-a344-dc62106411c7}</TypeSystem>
+    <Implicit_Task_Info>{c28e274d-194b-436d-8bd1-491d849bd55c}</Implicit_Task_Info>
+    <Implicit_KindOfTask>{b111ad19-70ab-4c3a-8ccb-644fc8158ba3}</Implicit_KindOfTask>
+    <Implicit_Jitter_Distribution>{ef26a487-32b6-4ba6-bc4f-ffb551b529a5}</Implicit_Jitter_Distribution>
+    <LibraryReferences>{9e37a30d-dcff-4920-8cd8-69177921a161}</LibraryReferences>
+    <Company>Tegan Innovations Ltd.</Company>
+    <Released>false</Released>
+    <Title>TE1096-04-SISS</Title>
+    <ProjectVersion>1.0.0</ProjectVersion>
+    <Author>oldschoo1</Author>
+    <Description>Stopper Insertion/Screw Station, 4th station of the EAGLE production line</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="DUTs\00_HMI\ST_Chart.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\00_HMI\StPoint.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\00_HMI\ST_UserLogHMI.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\E_MachineState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_ActiveEventsHMI.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_AlarmHistory.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_Events.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_MachineStatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_MasterCTRL.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_ModuleCMD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_ModuleStatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\01_MASTER\ST_SafetyPLC.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\02_Y_AXIS\E_AxisErrorID.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\02_Y_AXIS\E_AxisState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\02_Y_AXIS\ST_Y_Axis.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\03_KISTLER\E_KistlerErrorID.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\03_KISTLER\E_KistlerState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\03_KISTLER\ST_Kistler.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\03_KISTLER\ST_KistlerData_Temporary.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\03_KISTLER\ST_KistlerData_CMD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\03_KISTLER\ST_KistlerData_Status.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\04_SMAC\E_SmacState.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\04_SMAC\FUNCTIONS\ST_CYC_MAN.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\04_SMAC\FUNCTIONS\ST_Phasing_Home.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\04_SMAC\I_O\ST_SMAC_I_O.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\04_SMAC\ST_Smac.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\05_ProcessCycle\E_ProcessCycle.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DUTs\05_ProcessCycle\ST_ProcessReport.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="GVLs\ETHIP.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_CONSTANTS.TcGVL">
+      <SubType>Code</SubType>
+      <External>false</External>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_MODULES.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_PERSISTENT.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_HMI.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_IO.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_MASTER.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="GVLs\GVL_UTILITIES.TcGVL">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="PlcTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\00_MASTER\D_FaultHandling.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\00_MASTER\PRG_MasterSystemTime.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\01_MODULES\AXIS_Y\PRG_Fault_Axis_Y.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\01_MODULES\AXIS_Y\Y_Master_Y_Axis.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\01_MODULES\KISTLER\K_Master_Kistler.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\01_MODULES\KISTLER\PRG_Fault_Kistler.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\01_MODULES\SMAC\PRG_Fault_SMAC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\01_MODULES\SMAC\S_Master_SMAC.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\02_HMI\A_HMI.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\00_MASTER\A_Master.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\00_MASTER\B_Safety.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\00_MASTER\C_Machine_CTRL.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_ArrayOfByte2Real.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_BytesToReal.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_Byte_To_Bits.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_Chart.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_DistanceMonitor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_EventLog.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_ForceMonitor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_GripperCtrl.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_Real2ArrayOfByte.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_Scale.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_TerminalInfo.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_TimeControl.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FUN_PackBoolArrayToByte.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_UnpackByteToBoolArray.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\PRG_SysTime.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\SMAC\FB_ErrorReset.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\SMAC\FB_SmacCycleMan.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\SMAC\FB_SmacInitialization.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\FB_Pulse.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\03_Utilities\PRG_SysPulses.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PulseTask.TcTTO">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DUTs" />
+    <Folder Include="DUTs\00_HMI" />
+    <Folder Include="DUTs\01_MASTER" />
+    <Folder Include="DUTs\02_Y_AXIS" />
+    <Folder Include="DUTs\03_KISTLER" />
+    <Folder Include="DUTs\04_SMAC" />
+    <Folder Include="DUTs\04_SMAC\I_O" />
+    <Folder Include="DUTs\04_SMAC\FUNCTIONS" />
+    <Folder Include="DUTs\05_ProcessCycle" />
+    <Folder Include="GVLs" />
+    <Folder Include="POUs\00_MASTER" />
+    <Folder Include="POUs\01_MODULES\KISTLER" />
+    <Folder Include="POUs\01_MODULES\AXIS_Y" />
+    <Folder Include="POUs\01_MODULES\SMAC" />
+    <Folder Include="POUs\02_HMI" />
+    <Folder Include="POUs\03_Utilities" />
+    <Folder Include="POUs" />
+    <Folder Include="POUs\01_MODULES" />
+    <Folder Include="POUs\03_Utilities\SMAC" />
+  </ItemGroup>
+  <ItemGroup>
+    <PlaceholderReference Include="Tc2_EthernetIP">
+      <DefaultResolution>Tc2_EthernetIP, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_EthernetIP</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_MC2">
+      <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_MC2</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Standard">
+      <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Standard</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_System">
+      <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_Utilities</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_Module">
+      <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_Module</Namespace>
+    </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TE1096-04.tmc">
+      <SubType>Content</SubType>
+    </None>
+  </ItemGroup>
+  <ProjectExtensions>
+    <PlcProjectOptions>
+      <XmlArchive>
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
+      <v n="Name">"&lt;ProjectRoot&gt;"</v>
+      <d n="SubKeys" t="Hashtable" />
+      <d n="Values" t="Hashtable" />
+    </o>
+        </Data>
+        <TypeList>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
+    </PlcProjectOptions>
+  </ProjectExtensions>
+</Project>

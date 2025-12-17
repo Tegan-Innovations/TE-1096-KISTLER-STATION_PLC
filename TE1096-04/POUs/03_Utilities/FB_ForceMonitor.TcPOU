@@ -1,0 +1,189 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="FB_ForceMonitor" Id="{78deaf87-f7b5-4af9-bf4d-a4d57928b991}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ForceMonitor
+
+VAR_INPUT
+	
+	//Input parameters
+    bEnable                  			:BOOL;   
+    bActive                 			:BOOL;	//Monitoring active
+	bReset								:BOOL;
+    fForceInput              			:REAL;
+    fThreshold_UpperLimit    			:REAL;
+    fThreshold_LowerLimit   			:REAL;
+	fDebounceTolerance   				:REAL;	// +/- range for stable
+	fDistance							:REAL;
+	fDisTanceSetPoint					:REAL;
+
+
+
+END_VAR
+
+VAR_OUTPUT
+	
+	//Output parameters
+    bPass                  			    :BOOL;    //TRUE when within both limits
+    bFail                    			:BOOL;    //TRUE if outside
+    fHighestRecordedForce    			:REAL;
+    fLowestRecordedForce     			:REAL;
+    bOutOfRangeHigh          			:BOOL;
+    bOutOfRangeLow           			:BOOL;
+END_VAR
+
+VAR
+	//Debounce
+	fForceInputABS						:REAL;
+
+	tDebouncePeriod      				:TIME:= T#75MS;
+	tonDebounce      					:Tc2_Standard.TON;
+	fForceLastStable     				:REAL;
+	fForceFiltered       				:REAL;
+	bForceStable         				:BOOL;
+	
+	bDistancePass						:BOOL;
+	//Logic support variables
+    bActiveLast              			:BOOL;
+    bEvaluate	             			:BOOL;
+    bTracking                			:BOOL;
+END_VAR
+
+//----------------------------------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Input ABS
+IF fForceInput > 0 THEN      //Correct the error in negative read
+fForceInputABS :=ABS(fForceInput);
+ELSE 
+	fForceInputABS:=0;
+END_IF
+
+// Transitions
+bEvaluate 	:= NOT bActive AND bActiveLast;
+bActiveLast := bActive;
+
+
+// Debounce logic --------------------------------------------------------------*
+IF (fForceInputABS - fForceLastStable) <= fDebounceTolerance THEN
+    	tonDebounce(IN:=TRUE, PT:=tDebouncePeriod);
+ELSE
+    	tonDebounce(IN:=FALSE);
+    	fForceLastStable:= fForceInputABS;
+END_IF;
+
+bForceStable := tonDebounce.Q;
+
+IF bForceStable THEN fForceFiltered := fForceLastStable; END_IF
+
+
+// LOGIC ------------------------------------------------------------------------*
+IF bEnable  THEN
+
+	//Record
+    IF bActive THEN
+					IF NOT bTracking THEN
+						
+						fHighestRecordedForce 	:= fForceInputABS;
+						fLowestRecordedForce 	:= fForceInputABS;
+						bTracking := TRUE;
+						
+					END_IF
+						// Track max/min
+					IF 	fDistance < fDisTanceSetPoint THEN
+						IF fForceInputABS > fHighestRecordedForce THEN
+							fHighestRecordedForce := fForceInputABS;
+						END_IF;
+			
+						IF fForceInputABS < fLowestRecordedForce THEN
+							fLowestRecordedForce  := fForceInputABS;
+						END_IF;
+					END_IF;
+					
+					
+	//Evaluation
+    ELSIF bEvaluate THEN
+        
+						bFail := (fHighestRecordedForce > fThreshold_UpperLimit) OR
+      							 (fHighestRecordedForce  < fThreshold_LowerLimit);
+						bPass := NOT bFail;
+					
+						bTracking := FALSE;
+						bDistancePass := FALSE;					
+    END_IF
+
+ELSE
+		// Clear 
+		bPass 					:= FALSE;
+		bFail 					:= FALSE;
+		bOutOfRangeHigh 		:= FALSE;
+		bOutOfRangeLow 			:= FALSE;
+		fHighestRecordedForce 	:= 0.0;
+		fLowestRecordedForce 	:= 0.0;
+		bTracking 				:= FALSE;
+		bActiveLast 			:= FALSE;
+    	fForceLastStable 		:= 0.0;
+    	fForceFiltered 			:= 0.0;
+    	bForceStable 			:= FALSE;
+		tonDebounce			 (IN:= FALSE);
+END_IF
+
+IF bReset THEN
+		// Reset 
+		bPass 					:= FALSE;
+		bFail 					:= FALSE;
+		bOutOfRangeHigh 		:= FALSE;
+		bOutOfRangeLow 			:= FALSE;
+		fHighestRecordedForce 	:= 0.0;
+		fLowestRecordedForce 	:= 0.0;
+		bTracking 				:= FALSE;
+		bActiveLast 			:= FALSE;
+    	fForceLastStable 		:= 0.0;
+    	fForceFiltered 			:= 0.0;
+    	bForceStable 			:= FALSE;
+		tonDebounce			 (IN:= FALSE);
+END_IF
+//----------------------------------------------------------------------------oldschoo1]]></ST>
+    </Implementation>
+    <LineIds Name="FB_ForceMonitor">
+      <LineId Id="268" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="374" Count="2" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="34" Count="2" />
+      <LineId Id="217" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="205" Count="6" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="212" Count="2" />
+      <LineId Id="216" Count="0" />
+      <LineId Id="37" Count="2" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="40" Count="6" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="47" Count="1" />
+      <LineId Id="315" Count="0" />
+      <LineId Id="49" Count="6" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="324" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="57" Count="2" />
+      <LineId Id="105" Count="1" />
+      <LineId Id="64" Count="2" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="67" Count="10" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="220" Count="1" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="222" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="135" Count="7" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="224" Count="2" />
+      <LineId Id="223" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="101" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

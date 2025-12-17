@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PRG_SysPulses" Id="{c28f8fa5-65be-490b-ad96-143277b2a36f}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_SysPulses
+VAR 
+// 50% Duty Cycle
+	fbXO_250Hz    		:FB_Pulse;	//Correct at 2ms tick
+	fbXO_50Hz     		:FB_Pulse;	//Correct at 2ms tick
+	fbXO_10Hz			:FB_Pulse;	//Correct at 2ms tick
+	fbXO_5Hz			:FB_Pulse;	//Correct at 2ms tick
+	fbXO_2Hz			:FB_Pulse;	//Correct at 2ms tick	
+	fbXO_1Hz			:FB_Pulse;	//Correct at 2ms tick
+	fbXO_05Hz			:FB_Pulse;	//Correct at 2ms tick
+	// Frictions
+	fbXO_1p85Hz			:FB_Pulse;	//Correct at 2ms tick
+	fbXO_1p52Hz			:FB_Pulse;	//Correct at 2ms tick
+	fbXO_1p33Hz			:FB_Pulse;	//Correct at 2ms tick
+	fbXO_1p19Hz			:FB_Pulse;	//Correct at 2ms tick	
+	
+// 70/30 Duty Cycle
+	fbXO_1Hz_7030		:FB_Pulse;	//Correct at 2ms tick
+	
+// 80/20 Duty Cycle
+	fbXO_1Hz_8020		:FB_Pulse;	//Correct at 2ms tick
+//-----------------------------------------------oldschoo1		
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(*** Oscilator Pulse Generators at 2ms tick ***)
+
+// 50% Duty Cycle
+	fbXO_250Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#2MS,
+		tPulseOff			:=	T#2MS,
+		bFlash				=>	bFlash250Hz);
+	fbXO_50Hz( 
+		bEnable	    		:=	TRUE,
+		tPulseOn			:=	T#10MS,
+		tPulseOff			:=	T#10MS,
+		bFlash				=>	bFlash50Hz);
+	fbXO_10Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#50MS,
+		tPulseOff			:=	T#50MS,
+		bFlash				=>	bFlash10Hz);
+	fbXO_5Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#100MS,
+		tPulseOff			:=	T#100MS,
+		bFlash				=>	bFlash5Hz);
+	fbXO_2Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#250MS,
+		tPulseOff			:=	T#250MS,
+		bFlash				=>	bFlash2Hz);
+	fbXO_1Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#500MS,
+		tPulseOff			:=	T#500MS,
+		bFlash				=>	bFlash1Hz);	
+	fbXO_05Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#1000MS,
+		tPulseOff			:=	T#1000MS,
+		bFlash				=>	bFlash05Hz);
+//Frictions
+	fbXO_1p85Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#270MS,
+		tPulseOff			:=	T#270MS,
+		bFlash				=>	bFlash1p85Hz);
+	fbXO_1p52Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#330MS,
+		tPulseOff			:=	T#330MS,
+		bFlash				=>	bFlash1p52Hz);
+	fbXO_1p33Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#376MS,
+		tPulseOff			:=	T#376MS,
+		bFlash				=>	bFlash1p33Hz);
+	fbXO_1p19Hz(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#416MS,
+		tPulseOff			:=	T#416MS,
+		bFlash				=>	bFlash1p2Hz);
+		
+// 70/30 Duty Cycle
+	fbXO_1Hz_7030(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#700MS,
+		tPulseOff			:=	T#300MS,
+		bFlash				=>	bFlash1Hz_7030);
+		
+// 80/20 Duty Cycle
+	fbXO_1Hz_8020(
+		bEnable				:=	TRUE,
+		tPulseOn			:=	T#800MS,
+		tPulseOff			:=	T#200MS,
+		bFlash				=>	bFlash1Hz_8020);
+//-----------------------------------------------oldschoo1]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_SysPulses">
+      <LineId Id="313" Count="0" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="137" Count="4" />
+      <LineId Id="156" Count="4" />
+      <LineId Id="98" Count="4" />
+      <LineId Id="106" Count="4" />
+      <LineId Id="113" Count="4" />
+      <LineId Id="120" Count="4" />
+      <LineId Id="333" Count="3" />
+      <LineId Id="332" Count="0" />
+      <LineId Id="360" Count="0" />
+      <LineId Id="378" Count="8" />
+      <LineId Id="377" Count="0" />
+      <LineId Id="391" Count="3" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="397" Count="3" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="356" Count="3" />
+      <LineId Id="355" Count="0" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="427" Count="4" />
+      <LineId Id="426" Count="0" />
+      <LineId Id="192" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

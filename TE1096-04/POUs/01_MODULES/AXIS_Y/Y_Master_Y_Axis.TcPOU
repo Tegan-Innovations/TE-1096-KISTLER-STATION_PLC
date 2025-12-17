@@ -1,0 +1,644 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="Y_Master_Y_Axis" Id="{d3204fea-0ebc-46da-b5e6-c7a8a4e9a82e}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Y_Master_Y_Axis
+VAR
+	
+	// Link to Task
+	refY_Axis							:AXIS_REF;	//Axis_1
+										
+										
+	fPositionLimitMin					:LREAL			 := 5;
+	fPositionLimitMax					:LREAL			 := 110;
+	fLimitPositionLow					:LREAL; 		//16#0001_000D
+	fLimitPositionHigh					:LREAL;			//16#0001_000E
+	
+	// Local Axis Config
+	posTarget							:LREAL;
+	fOffsets							:ARRAY [1..3]OF LREAL;
+	nOfSetPos							:INT:=3;
+	fCurrentPosition					:LREAL;
+
+    // State Machine CTRL
+    eState								:E_AxisState:=E_AxisState.ABORTED;
+
+	// Timers && Triggers
+	tonResetError						:Tc2_Standard.TON;
+	tonPowerAxis						:Tc2_Standard.TON;
+	tonPowerAxis2						:Tc2_Standard.TON;
+	tonActionDone						:Tc2_Standard.TON;
+	tonMoveTimeout						:Tc2_Standard.TON;
+	tonPowerUpTimeout					:Tc2_Standard.TON;
+	tonPowerUpError						:Tc2_Standard.TON;
+	tonAbortModule						:Tc2_Standard.TON;
+	tonDelayExe							:Tc2_Standard.TON;
+
+				
+    // Motion FB Instances
+    fbPower    							:Tc2_MC2.MC_Power;
+    fbReset    							:Tc2_MC2.MC_Reset;
+    fbStop     							:Tc2_MC2.MC_Stop;
+    fbMoveABS     						:Tc2_MC2.MC_MoveAbsolute;
+	fbMoveREL							:Tc2_MC2.MC_MoveRelative;
+	fbReadStatus						:Tc2_MC2.MC_ReadStatus;
+	fbReadPos							:Tc2_MC2.MC_ReadActualPosition;
+	stAxisStatus						:ST_AxisStatus;
+	fbParameter							:ARRAY[0..1]OF Tc2_MC2.MC_ReadParameter;
+	
+	// Function Blocks Flags
+	bReq_Power							:BOOL;		// Request Power to Axis 
+	bReq_Reset							:BOOL;		// Request Axis Reset
+	bReq_MoveABS						:BOOL;		// Request Move Action 
+	bReq_MoveREL						:BOOL;		// Request Move Action
+	bReq_Stop							:BOOL;		// Request Axis to Stop
+	bAxisInError						:BOOL;
+	
+	//Index
+	idx									:INT;
+	//MANUAL MODE
+	nManualModeState					:DINT;
+	trigbMoveToPos						:R_TRIG;
+	bTest								:BOOL;
+
+//-------------------------------------------------------------------------------*		
+END_VAR
+VAR_INPUT	
+	bRetract							:BOOL;		// Velocity Change
+END_VAR
+VAR PERSISTENT
+		// Set Parameters
+    cfgAxis    							:ST_Y_Axis;(*:=(
+										posHome 		  := 7.0,
+										posWorkPositions := [14.5,33.7,100.0],
+										fPositionOffsets := [0.0,  0.0,  0.0],
+										fTargetVelocity  := 25.0,
+										fRetractVelocity := 90.0);//after comes from hmi*)
+END_VAR
+
+//--------------------IN/OUT-----------------------------------------------------*
+VAR_INPUT	
+	CMD									:ST_ModuleCMD;	
+END_VAR
+VAR_OUTPUT	
+	STATUS								:ST_ModuleStatus;	
+END_VAR
+//------------------------------------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[PRG_Fault_Axis_Y(aAlarms := GVL_Master.stAlarms);
+// Positions Offsets Mapping
+IF (GVL_PERSISTENT.fPositions_Offset[1]>1.3) OR (GVL_PERSISTENT.fPositions_Offset[2]>1.3)
+	THEN
+fOffsets[1] := 0.0;
+fOffsets[2] := 0.0;
+ELSE
+fOffsets[1] := GVL_PERSISTENT.fPositions_Offset[1];	//Picking Screw Position
+fOffsets[2] := GVL_PERSISTENT.fPositions_Offset[2];	//Screwwing and Pressing Actions Position	
+END_IF
+
+//-------------------------------------------------------------------------------------------*
+//Call For Actions
+a_Ctrl_Axis();
+b_Call_AxisFBs();
+d_Get_CurrentPosition();
+//---------------------*
+//------------------------------------------------------------------------------------oldschoo1
+]]></ST>
+    </Implementation>
+    <Action Name="a_Ctrl_Axis" Id="{4981aca3-a94a-4db5-9a82-6e46587d07a9}">
+      <Implementation>
+        <ST><![CDATA[// Timmers && Triggers     
+tonPowerAxis	(IN:= eState=E_AxisState.ENABLE_POWER, 
+			 	 PT:= T#50MS);			 
+tonActionDone	(IN:= eState=E_AxisState.IN_TARGET_POS,
+			  	 PT:= T#100MS);
+tonMoveTimeout	(IN:= eState=E_AxisState.MOVE_ABS OR eState=E_AxisState.MOVE_REL,
+			   	 PT:= T#10S);			  
+tonAbortModule	(IN:=	cmd.bAbort OR (NOT stSafety.bSafety_OK) OR (NOT cmd.bEnable),
+			     PT:= T#100MS);
+tonResetError	(IN:= cmd.bReset OR fbPower.Error OR fbStop.Error OR fbMoveABS.Error OR fbMoveREL.Error,
+			  	 PT:= T#500MS);
+tonDelayExe  	(IN:= eState=E_AxisState.HOMING AND stY_Axis.bSetToHome,
+			  	 PT:= T#300MS);
+(**************************************************RESET************************************************)		   
+// Reset Errors
+IF cmd.bReset OR fbPower.Error OR fbStop.Error OR fbMoveABS.Error OR fbMoveREL.Error THEN
+
+			status.bError 	:= TRUE;
+			bReq_Power 		:= FALSE;
+			bReq_MoveABS 	:= FALSE;
+			bReq_MoveREL 	:= FALSE;
+			bReq_Stop 		:= FALSE;		
+            eState := E_AxisState.RESET_ERROR;
+			END_IF
+IF  eState=E_AxisState.ABORTED THEN
+CMD_Axis.bExecute			  :=FALSE;
+stY_Axis.bSetToHome			  :=FALSE;
+Y_Master_Y_Axis.bRetract 	  :=FALSE; END_IF			
+IF tonResetError.Q THEN bReq_Reset := TRUE; END_IF
+IF bAxisInError THEN bReq_Reset:=bResetButtonRisingEdge; eState:= E_AxisState.ERROR; END_IF
+
+// Abort Action
+IF tonAbortModule.Q THEN
+
+			bReq_Power := FALSE;
+			eState := E_AxisState.ABORTED;
+			END_IF
+IF CMD.bManualMode THEN
+	eState := E_AxisState.MANUAL_MODE;
+END_IF
+(*******************************************************CTRL***********************************************************)
+// Axis CTRL State Machine
+CASE eState OF //--------------------------------------------------------------------------------------------------SM
+	
+E_AxisState.ABORTED://-------------------------------------------------------------------------------------------ABORTED:
+
+
+							IF stSafety.bSafety_OK AND cmd.bEnable AND NOT fbPower.Error THEN
+								
+									bReq_Power := TRUE;
+									eState := E_AxisState.ENABLE_POWER;
+							END_IF
+
+E_AxisState.ENABLE_POWER://---------------------------------------------------------------------------------ENABLE_POWER:
+
+							IF fbPower.Status AND NOT fbPower.Error THEN
+								
+									bReq_Reset := TRUE;
+									eState := E_AxisState.HOMING;
+							END_IF
+
+E_AxisState.RESET_ERROR://-----------------------------------------------------------------------------------RESET_ERROR:
+
+							IF fbReset.Done AND fbPower.Status THEN
+								
+									bReq_Reset := FALSE;
+									eState := E_AxisState.HOMING;
+									
+							ELSIF fbReset.Done AND NOT fbPower.Status THEN
+							
+										eState := E_AxisState.ABORTED;
+										
+							ELSIF NOT fbPower.Error AND NOT fbStop.Error AND 
+								  NOT fbMoveABS.Error AND NOT fbMoveREL.Error THEN
+								  
+										eState := E_AxisState.ABORTED;
+							END_IF
+
+E_AxisState.HOMING://---------------------------------------------------------------------------------------------HOMING:
+
+							IF ABS(fCurrentPosition - cfgAxis.posHome)<=0.5 THEN
+								
+										bReq_MoveABS				  :=FALSE;
+										CMD_Axis.bExecute			  :=FALSE;
+										stY_Axis.bSetToHome			  :=FALSE;
+										Y_Master_Y_Axis.bRetract 	  :=FALSE;
+										
+										eState := E_AxisState.AXIS_READY;	
+ 							ELSE
+										//bReq_MoveABS				  :=TRUE; //test
+										stY_Axis.bSetToHome			  :=TRUE;
+										posTarget:=cfgAxis.posHome;
+										Y_Master_Y_Axis.bRetract 	  :=TRUE;
+										eState 							:= E_AxisState.MOVE_ABS;
+							END_IF
+							 	
+									IF tonDelayExe.Q THEN
+											CMD_Axis.bExecute		  :=TRUE;
+									END_IF
+									
+E_AxisState.AXIS_READY://-------------------------------------------------------------------------------------AXIS_READY:
+
+							IF cmd.bExecute THEN
+									eState := E_AxisState.GET_TARGET;
+							END_IF
+							
+E_AxisState.GET_TARGET://-------------------------------------------------------------------------------------GET_TARGET:
+
+							posTarget := c_Get_TargetPositon(
+															posHome 	:= cfgAxis.posHome,
+															posPoints   := cfgAxis.posWorkPositions,
+															fOffsets	:= fOffsets,
+															bSetHome 	:= stY_Axis.bSetToHome,
+															bSetPoint 	:= stY_Axis.bSetToPosition
+															);	
+															eState := E_AxisState.MOVE_ABS;
+	
+E_AxisState.MOVE_ABS://-----------------------------------------------------------------------------------------MOVE_ABS:
+
+							IF posTarget > fPositionLimitMin AND
+							   posTarget < fPositionLimitMax
+ 								THEN 
+									bReq_MoveABS := TRUE;
+									eState := E_AxisState.MOVING_ABS;
+							END_IF
+							stY_Axis.bSetToHome			  :=FALSE;
+							
+							
+E_AxisState.MOVING_ABS://-------------------------------------------------------------------------------------MOVING_ABS:
+
+							IF fbMoveABS.Done THEN
+									
+									bReq_MoveABS := FALSE;
+									eState := E_AxisState.IN_TARGET_POS;
+									
+							ELSIF tonMoveTimeout.Q THEN
+									
+									bReq_MoveABS := FALSE;
+									eState := E_AxisState.ERROR;
+							END_IF
+							//TO KNOW POSITION OF AXIS
+							GVL_HMI.bY_AxisInPosition1		:= FALSE;
+							GVL_HMI.bY_AxisInPosition2		:= FALSE;
+							GVL_HMI.bY_AxisInPosition3		:= FALSE;
+							GVL_HMI.bY_AxisInHomePosition	:= FALSE;
+
+E_AxisState.MOVE_REL:;
+E_AxisState.MOVING_REL:;
+
+E_AxisState.IN_TARGET_POS://-------------------------------------------------------------------------------IN_TARGET_POS:
+
+							IF tonActionDone.Q THEN
+								eState := E_AxisState.AXIS_READY;
+							END_IF
+							//TO KNOW THE POSITION OF THE AXIS
+							IF stY_Axis.bSetToPosition[1] THEN
+								GVL_HMI.bY_AxisInPosition1				:= TRUE;
+							END_IF
+							IF stY_Axis.bSetToPosition[2] THEN
+								GVL_HMI.bY_AxisInPosition2				:= TRUE;
+							END_IF
+							IF stY_Axis.bSetToPosition[3] THEN
+								GVL_HMI.bY_AxisInPosition3				:= TRUE;
+							END_IF
+							IF stY_Axis.bSetToHome THEN
+								GVL_HMI.bY_AxisInHomePosition			:= TRUE;
+							END_IF
+E_AxisState.ERROR://-----------------------------------------------------------------------------------------------ERROR:
+
+	 					eState := E_AxisState.ABORTED;
+						
+E_AxisState.MANUAL_MODE://-----------------------------------------------------------------------------------MANUAL_MODE:
+
+							e_Manual();
+					
+							IF NOT CMD.bManualMode THEN
+								eState := E_AxisState.ABORTED;
+							END_IF
+
+ELSE 
+eState := E_AxisState.ABORTED;
+END_CASE //------------------------------------------------------------------------------------------------------END_CASE
+
+(******************************************************STATUS************************************************************)
+// Module Status
+status.bReady	:= eState = E_AxisState.AXIS_READY;
+
+status.bBusy	:= eState <> E_AxisState.ABORTED	AND
+				   eState <> E_AxisState.AXIS_READY AND
+				   eState <> E_AxisState.IN_TARGET_POS AND
+				   eState <> E_AxisState.ERROR;
+				   
+status.bDone	:= eState = E_AxisState.IN_TARGET_POS;
+
+status.bError	:= eState = E_AxisState.ERROR OR 
+				   fbPower.Error OR fbStop.Error OR fbMoveABS.Error OR fbMoveREL.Error; 
+//---------------------------------------------------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="b_Call_AxisFBs" Id="{46e77f9d-ddc0-4859-9573-a3495da6c21a}">
+      <Implementation>
+        <ST><![CDATA[// CTRL FBs Call
+
+	fbPower 	(Axis:=refY_Axis, Enable:=bReq_Power, Enable_Positive:=bReq_Power, Enable_Negative:=bReq_Power);
+	fbReset 	(Axis:=refY_Axis, Execute:=bReq_Reset);
+	
+  fbMoveABS 	(Axis:=refY_Axis, Execute:=bReq_MoveABS, 
+				 Position:=posTarget, Velocity:= SEL(bRetract,cfgAxis.fTargetVelocity,cfgAxis.fRetractVelocity));
+  fbMoveREL 	(Axis:=refY_Axis, Execute:=FALSE);
+ 	 fbStop 	(Axis:=refY_Axis, Execute:=FALSE);
+  fbReadPos		(Axis:=refY_Axis, Enable:=eState=E_AxisState.HOMING);
+fbParameter[0]  (Axis:=refY_Axis, Enable:=TRUE, ParameterNumber:=MC_AXISPARAMETER.AxisMinSoftPosLimit, Value=>fLimitPositionLow);
+fbParameter[1]  (Axis:=refY_Axis, Enable:=TRUE, ParameterNumber:=MC_AXISPARAMETER.AxisMaxSoftPosLimit, Value=>fLimitPositionHigh);
+fbReadStatus	(Axis:=refY_Axis, Enable:=TRUE, Status=>stAxisStatus, Error=>bAxisInError);
+//-----------------------------------------------------------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="c_Get_TargetPositon" Id="{d69107da-47c7-40a8-b230-3defd16f8c05}">
+      <Declaration><![CDATA[METHOD c_Get_TargetPositon	:LREAL
+VAR_INPUT
+
+	// Positions
+    posHome     			:LREAL;
+    posPoints   			:ARRAY[1..3]OF LREAL;
+    fOffsets  				:ARRAY[1..3]OF LREAL;
+	
+	// Set Target Flags
+    bSetHome    			:BOOL;
+    bSetPoint   			:ARRAY[1..3]OF BOOL;
+	
+END_VAR
+//----------------------------------------------------------oldschoo1
+
+
+VAR
+	idx           			:INT;
+	posTargeteBase	     	:LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bSetHome THEN
+    		posTargeteBase := posHome;
+ELSE
+	
+			FOR idx:= 1 TO 3 
+			DO
+					IF bSetPoint[idx] THEN
+						posTargeteBase := posPoints[idx] + fOffsets[idx];
+						EXIT;
+					END_IF		
+			END_FOR
+END_IF
+
+c_Get_TargetPositon	:= posTargeteBase;
+//--------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Method>
+    <Action Name="d_Get_CurrentPosition" Id="{799ecc77-506d-4eda-a5b2-07b88c5b9039}">
+      <Implementation>
+        <ST><![CDATA[IF fbReadPos.Valid THEN fCurrentPosition:=fbReadPos.Position; END_IF
+//----------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="e_Manual" Id="{626d8992-b5ab-4015-adbc-a66765231fb7}">
+      <Implementation>
+        <ST><![CDATA[posTarget := c_Get_TargetPositon(
+															posHome 	:= cfgAxis.posHome,
+															posPoints   := cfgAxis.posWorkPositions,
+															fOffsets	:= fOffsets,
+															bSetHome 	:= stY_Axis.bSetToHome,
+															bSetPoint 	:= stY_Axis.bSetToPosition
+															);	
+trigbMoveToPos( CLK := GVL_HMI.bMoveToPos );
+IF GVL_HMI.bY_AxisPosition1 THEN
+	stY_Axis.bSetToPosition[1]			:= TRUE;
+	GVL_HMI.bMoveToPos					:= TRUE;
+END_IF
+IF GVL_HMI.bY_AxisPosition2 THEN
+	stY_Axis.bSetToPosition[2]			:= TRUE;
+	GVL_HMI.bMoveToPos					:= TRUE;
+END_IF
+IF GVL_HMI.bY_AxisPosition3 THEN
+	stY_Axis.bSetToPosition[3]			:= TRUE;
+	GVL_HMI.bMoveToPos					:= TRUE;
+END_IF
+IF GVL_HMI.bY_HomePosition THEN
+	stY_Axis.bSetToHome					:= TRUE;
+	GVL_HMI.bMoveToPos					:= TRUE;
+END_IF
+	
+IF trigbMoveToPos.Q THEN
+	nManualModeState					:=10;
+END_IF
+
+CASE nManualModeState OF
+	
+10:
+IF posTarget > fPositionLimitMin AND
+		posTarget < fPositionLimitMax THEN 
+		bReq_MoveABS 					:= TRUE;
+		GVL_HMI.bY_AxisInPosition1Man	:= FALSE;
+		GVL_HMI.bY_AxisInPosition2Man	:= FALSE;
+		GVL_HMI.bY_AxisInPosition3Man	:= FALSE;
+		GVL_HMI.bY_AxisInHomePositionMan:= FALSE;
+		nManualModeState				:=20;
+	END_IF	
+20:
+IF fbMoveABS.Done THEN	
+	IF stY_Axis.bSetToPosition[1] THEN
+		GVL_HMI.bY_AxisInPosition1Man	:= TRUE;
+	END_IF
+	IF stY_Axis.bSetToPosition[2] THEN
+		GVL_HMI.bY_AxisInPosition2Man	:= TRUE;
+	END_IF
+	IF stY_Axis.bSetToPosition[3] THEN
+		GVL_HMI.bY_AxisInPosition3Man	:= TRUE;
+	END_IF
+	IF stY_Axis.bSetToHome THEN
+		GVL_HMI.bY_AxisInHomePositionMan:= TRUE;
+	END_IF
+	nManualModeState					:=30;
+END_IF
+	
+30:								
+		bReq_MoveABS 					:= FALSE;
+		stY_Axis.bSetToPosition[1]		:= FALSE;
+		stY_Axis.bSetToPosition[2]		:= FALSE;
+		stY_Axis.bSetToPosition[3]		:= FALSE;
+		stY_Axis.bSetToHome				:= FALSE;
+		GVL_HMI.bMoveToPos				:= FALSE;
+		
+IF NOT GVL_Master.stMachineStatus.bManualMode THEN
+		GVL_HMI.bY_AxisInPosition1Man	:= FALSE;
+		GVL_HMI.bY_AxisInPosition2Man	:= FALSE;
+		GVL_HMI.bY_AxisInPosition3Man	:= FALSE;
+		GVL_HMI.bY_AxisInHomePositionMan:= FALSE;
+END_IF
+END_CASE
+						
+ 								
+
+							
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="Y_Master_Y_Axis">
+      <LineId Id="800" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="510" Count="0" />
+      <LineId Id="643" Count="0" />
+      <LineId Id="648" Count="1" />
+      <LineId Id="645" Count="0" />
+      <LineId Id="647" Count="0" />
+      <LineId Id="646" Count="0" />
+      <LineId Id="644" Count="0" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="329" Count="1" />
+      <LineId Id="721" Count="0" />
+      <LineId Id="268" Count="1" />
+      <LineId Id="570" Count="0" />
+    </LineIds>
+    <LineIds Name="Y_Master_Y_Axis.a_Ctrl_Axis">
+      <LineId Id="210" Count="2" />
+      <LineId Id="217" Count="1" />
+      <LineId Id="220" Count="2" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="426" Count="0" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="225" Count="2" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="231" Count="5" />
+      <LineId Id="375" Count="0" />
+      <LineId Id="450" Count="1" />
+      <LineId Id="449" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="238" Count="5" />
+      <LineId Id="461" Count="2" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="248" Count="3" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="252" Count="15" />
+      <LineId Id="371" Count="0" />
+      <LineId Id="269" Count="6" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="381" Count="1" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="281" Count="0" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="419" Count="0" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="452" Count="0" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="429" Count="1" />
+      <LineId Id="445" Count="0" />
+      <LineId Id="444" Count="0" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="453" Count="0" />
+      <LineId Id="447" Count="0" />
+      <LineId Id="423" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="486" Count="0" />
+      <LineId Id="421" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="432" Count="3" />
+      <LineId Id="283" Count="6" />
+      <LineId Id="291" Count="10" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="302" Count="0" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="303" Count="2" />
+      <LineId Id="487" Count="0" />
+      <LineId Id="466" Count="0" />
+      <LineId Id="387" Count="0" />
+      <LineId Id="306" Count="10" />
+      <LineId Id="318" Count="0" />
+      <LineId Id="479" Count="4" />
+      <LineId Id="319" Count="8" />
+      <LineId Id="469" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="467" Count="1" />
+      <LineId Id="471" Count="1" />
+      <LineId Id="470" Count="0" />
+      <LineId Id="474" Count="1" />
+      <LineId Id="473" Count="0" />
+      <LineId Id="477" Count="1" />
+      <LineId Id="476" Count="0" />
+      <LineId Id="329" Count="2" />
+      <LineId Id="460" Count="0" />
+      <LineId Id="454" Count="0" />
+      <LineId Id="456" Count="1" />
+      <LineId Id="465" Count="0" />
+      <LineId Id="459" Count="0" />
+      <LineId Id="484" Count="1" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="334" Count="2" />
+      <LineId Id="376" Count="0" />
+      <LineId Id="337" Count="0" />
+      <LineId Id="340" Count="1" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="343" Count="3" />
+      <LineId Id="394" Count="0" />
+      <LineId Id="348" Count="0" />
+      <LineId Id="393" Count="0" />
+      <LineId Id="350" Count="1" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="Y_Master_Y_Axis.b_Call_AxisFBs">
+      <LineId Id="13" Count="5" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="Y_Master_Y_Axis.c_Get_TargetPositon">
+      <LineId Id="24" Count="2" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="28" Count="6" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="51" Count="0" />
+    </LineIds>
+    <LineIds Name="Y_Master_Y_Axis.d_Get_CurrentPosition">
+      <LineId Id="1" Count="0" />
+      <LineId Id="3" Count="0" />
+    </LineIds>
+    <LineIds Name="Y_Master_Y_Axis.e_Manual">
+      <LineId Id="2" Count="6" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="88" Count="2" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="92" Count="2" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="96" Count="2" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="58" Count="2" />
+      <LineId Id="112" Count="4" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="101" Count="1" />
+      <LineId Id="104" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="107" Count="1" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="110" Count="1" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="75" Count="1" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="124" Count="2" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="31" Count="2" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

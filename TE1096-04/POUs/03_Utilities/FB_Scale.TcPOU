@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Scale" Id="{1342ee58-0be6-415a-bc13-c7add60c9f0d}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Scale
+VAR_INPUT
+	rRawData                   	: LREAL;
+	rRawDataLowerOffLimit      	: LREAL;
+	rRawDataUpperOffLimit      	: LREAL;
+	rScaleDataLowerOffLimit    	: LREAL;
+	rScaleDataUpperOffLimit    	: LREAL;
+	rY_Intercept				: LREAL;
+	
+END_VAR
+VAR_OUTPUT
+	rScaleData					: LREAL;
+END_VAR
+VAR
+	m							: LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF (rRawDataUpperOffLimit - rRawDataLowerOffLimit <> 0) THEN
+	m								:= (rScaleDataUpperOffLimit - rScaleDataLowerOffLimit )/( rRawDataUpperOffLimit - rRawDataLowerOffLimit);
+
+END_IF
+
+rScaleData						:= ( rRawData * m) + rY_Intercept;]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Scale">
+      <LineId Id="38" Count="1" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

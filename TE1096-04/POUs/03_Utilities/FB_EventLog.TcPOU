@@ -1,0 +1,248 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_EventLog" Id="{a63659b2-9858-443e-ad18-a27b445c9bbd}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_EventLog
+VAR_INPUT
+	bEnable				:BOOL;		//Enable alarm loggin functionality
+END_VAR
+VAR_IN_OUT
+	sDateTime			:STRING;	//System current date and time for alarm log functinality
+	aEventFlags			:ARRAY[*] OF BOOL;			//Active events array - needs to be te exact same size as aEventMsgs
+	aEventTexts			:ARRAY[*] OF T_MaxSTring;	//All events messages defined for the system - indices corresponds to indices of aEvents
+	aActiveEvents		:ARRAY[*] OF T_MaxSTring;	//Active events messages - displayed in active alarms
+	aEventLog			:ARRAY[*] OF T_MaxSTring;	//Logged events messages - displayed in alarm history
+	siDate				:STRING;	//System current Date
+	siTime				:STRING;		//System current time
+	soDate				:ARRAY[*] OF T_MaxSTring;
+	soTime				:ARRAY[*] OF T_MaxSTring;
+END_VAR
+VAR_OUTPUT
+	bLogActive			:BOOL;
+END_VAR
+VAR
+	bFirstScan			:BOOL := TRUE;
+	bInputDataValid		:BOOL; 	//Input data valid - checked only at first scan or block reinit
+	aEventsOld			:POINTER TO BOOL;
+	ni					:DINT;
+	nj					:DINT;
+	
+	nEventsStart		:DINT;	//Start index of all arrays
+	nEventsEnd			:DINT;	//End index of longest arrays - aEvents and aEventMsgs
+	nEventTextsStart	:DINT;	//Start index of aEventMsgs
+	nEventTextsEnd		:DINT;	//End index of aEventMsgs
+	nLogEventsStart		:DINT;	//Start index of aLogEventMsgs
+	nLogEventsEnd		:DINT;	//End index of aLogEventMsgs
+	nActiveEventsStart	:DINT;	//Start index of aActiveEventMsgs
+	nActiveEventsEnd	:DINT;	//End index of aActiveEntsMsgs
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Check input data
+IF bFirstScan THEN
+	Init();
+END_IF
+
+bLogActive := bEnable AND bInputDataValid and (aEventsOld <> 0);
+IF NOT bLogActive OR (aEventsOld = 0) THEN
+	RETURN; //Do nothing
+END_IF
+
+//Update active and logged events
+IF EventChangeDetected() THEN
+	//Update event log
+	FOR ni := nEventsEnd TO nEventsStart BY -1 DO
+		
+		//Check for new active alarms
+		IF aEventFlags[ni] AND NOT aEventsOld[ni] THEN
+			//Shift all alarms one row down
+			FOR nj := nLogEventsEnd TO nLogEventsStart + 1 BY -1 DO
+				aEventLog[nj] := aEventLog[nj-1];
+				soDate	[nj]	:= soDate[nj-1];
+				soTime	[nj]	:= soTime[nj-1];
+			END_FOR
+			
+			//Add new logged event
+			aEventLog[nEventsStart] := aEventTexts[ni];
+			soDate	[nEventsStart]	:= siDate;
+			soTime	[nEventsStart]	:= siTime;
+		END_IF
+	END_FOR
+	
+	//Clear all active event messages initially
+	ClearActiveMsgs();
+	
+	//Update active events
+	ni := nEventsStart;
+	nj := nActiveEventsStart;
+	WHILE ni <= nEventsEnd AND nj <= nActiveEventsEnd DO
+		IF aEventFlags[ni] THEN //If Alarm is active, move the corresponding Alarm Message into the IntermediateAlarmTable
+			aActiveEvents[nj] := aEventTexts[ni];
+			nj := nj+1;
+		END_IF
+		ni := ni+1;
+	END_WHILE
+	
+	//Update aEventsOld for comparison
+	StoreEvents();
+END_IF
+
+bFirstScan := FALSE;]]></ST>
+    </Implementation>
+    <Method Name="CalcBounds" Id="{3b271759-eb18-478a-8d42-f065284dea78}">
+      <Declaration><![CDATA[//Calculate bounds for all arrays
+METHOD PRIVATE CalcBounds : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Calculate indices for all arrays
+nEventsStart := LOWER_BOUND(aEventFlags, 1);
+nEventsEnd := UPPER_BOUND(aEventFlags, 1);
+nEventTextsStart := LOWER_BOUND(aEventTexts, 1);
+nEventTextsEnd := UPPER_BOUND(aEventTexts, 1);
+nLogEventsStart := LOWER_BOUND(aEventLog, 1);
+nLogEventsEnd := UPPER_BOUND(aEventLog, 1);
+nActiveEventsStart := LOWER_BOUND(aActiveEvents, 1);
+nActiveEventsEnd := UPPER_BOUND(aActiveEvents, 1);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="ClearActiveMsgs" Id="{3f6402a0-3d8a-48ce-a477-2d50c6642ea6}">
+      <Declaration><![CDATA[//Clear active messages on events update
+METHOD PRIVATE ClearActiveMsgs : BOOL
+VAR
+	ni		:DINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Clear active messages one-by-one
+FOR ni := nActiveEventsStart TO nActiveEventsEnd DO
+	aActiveEvents[ni] := '';
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="EventChangeDetected" Id="{eed7f2f9-073d-4c62-89d7-44f568173280}">
+      <Declaration><![CDATA[//Event change detected
+METHOD PRIVATE EventChangeDetected : BOOL
+VAR
+	ni			:DINT;
+	nj			:DINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Compare events change one-by-one to dynamic array
+EventChangeDetected := FALSE;
+nj := 0; //Index for aEventsOld array
+
+FOR ni := nEventsStart TO nEventsEnd DO
+	IF aEventFlags[ni] <> aEventsOld[nj] THEN
+		EventChangeDetected := TRUE;	
+		RETURN;
+	END_IF
+	nj := nj + 1;
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_exit" Id="{127a36ad-5364-4145-a757-ed5cd82a71d5}">
+      <Declaration><![CDATA[METHOD FB_exit : BOOL
+VAR_INPUT
+	bInCopyCode : BOOL; // if TRUE, the exit method is called for exiting an instance that is copied afterwards (online change).
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Clear dynamically allocated data on block close
+IF aEventsOld <> 0 THEN
+	__DELETE(aEventsOld);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Init" Id="{57c73790-fc63-4e8a-8ab4-8cff537b23ca}">
+      <Declaration><![CDATA[METHOD PRIVATE Init : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Calculate bounds for all referenced arrays
+CalcBounds();
+bInputDataValid := InputDataValid();
+
+//Check if dynamic array creted
+IF bInputDataValid AND aEventsOld = 0 THEN
+	aEventsOld := __NEW(BOOL, TO_UDINT(nEventsEnd - nEventsStart + 1));
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="InputDataValid" Id="{5a7107dd-5aca-48e9-9073-8a286251bc1c}">
+      <Declaration><![CDATA[METHOD PRIVATE InputDataValid : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[InputDataValid := nEventsStart = nEventTextsStart AND nEventsEnd = nEventTextsEnd;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="StoreEvents" Id="{87860c42-749b-411e-874c-3ed21106cf54}">
+      <Declaration><![CDATA[//Store previous events in aEventsOld
+METHOD PRIVATE StoreEvents : BOOL
+VAR
+	ni		:DINT;
+	nj		:DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Copy one-by-one elements from aEvents to aEventsOld
+nj := 0; //Index for aEventsOld array
+FOR ni := nEventsStart TO nEventsEnd DO
+	aEventsOld[nj] := aEventFlags[ni];
+	nj := nj + 1;
+END_FOR
+
+StoreEvents := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_EventLog">
+      <LineId Id="997" Count="19" />
+      <LineId Id="1080" Count="1" />
+      <LineId Id="1017" Count="3" />
+      <LineId Id="1076" Count="1" />
+      <LineId Id="1021" Count="20" />
+      <LineId Id="538" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.CalcBounds">
+      <LineId Id="9" Count="7" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.ClearActiveMsgs">
+      <LineId Id="5" Count="0" />
+      <LineId Id="14" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.EventChangeDetected">
+      <LineId Id="30" Count="2" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="22" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.FB_exit">
+      <LineId Id="9" Count="0" />
+      <LineId Id="6" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.Init">
+      <LineId Id="6" Count="6" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.InputDataValid">
+      <LineId Id="11" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_EventLog.StoreEvents">
+      <LineId Id="5" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="30" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

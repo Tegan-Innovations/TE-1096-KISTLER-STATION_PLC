@@ -1,0 +1,338 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="D_FaultHandling" Id="{4bfe511d-0e81-43ab-8c9c-3700fb5b1051}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM D_FaultHandling
+VAR
+	i							: INT;
+	bFlagResetOn				: BOOL;
+	bStationCycleFaultFlag		: BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ACT_FaultTrig();
+
+(************************************** Faults reset **********************************************)
+IF   bResetButtonRisingEdge THEN 
+	FOR i := 0 TO 127 DO
+		GVL_MASTER.stAlarms[0].aEventFlags[i] := FALSE;
+	END_FOR
+END_IF
+
+
+//===============================================================
+//Initialize event texts on first scan
+IF NOT GVL_MASTER.stAlarms[0].bEventTextsSet THEN
+	SetEventTexts();
+	GVL_MASTER.stAlarms[0].bEventTextsSet := TRUE;
+END_IF
+IF NOT GVL_MASTER.stAlarms[0].bEventTextsSet THEN
+	GVL_MASTER.stAlarms[0].bEventTextsSet := FALSE;
+END_IF
+
+
+(***************************************************************************************************)
+//Immediate fault
+GVL_MASTER.stAlarms[0].bImmediateFault := FALSE;
+FOR i := 0 TO 32DO
+	GVL_MASTER.stAlarms[0].bImmediateFault := GVL_MASTER.stAlarms[0].bImmediateFault OR GVL_MASTER.stAlarms[0].aEventFlags[i];
+END_FOR
+
+//Cycle stop fault
+GVL_MASTER.stAlarms[0].bCycleStopFault := FALSE;
+FOR i := 33 TO 79 DO
+	GVL_MASTER.stAlarms[0].bCycleStopFault := GVL_MASTER.stAlarms[0].bCycleStopFault OR GVL_MASTER.stAlarms[0].aEventFlags[i];
+END_FOR
+
+//Cycle stop request
+GVL_MASTER.stAlarms[0].bCycleStopRequest := FALSE;
+FOR i := 80 TO 99 DO
+	GVL_MASTER.stAlarms[0].bCycleStopRequest := GVL_MASTER.stAlarms[0].bCycleStopRequest OR GVL_MASTER.stAlarms[0].aEventFlags[i];
+END_FOR
+
+
+(**************************** Master Fault Monitors ***********************************************)
+(* Station Immediate Fault Monitor *)
+stMasterCTRL.bNoMachineImmediateFault	 := 	NOT GVL_MASTER.stAlarms[0].bImmediateFault AND NOT GVL_MASTER.stAlarms[1].bImmediateFault AND
+                                            			NOT GVL_MASTER.stAlarms[2].bImmediateFault AND NOT GVL_MASTER.stAlarms[3].bImmediateFault;
+								
+(**************************************************************************************************)
+
+(* Master Cycle Stop Fault Monitor *)
+ stMasterCtrl.bNoCycleStopFault:= NOT GVL_MASTER.stAlarms[0].bCycleStopFault AND NOT GVL_MASTER.stAlarms[1].bCycleStopFault AND
+								NOT GVL_MASTER.stAlarms[2].bCycleStopFault AND NOT GVL_MASTER.stAlarms[3].bCycleStopFault;
+(* Cycle Stop Request *)
+IF GVL_MASTER.stAlarms[0].bCycleStopRequest OR GVL_MASTER.stAlarms[1].bCycleStopRequest OR 
+	GVL_MASTER.stAlarms[2].bCycleStopRequest OR GVL_MASTER.stAlarms[3].bCycleStopRequest THEN
+	stMasterCtrl.bCycleStopRequest			:= TRUE;
+ELSE stMasterCtrl.bCycleStopRequest			:= FALSE;
+END_IF]]></ST>
+    </Implementation>
+    <Action Name="ACT_FaultTrig" Id="{53e213f5-8b8e-4f02-8159-788ac93a1ce9}">
+      <Implementation>
+        <ST><![CDATA[(**************************************************************************************************)
+(**************************** Master Immediate Fault Stop *****************************************)
+(**************************************************************************************************)
+//TERMINAL 1 _ EK1100 - EtherCAT Coupler Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEK1100State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[1] := TRUE;
+END_IF
+// TERMINAL 2 _ EL6070-0033	- License Key Terminal for TC3 Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL6070State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[2] := TRUE;
+END_IF
+// TERMINAL 3 _ EL6910 - Safety PLC - Virtual Channels Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL6910State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[3] := TRUE;
+END_IF
+// TERMINAL 4 _ EL1918 - 8 Channel Digital Safety Inputs Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL1918_1State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[4] := TRUE;
+END_IF
+// TERMINAL 5 _ EL1918 - 8 Channel Digital Safety Inputs Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL1918_2State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[5] := TRUE;
+END_IF
+// TERMINAL 6 _ ELEL2904 - 4 Channel Digital Safety Outputs Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL2904_1State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[6] := TRUE;
+END_IF
+// TERMINAL 7 _ ELEL2904 - 4 Channel Digital Safety Outputs Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL2904_2State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[7] := TRUE;
+END_IF
+// TERMINAL 8 _ EL1809 - 16 Channel Digital Input Terminal Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL1809_1State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[8] := TRUE;
+END_IF
+// TERMINAL 9 _ EL1809 - 16 Channel Digital Input Terminal Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL1809_2State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[9] := TRUE;
+END_IF
+// TERMINAL 10 _ EL2809	- 16 Channel Digital Output Terminal Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL2809State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[10] := TRUE;
+END_IF
+// TERMINAL 11 _ EL9576 - Brake Chopper Terminal Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL9576State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[11] := TRUE;
+END_IF
+// TERMINAL 12 _ EL7211-0010 - Servo Motor Drive Not Operational
+IF NOT GVL_MASTER.stMachineStatus.bSystemPowerUp AND GVL_IO.nEL7211State<>8 THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[12] := TRUE;
+END_IF
+//No user logged in
+GVL_MASTER.stAlarms[0].aEventTimers[13](IN := (GVL_HMI.sUserName=''), PT := T#40MS);
+IF GVL_MASTER.stAlarms[0].aEventTimers[13].Q THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[13] := TRUE;	
+END_IF
+//Safety 
+IF NOT stSafety.bSafety_OK THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[14] := TRUE;
+END_IF
+//E-STOP Pressed
+IF NOT stSafety.bEStop_OK THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[15] := TRUE;
+END_IF
+//Light beam Crossed
+IF NOT stSafety.bLightBeam_MuteCMD AND stSafety.bLightBeam_Crossed AND NOT Y_Master_Y_Axis.refY_Axis.Status.Moving THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[16] := TRUE;
+END_IF
+//Door openned
+IF NOT stSafety.bDoorClosed AND stSafety.bLockDoor_CMD  THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[17] := TRUE;
+END_IF
+//PSU 1 FAULT
+IF NOT GVL_IO.iPSU_1_OK  THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[18] := TRUE;
+END_IF
+//PSU 2 FAULT
+IF NOT GVL_IO.iPSU_2_OK  THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[19] := TRUE;
+END_IF
+//PSU 3 FAULT
+IF NOT GVL_IO.iPSU_3_OK  THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[20] := TRUE;
+END_IF
+//E-Stop CH1 Signal
+IF NOT GVL_IO.iE_Stop_Ch1  THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[21] := TRUE;
+END_IF
+//E-Stop CH2 Signal
+IF NOT GVL_IO.iE_Stop_Ch2  THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[22] := TRUE;
+END_IF
+
+
+
+//System stopping timeout
+GVL_MASTER.stAlarms[0].aEventTimers[13](IN := ( GVL_MASTER.stMachineStatus.bStopping), PT := T#20S);
+IF GVL_MASTER.stAlarms[0].aEventTimers[13].Q THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[13] := TRUE;	
+END_IF
+//10 Min Auto cycle stop
+GVL_MASTER.stAlarms[0].aEventTimers[80](IN := ((C_Machine_CTRL.eCycleState = E_ProcessCycle.IDLE) AND 
+(stMachineStatus.eMachineState = E_MachineState.SYSTEM_AUTO_CYCLE)), PT := T#10M);
+IF GVL_MASTER.stAlarms[0].aEventTimers[80].Q THEN //
+	GVL_MASTER.stAlarms[0].aEventFlags[80] := TRUE;
+END_IF
+//Autocyle Timeout 
+(*GVL_MASTER.stAlarms[0].aEventTimers[81]
+(IN:= GVL_MASTER.stMachineStatus.bAutoCycle AND C_Machine_CTRL.eCycleState <> E_ProcessCycle.IDLE , PT :=T#90S ); 
+IF GVL_MASTER.stAlarms[0].aEventTimers[81].Q THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[81] := TRUE;
+END_IF*)
+//No user logged IN
+IF NOT GVL_HMI.bUserLogedIntSignal THEN
+	GVL_MASTER.stAlarms[0].aEventFlags[82] := TRUE;
+END_IF
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="SetEventTexts" Id="{b1d95275-324b-477f-a5f7-c3578a28df92}">
+      <Declaration><![CDATA[METHOD SetEventTexts : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Immediate Faults
+GVL_MASTER.stAlarms[0].aEventTexts[0] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[1] := 'TERMINAL 1 _ EK1100 - EtherCAT Coupler Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[2] := 'TERMINAL 2 _ EL6070-0033	- License Key Terminal for TC3 Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[3] := 'TERMINAL 3 _ EL6910 - Safety PLC - Virtual Channels Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[4] := 'TERMINAL 4 _ EL1918 - 8 Channel Digital Safety Inputs Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[5] := 'TERMINAL 5 _ EL1918 - 8 Channel Digital Safety Inputs Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[6] := 'TERMINAL 6 _ ELEL2904 - 4 Channel Digital Safety Outputs Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[7] := 'TERMINAL 7 _ ELEL2904 - 4 Channel Digital Safety Outputs Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[8] := 'TERMINAL 8 _ EL1809 - 16 Channel Digital Input Terminal Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[9] := 'TERMINAL 9 _ EL1809 - 16 Channel Digital Input Terminal Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[10] := 'TERMINAL 10 _ EL2809	- 16 Channel Digital Output Terminal Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[11] := 'TERMINAL 11 _ EL9576 - Brake Chopper Terminal Not Operational'; 
+GVL_MASTER.stAlarms[0].aEventTexts[12] := 'TERMINAL 12 _ EL7211-0010 - Servo Motor Drive Not Operational';
+GVL_MASTER.stAlarms[0].aEventTexts[13] := 'No user logged in';
+GVL_MASTER.stAlarms[0].aEventTexts[14] := 'Safety';
+GVL_MASTER.stAlarms[0].aEventTexts[15] := 'E-STOP Pressed';
+GVL_MASTER.stAlarms[0].aEventTexts[16] := 'Light beam Crossed';
+GVL_MASTER.stAlarms[0].aEventTexts[17] := 'Door openned';
+GVL_MASTER.stAlarms[0].aEventTexts[18] := 'PSU 1 FAULT';
+GVL_MASTER.stAlarms[0].aEventTexts[19] := 'PSU 2 FAULT';
+GVL_MASTER.stAlarms[0].aEventTexts[20] := 'PSU 3 FAULT';
+GVL_MASTER.stAlarms[0].aEventTexts[21] := 'E-Stop CH1 Signal';
+GVL_MASTER.stAlarms[0].aEventTexts[22] := 'E-Stop CH2 Signal';
+
+//Cycle stop fault
+
+GVL_MASTER.stAlarms[0].aEventTexts[33] := 'System stopping timeout';
+GVL_MASTER.stAlarms[0].aEventTexts[34] := '10 Min Auto cycle stop';
+GVL_MASTER.stAlarms[0].aEventTexts[35] := 'Autocyle Timeout';
+GVL_MASTER.stAlarms[0].aEventTexts[36] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[37] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[38] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[39] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[40] := ''; 
+GVL_MASTER.stAlarms[0].aEventTexts[41] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[42] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[43] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[44] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[45] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[46] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[47] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[48] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[59] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[50] := '';
+
+//Cycle Stop Requests
+
+GVL_MASTER.stAlarms[0].aEventTexts[80] := '10 Min Auto cycle stop';
+GVL_MASTER.stAlarms[0].aEventTexts[81] := 'Autocyle Timeout';
+GVL_MASTER.stAlarms[0].aEventTexts[82] := 'No user logged IN';
+
+GVL_MASTER.stAlarms[0].aEventTexts[84] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[85] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[86] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[87] := ''; 
+GVL_MASTER.stAlarms[0].aEventTexts[88] := '';
+GVL_MASTER.stAlarms[0].aEventTexts[89] := '';]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="D_FaultHandling">
+      <LineId Id="6" Count="44" />
+      <LineId Id="61" Count="4" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="78" Count="0" />
+    </LineIds>
+    <LineIds Name="D_FaultHandling.ACT_FaultTrig">
+      <LineId Id="2" Count="2" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="73" Count="2" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="77" Count="2" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="81" Count="2" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="85" Count="2" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="90" Count="2" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="97" Count="2" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="100" Count="2" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="103" Count="2" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="110" Count="2" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="113" Count="2" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="116" Count="2" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="31" Count="4" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="141" Count="2" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="144" Count="2" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="152" Count="2" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="175" Count="2" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="179" Count="2" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="183" Count="2" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="188" Count="2" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="191" Count="2" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="155" Count="4" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="160" Count="1" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="162" Count="7" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="197" Count="1" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="138" Count="0" />
+    </LineIds>
+    <LineIds Name="D_FaultHandling.SetEventTexts">
+      <LineId Id="6" Count="18" />
+      <LineId Id="61" Count="3" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="25" Count="32" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

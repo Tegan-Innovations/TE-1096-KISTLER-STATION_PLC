@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <GVL Name="GVL_PERSISTENT" Id="{afaeb518-3dc7-4493-9f2e-37c11a3eac8a}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL PERSISTENT
+
+
+	// Y-Axis Parameters
+										//Position Offsets must be in small increments, never bigger then 1.3mm
+	fPositions_Offset					:ARRAY [1..3]OF LREAL;//HMI offset for only: [1]-Picking Screw,[2]-Press && Screwing Actions
+	
+	
+	// Kistler Parameters - For Force evaluation PLC logic	 (only Bottom Position will be send to the controller)
+	rKistlerForce_UpperLimit			:REAL;//:= 75.0;	//HMI parameter - Force Upper threshold limit for PASS/FAIL
+	rKistlerForce_LowerLimit			:REAL;//:=  7.0;	//HMI parameter - Force Lower threshold limit for PASS/FAIL
+	rKistlerForce_Speed					:REAL;//:=	9.3 mm/s;	//HMI parameter - Position where Press Cylinder starts touching Reservoir
+
+	
+	rMeasurementTolerance				:REAL;//:=  3.0;	//HMI parameter - Force Measurement Tolerance
+	rReservoir_ContactPosition			:REAL;//:=	 5.2;	//HMI parameter - Position where Press Cylinder starts touching Reservoir
+	rReservoir_BottomPosition			:REAL;//:=	28.6;	//HMI parameter - Position where the pressure cylinder touches the end of Reservoir.
+	rReservoir_Bottomlimitoffset		:REAL;//:=	0.5;	//HMI parameter - Offset to validate the force up to the position where the pressure cylinder finishes touching the Reservoir
+	DatosHistory 						:ARRAY [1..100,1..100] OF Stpoint;  // Output array with captured data
+	GraphDataHistorystorage				:ARRAY [1..100,1..100] OF Stpoint;
+	// Kistler Parameters
+	
+	
+	
+	// Proccess Counter
+	stProccessReportLog					:ARRAY [1..250]OF ST_ProcessReport;
+	
+	
+	
+	//HMI
+	stUserLogHMI				: ARRAY[0..250] OF ST_UserLogHMI;
+	UserId						: UINT;
+	bSMACEnable					: BOOL;
+	
+	//Statistics
+	nSmacGoodParts				: DINT;
+	nKistlerGoodParts			: DINT;
+	nSmacTotalGoodParts			: DINT;
+	nKistlerTotalGoodParts		: DINT;
+	nSmacBadParts				: DINT;
+	nKistlerBadParts			: DINT;
+	nSmacTotalBadParts			: DINT;
+	nKistlerTotalBadParts		: DINT;
+	
+	nSmacRotativeSetPoint		: DINT;
+	
+	//-----------------------------------------------------------------------------------------------------------------------oldschoo1
+	h							: INT:=1;
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

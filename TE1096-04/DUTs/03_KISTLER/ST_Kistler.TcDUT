@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Kistler" Id="{9a45782f-ecfe-4670-81b8-1852f29e2ff8}">
+    <Declaration><![CDATA[TYPE ST_Kistler :
+STRUCT
+
+
+	// EtherCAT communication
+	st_TelegramDataOut                   	:ARRAY[0..199]OF BYTE; 	// Channels/Triggers
+	st_TelegramDataIn                  		:ARRAY[0..199]OF BYTE; // Mirror/Statuses
+
+	
+	// I/O communication
+	bKistlerCTRL_FB1						:BOOL;	// Channel 09 - Kistler CTRL - Feedback Signal 1	
+	bKistlerCTRL_FB2						:BOOL;	// Channel 10 - Kistler CTRL - Feedback Signal 2	
+	bKistlerCTRL_FB3						:BOOL;	// Channel 11 - Kistler CTRL - Feedback Signal 3
+
+	bKistlerCTRL_Sig1						:BOOL;	// Channel 09 - Kistler CTRL Signal 1
+	bKistlerCTRL_Sig2						:BOOL;	// Channel 10 - Kistler CTRL Signal 2
+	bKistlerCTRL_Sig3						:BOOL;	// Channel 11 - Kistler CTRL Signal 3
+	bKistlerCTRL_Sig4						:BOOL;	// Channel 12 - Kistler CTRL Signal 4
+	
+
+//---------------------------------------------------------------------------------------------------oldschoo1
+	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

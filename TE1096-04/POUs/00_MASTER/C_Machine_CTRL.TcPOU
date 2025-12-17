@@ -1,0 +1,1172 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="C_Machine_CTRL" Id="{1b8b0cab-1e15-45dd-abc7-e58024eda65a}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM C_Machine_CTRL
+VAR
+	
+	bFirstRun					:BOOL;
+	bFirstAutoCycle				:BOOL;
+	bSmacDone					:BOOL;
+	bKistlerDone				:BOOL;
+	rSmacDone					:R_TRIG;
+	rKistlerDone				:R_TRIG;
+	bStatisticsFlag				:ARRAY[0..1] OF BOOL;
+	
+	eMachineState				:E_MachineState:=E_MachineState.SYSTEM_POWER_UP;
+
+	//Timers && Triggers
+	tonSys_Init					:Tc2_Standard.TON:=(PT:=T#1S);
+	tonSys_InitTimeout			:Tc2_Standard.TON:=(PT:=T#3M);					
+	tonWAIT_SMAC_KISLR			:Tc2_Standard.TON;
+	tonFirstAutoCycle			:Tc2_Standard.TON:=(PT:=T#500MS);
+	
+	//Process Cycle
+	eCycleState					:E_ProcessCycle;
+	stTotalReport				:ST_ProcessReport;
+	bStartConditions			:BOOL;	
+	tonTwoHandsTouching			:Tc2_Standard.TON;         
+	bScrewPresent				: BOOL;
+	bReservoirPresent			: BOOL;
+	tonGrippersOpennedSignal	: TON;
+	tonDelayExe					:Tc2_Standard.TON:=(PT:=T#100MS);
+	rtrigResetModule			:Tc2_Standard.R_TRIG;
+	rtrigProcessLogShift		:Tc2_Standard.R_TRIG;
+	
+	
+	//Index
+	idx							:INT;
+	
+END_VAR
+//----------------------------------------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[// Call for Actions
+
+   b_Machine_Status();		//State machina 
+	 c_ProcessCycle();	   //Master sequencer
+
+
+//----------------------------------------------------------------*
+
+
+// Process Report circular buffer
+rtrigProcessLogShift(CLK:=eCycleState=E_ProcessCycle.Saving_DATA);
+
+IF rtrigProcessLogShift.Q THEN 
+	FOR idx:= 250 TO 2 BY -1 DO
+		GVL_PERSISTENT.stProccessReportLog[idx]:=GVL_PERSISTENT.stProccessReportLog[idx-1];
+	END_FOR
+	GVL_PERSISTENT.stProccessReportLog[1]:=stTotalReport;
+END_IF//																										||
+//--------------------------------------------------------------------------------------------------------oldschoo1]]></ST>
+    </Implementation>
+    <Action Name="b_Machine_Status" Id="{b6145e3c-946a-45ea-af33-35f0ef7a03eb}">
+      <Implementation>
+        <ST><![CDATA[
+
+
+
+//Timers && Triggers
+tonSys_Init(IN:=stMachineStatus.bInitialising);
+tonSys_InitTimeout(IN:=stMachineStatus.bInitialising);
+IF stMachineStatus.eMachineState <> E_MachineState.SYSTEM_AUTO_CYCLE THEN
+	bFirstAutoCycle							:= FALSE;
+END_IF
+
+//Transition IF Cycle Stop Fault OR Imediate Fault
+IF NOT stMasterCtrl.bNoMachineImmediateFault THEN		
+				stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_FAULT;
+	
+ELSIF NOT stMasterCtrl.bNoCycleStopFault AND NOT stMachineStatus.bImmediateStopped THEN
+				stMachineStatus.eMachineState := E_MachineState.CYCLE_STOP_FAULT;
+END_IF
+
+IF NOT GVL_Master.stMasterCTRL.bManualModeRequest THEN
+	CMD_Axis.bManualMode	:=FALSE;
+	CMD_Smac.bManualMode	:=FALSE;
+	CMD_Kistler.bManualMode	:=FALSE;
+END_IF
+(****************************************************MACHINE_CTRL*******************************************************************)
+//STATE MACHINE: ------------------------------------------------------------------------------------------------------------------SM
+CASE stMachineStatus.eMachineState OF
+
+E_MachineState.SYSTEM_POWER_UP: 		// ------------------------------------------------------------------------------POWER_UP
+
+				IF tonSystemPowerUP.Q THEN
+						stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_STOPPED;//
+				END_IF
+	
+E_MachineState.IMMEDIATE_STOPPED:		// ---------------------------------------------------------------------IMMEDIATE_STOPPED
+
+				IF stMasterCtrl.bNoMachineImmediateFault AND bResetButtonFallingEdge THEN
+						stMachineStatus.eMachineState := E_MachineState.SYSTEM_INITIALISING;//
+						
+				ELSIF NOT stMasterCtrl.bNoCycleStopFault THEN
+						stMachineStatus.eMachineState := E_MachineState.CYCLE_STOP_FAULT;//
+					
+				ELSIF NOT stMasterCtrl.bNoMachineImmediateFault THEN
+					stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_FAULT;//	
+				END_IF		
+
+
+E_MachineState.SYSTEM_INITIALISING:		// -------------------------------------------------------------------SYSTEM_INITIALISING		
+
+				IF tonSys_Init.Q THEN
+						CMD_Axis.bEnable	:=TRUE;
+						CMD_Smac.bEnable	:=TRUE;
+						CMD_Kistler.bEnable	:=TRUE;
+						
+						CMD_Axis.bAbort		:=FALSE;
+						CMD_Smac.bAbort		:=FALSE;
+						CMD_Kistler.bAbort	:=FALSE;
+				END_IF
+
+				//IF Axis_STATUS.bReady AND Kistler_STATUS.bReady  AND Smac_STATUS.bReady THEN 
+				 IF Axis_STATUS.bReady AND Kistler_STATUS.bReady AND ( GVL_PERSISTENT.bSMACEnable AND Smac_STATUS.bReady OR NOT GVL_PERSISTENT.bSMACEnable) THEN //**LAA  29092025
+										stMachineStatus.eMachineState:= E_MachineState.SYSTEM_READY_TO_START;//
+				END_IF
+
+				IF bStopButtonFallingEdge OR 
+			 	  (stMasterCtrl.bNoMachineImmediateFault AND 
+			 	  (stMasterCtrl.bCycleStopRequest OR tonSys_InitTimeout.Q) AND 
+			       stMasterCtrl.bAllActionsStopped)
+					THEN
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOPPED;//
+						
+				ELSIF stMasterCtrl.bNoMachineImmediateFault AND NOT stMasterCtrl.bNoCycleStopFault 
+					THEN		
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOP_FAULT;//
+			
+				ELSIF NOT stMasterCtrl.bNoMachineImmediateFault 
+					THEN
+										stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_FAULT;//
+				END_IF
+			
+					
+E_MachineState.SYSTEM_READY_TO_START:	// -------------------------------------------------------------------SYSTEM_READY_TO_START<<<
+
+				IF 	 bStartButtonFallingEdge AND stMasterCtrl.bAllModulesReady THEN
+					
+										stMachineStatus.eMachineState := E_MachineState.SYSTEM_AUTO_CYCLE;//
+				
+				ELSIF bStopButtonFallingEdge THEN
+					
+										stMachineStatus.eMachineState := E_MachineState.STOPPING;//
+										
+				ELSIF stMasterCtrl.bNoMachineImmediateFault AND NOT stMasterCtrl.bNoCycleStopFault THEN	
+	
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOP_FAULT;//
+			
+				ELSIF NOT stMasterCtrl.bNoMachineImmediateFault THEN
+										stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_FAULT;//
+				ELSIF GVL_Master.stMasterCTRL.bManualModeRequest AND stMasterCtrl.bNoMachineImmediateFault AND stMasterCtrl.bNoCycleStopFault THEN
+										stMachineStatus.eMachineState := E_MachineState.MANUAL_MODE;//
+				END_IF
+
+				
+
+E_MachineState.SYSTEM_AUTO_CYCLE:		// ---------------------------------------------------------------------SYSTEM_AUTO_CYCLE	
+
+				IF bStopButtonFallingEdge THEN					
+										stMachineStatus.eMachineState := E_MachineState.STOPPING;//
+						
+				ELSIF stMasterCtrl.bCycleStopRequest THEN 
+					
+										stMachineStatus.eMachineState := E_MachineState.STOPPING;//
+										
+				ELSIF stMasterCtrl.bNoMachineImmediateFault AND NOT stMasterCtrl.bNoCycleStopFault THEN	
+	
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOP_FAULT;//
+			
+				ELSIF NOT stMasterCtrl.bNoMachineImmediateFault THEN
+										stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_FAULT;//
+				END_IF	
+
+E_MachineState.SYSTEM_STANDBY:;//
+
+
+
+E_MachineState.STOPPING:				// ------------------------------------------------------------------------------STOPPING
+
+				IF stMasterCtrl.bAllActionsStopped THEN
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOPPED;//					
+				END_IF
+				CMD_Axis.bEnable	:=FALSE;
+				CMD_Smac.bEnable	:=FALSE;
+				CMD_Kistler.bEnable	:=FALSE;
+				
+				CMD_Axis.bAbort		:=TRUE;
+				CMD_Smac.bAbort		:=TRUE;
+				CMD_Kistler.bAbort	:=TRUE;
+
+E_MachineState.CYCLE_STOPPED:			// -------------------------------------------------------------------------CYCLE_STOPPED
+
+				IF stMasterCtrl.bNoCycleStopFault   AND 
+	      		NOT stMasterCtrl.bCycleStopRequest  AND 
+                               bResetButtonFallingEdge
+
+									THEN	
+										stMachineStatus.eMachineState := E_MachineState.SYSTEM_INITIALISING;		
+				END_IF	
+
+E_MachineState.IMMEDIATE_FAULT:			// -----------------------------------------------------------------------IMMEDIATE_FAULT
+				
+				CMD_Axis.bEnable	:=FALSE;
+				CMD_Smac.bEnable	:=FALSE;
+				CMD_Kistler.bEnable	:=FALSE;
+						
+				CMD_Axis.bAbort		:=TRUE;
+				CMD_Smac.bAbort		:=TRUE;
+				CMD_Kistler.bAbort	:=TRUE;
+				
+				IF stMasterCtrl.bNoMachineImmediateFault	THEN
+										stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_STOPPED;		
+				END_IF
+
+E_MachineState.CYCLE_STOP_FAULT:		// ----------------------------------------------------------------------CYCLE_STOP_FAULT
+
+				CMD_Axis.bEnable	:=FALSE;
+				CMD_Smac.bEnable	:=FALSE;
+				CMD_Kistler.bEnable	:=FALSE;
+						
+				CMD_Axis.bAbort		:=TRUE;
+				CMD_Smac.bAbort		:=TRUE;
+				CMD_Kistler.bAbort	:=TRUE;
+				
+				IF stMasterCtrl.bNoCycleStopFault THEN
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOPPED;
+				END_IF	
+
+
+E_MachineState.MANUAL_MODE:;//
+
+				IF bStopButtonFallingEdge OR NOT GVL_Master.stMasterCTRL.bManualModeRequest THEN
+					
+										stMachineStatus.eMachineState := E_MachineState.STOPPING;//
+										
+										CMD_Axis.bManualMode:=FALSE;
+										CMD_Smac.bManualMode:=FALSE;
+										CMD_Kistler.bManualMode:=FALSE;
+										CMD_Axis.bAbort		:=TRUE;
+										CMD_Smac.bAbort		:=TRUE;
+										CMD_Kistler.bAbort	:=TRUE;
+				ELSIF stMasterCtrl.bNoMachineImmediateFault AND NOT stMasterCtrl.bNoCycleStopFault THEN	
+	
+										stMachineStatus.eMachineState := E_MachineState.CYCLE_STOP_FAULT;//
+										
+										CMD_Axis.bManualMode:=FALSE;
+										CMD_Smac.bManualMode:=FALSE;
+										CMD_Kistler.bManualMode:=FALSE;
+										CMD_Axis.bAbort		:=TRUE;
+										CMD_Smac.bAbort		:=TRUE;
+										CMD_Kistler.bAbort	:=TRUE;
+			
+				ELSIF NOT stMasterCtrl.bNoMachineImmediateFault THEN
+							
+										stMachineStatus.eMachineState := E_MachineState.IMMEDIATE_FAULT;//
+				
+										CMD_Axis.bManualMode:=FALSE;
+										CMD_Smac.bManualMode:=FALSE;
+										CMD_Kistler.bManualMode:=FALSE;
+										CMD_Axis.bAbort		:=TRUE;
+										CMD_Smac.bAbort		:=TRUE;
+										CMD_Kistler.bAbort	:=TRUE;
+										
+				ELSE 					CMD_Axis.bManualMode:=TRUE;
+										CMD_Smac.bManualMode:=TRUE;
+										CMD_Kistler.bManualMode:=TRUE;
+				END_IF
+ELSE
+stMachineStatus.eMachineState:=E_MachineState.SYSTEM_POWER_UP;		
+END_CASE									// ------------------------------------------------------------------------------- END SM
+
+
+(******************************************************MACHINE_STATUS***************************************************************)
+// Status Flags -----------------------------------------------------------------------------------------------------STATUS_FLAGS
+stMachineStatus.bSystemPowerUp 			:= (stMachineStatus.eMachineState = E_MachineState.SYSTEM_POWER_UP);
+stMachineStatus.bImmediateStopped 		:= (stMachineStatus.eMachineState = E_MachineState.IMMEDIATE_STOPPED);
+stMachineStatus.bInitialising 			:= (stMachineStatus.eMachineState = E_MachineState.SYSTEM_INITIALISING);
+stMachineStatus.bReadyToStart 			:= (stMachineStatus.eMachineState = E_MachineState.SYSTEM_READY_TO_START);
+stMachineStatus.bAutoCycle 				:= (stMachineStatus.eMachineState = E_MachineState.SYSTEM_AUTO_CYCLE);
+stMachineStatus.bStandby 				:= (stMachineStatus.eMachineState = E_MachineState.SYSTEM_STANDBY);
+stMachineStatus.bStopping 				:= (stMachineStatus.eMachineState = E_MachineState.STOPPING);
+stMachineStatus.bCycleStopped 			:= (stMachineStatus.eMachineState = E_MachineState.CYCLE_STOPPED);
+stMachineStatus.bImmediateFault 		:= (stMachineStatus.eMachineState = E_MachineState.IMMEDIATE_FAULT);
+stMachineStatus.bCycleStopFault 		:= (stMachineStatus.eMachineState = E_MachineState.CYCLE_STOP_FAULT);
+stMachineStatus.bManualMode 			:= (stMachineStatus.eMachineState = E_MachineState.MANUAL_MODE);
+
+//Transition Flags -----------------------------------------------------------------------------------------------TRANZITION_FLAGS
+stMasterCtrl.bAllActionsStopped			:= (Axis_STATUS.bReady AND Kistler_STATUS.bReady AND ( GVL_PERSISTENT.bSMACEnable AND Smac_STATUS.bReady OR NOT GVL_PERSISTENT.bSMACEnable) ) OR  //**LAA 29092025
+										   (NOT Axis_STATUS.bBusy AND NOT Kistler_STATUS.bBusy );
+										   
+stMasterCtrl.bAllModulesReady			:= (Axis_STATUS.bReady AND Kistler_STATUS.bReady AND ( GVL_PERSISTENT.bSMACEnable AND Smac_STATUS.bReady OR NOT GVL_PERSISTENT.bSMACEnable)); //**LAA 29092025
+
+(*stMasterCtrl.bAllActionsStopped			:= (Axis_STATUS.bReady AND Kistler_STATUS.bReady AND Smac_STATUS.bReady ) OR
+										   (NOT Axis_STATUS.bBusy AND NOT Kistler_STATUS.bBusy );
+										   
+stMasterCtrl.bAllModulesReady			:= (Axis_STATUS.bReady AND Kistler_STATUS.bReady AND Smac_STATUS.bReady ); 
+
+*)]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="c_ProcessCycle" Id="{680539a3-5409-4299-95ed-f307f3651986}">
+      <Implementation>
+        <ST><![CDATA[//Timers
+tonDelayExe(IN:=(eCycleState=E_ProcessCycle.AXIS_HOME AND Axis_STATUS.bReady) OR
+				(eCycleState=E_ProcessCycle.AXIS_CMD_1 AND Axis_STATUS.bReady) OR
+				(eCycleState=E_ProcessCycle.AXIS_CMD_2 AND Axis_STATUS.bReady) OR
+				(eCycleState=E_ProcessCycle.AXIS_CMD_3 AND Axis_STATUS.bReady) OR
+				(eCycleState=E_ProcessCycle.SMAC_CMD_1 AND Smac_STATUS.bReady) OR
+				((eCycleState=E_ProcessCycle.CMD_SMAC_KISLR OR eCycleState=E_ProcessCycle.CMD_KISLR )AND (CMD_Kistler.bExecute OR NOT bReservoir_Present)AND (GVL_PERSISTENT.bSMACEnable AND CMD_Smac.bExecute OR NOT bScrewPresent ))
+);  //AND Smac_STATUS.bReady));				//to finish
+				
+tonGrippersOpennedSignal( IN :=  NOT stSmac.bGripperA_ClosedSensor AND NOT stSmac.bGripperA_ClosedSensor, PT := T#1S);
+tonWAIT_SMAC_KISLR(IN := eCycleState = E_ProcessCycle.WAIT_SMAC_KISLR,PT := T#500MS);
+tonFirstAutoCycle( IN := eCycleState = E_ProcessCycle.IDLE AND stMachineStatus.bAutoCycle);
+(******************************************************START CONDITIONS******************************************************)				
+// Start Conditions: 
+// - Optional add HMI PopUp if Pack fixture is in but NOT all 3 parts present -	
+		
+tonTwoHandsTouching(IN:=stSafety.bTwoHands_Signal, PT:=T#500MS);       // **LAA 03/12/2025 > it was too slow PT:=T#2S);
+
+bStartConditions 		 := (tonTwoHandsTouching.Q AND 
+							stMachineStatus.bAutoCycle AND
+							GVL_MASTER.bPuck_Present);
+							//AND bGearBox_Present 
+					
+							
+//Reset Module --------------------------------------------------------------------------------------------------------------*
+IF bResetButtonRisingEdge OR 
+stMachineStatus.bCycleStopFault OR stMachineStatus.bImmediateFault OR stMachineStatus.bImmediateStopped
+THEN eCycleState:=E_ProcessCycle.RESET_ALL_CMD;END_IF
+//KISTLER / SMAC DONE---------------------------------------------------------------------------------------------------------*
+rSmacDone( CLK := Smac_STATUS.bDone );					
+rKistlerDone( CLK := Kistler_STATUS.bDone );					
+
+IF rKistlerDone.Q THEN 
+	bKistlerDone		:= TRUE;
+END_IF
+IF rSmacDone.Q THEN
+	bSmacDone			:= TRUE;
+END_IF
+
+(************************************************************CTRL*************************************************************)
+//STATE MACHINE: -----------------------------------------------------------------------------------------------------------SM
+CASE eCycleState OF
+						(****************************************************************IDLE********************************)
+E_ProcessCycle.IDLE:	//-----------------------------------------------------------------------------------------------IDLE
+									IF bStartConditions AND GVL_PERSISTENT.bSMACEnable THEN   //**LAA 29092025
+										eCycleState:=E_ProcessCycle.AXIS_CMD_1;
+										stTotalReport.bKis_Pass								:= FALSE;
+										stTotalReport.bKis_Fail								:= FALSE;
+										stTotalReport.bSmac_Pass							:= FALSE;
+										stTotalReport.bSmac_Fail							:= FALSE;
+										GVL_IO.qCycleIndicator_RedLED						:= FALSE;
+										GVL_IO.qCycleIndicator_GreenLED						:= FALSE;
+										S_Master_SMAC.bCloseGripper							:= FALSE;
+										ELSIF bStartConditions AND NOT GVL_PERSISTENT.bSMACEnable THEN // *LAA  29092025
+											eCycleState:=E_ProcessCycle.AXIS_CMD_2;
+											stTotalReport.bKis_Pass								:= FALSE;
+											stTotalReport.bKis_Fail								:= FALSE;
+											stTotalReport.bSmac_Pass							:= FALSE;
+											stTotalReport.bSmac_Fail							:= FALSE;
+											GVL_IO.qCycleIndicator_RedLED						:= FALSE;
+											GVL_IO.qCycleIndicator_GreenLED						:= FALSE;
+											S_Master_SMAC.bCloseGripper							:= FALSE;
+									END_IF
+									 IF NOT bFirstAutoCycle AND GVL_MASTER.bPuck_Present AND
+										NOT tonFirstAutoCycle.Q AND stMachineStatus.bAutoCycle THEN
+										eCycleState:=E_ProcessCycle.AXIS_CMD_3;
+										stTotalReport.bKis_Pass								:= FALSE;
+										stTotalReport.bKis_Fail								:= FALSE;
+										stTotalReport.bSmac_Pass							:= FALSE;
+										stTotalReport.bSmac_Fail							:= FALSE;
+										GVL_IO.qCycleIndicator_RedLED						:= FALSE;
+										GVL_IO.qCycleIndicator_GreenLED						:= FALSE;
+										S_Master_SMAC.bCloseGripper							:= FALSE;
+									END_IF
+									//Just Idleing like chilling here
+									CMD_Smac.bFixtureGripper		:= FALSE;
+									CMD_Smac.bGuideGripper			:= FALSE;
+									IF stMachineStatus.bAutoCycle AND NOT GVL_MASTER.bPuck_Present THEN
+										GVL_HMI.sMessageToOperator	:='Insert Nest';
+									ELSIF stMachineStatus.bAutoCycle AND GVL_MASTER.bPuck_Present THEN
+										GVL_HMI.sMessageToOperator	:='Put two hands to start Cycle Process';
+									ELSIF NOT stMachineStatus.bAutoCycle AND  stMachineStatus.bReadyToStart THEN
+									GVL_HMI.sMessageToOperator	:='Press START to Begin';
+									ELSIF NOT stMachineStatus.bAutoCycle AND  NOT stMachineStatus.bReadyToStart THEN
+									GVL_HMI.sMessageToOperator	:='Press RESET';
+									END_IF
+									
+							(************************************************************CYCLE******************************)									
+E_ProcessCycle.AXIS_CMD_1:	//-------------------------------------------------------------------------------------AXIS_CMD_1
+
+									IF Axis_STATUS.bReady THEN
+											stY_Axis.bSetToPosition[1]	:=TRUE;
+									END_IF
+
+									IF tonDelayExe.Q THEN
+											CMD_Axis.bExecute			:=TRUE;
+											eCycleState:=E_ProcessCycle.WAIT_AXIS_CMD_1;
+									END_IF
+									GVL_HMI.sMessageToOperator	:='Axis Y Moving to Position 1';
+									bFirstAutoCycle						:=TRUE;
+									
+	
+E_ProcessCycle.WAIT_AXIS_CMD_1:	//----------------------------------------------------------------------------WAIT_AXIS_CMD_1
+							 		IF GVL_PERSISTENT.bSMACEnable AND Axis_STATUS.bDone AND bScrew_Present THEN
+											stY_Axis.bSetToPosition[1]	:=FALSE;
+											CMD_Axis.bExecute			:=FALSE;
+											bScrewPresent				:=TRUE;
+											eCycleState:=E_ProcessCycle.SMAC_CMD_1;
+									ELSIF  GVL_PERSISTENT.bSMACEnable AND Axis_STATUS.bDone AND NOT bScrew_Present OR NOT GVL_PERSISTENT.bSMACEnable THEN
+											stY_Axis.bSetToPosition[1]	:=FALSE;
+											CMD_Axis.bExecute			:=FALSE;
+											bScrewPresent				:=FALSE;
+											eCycleState:=E_ProcessCycle.AXIS_CMD_2;
+									END_IF
+									
+									
+E_ProcessCycle.SMAC_CMD_1:	//-------------------------------------------------------------------------------------SMAC_CMD_1		//to finish
+									IF  Smac_STATUS.bReady THEN
+										stSmac.bSet_PickScrew				:=TRUE;
+										CMD_Smac.bExecute					:=TRUE;
+									END_IF
+									IF  Smac_Status.bBusy THEN
+										eCycleState:=E_ProcessCycle.WAIT_SMAC_CMD_1;
+									END_IF
+									
+									GVL_HMI.sMessageToOperator	:='Smac Picking Screw Part';
+
+	
+E_ProcessCycle.WAIT_SMAC_CMD_1:	//----------------------------------------------------------------------------WAIT_SMAC_CMD_1		//to finish
+									//Wait for Smac device to feedback 
+									IF Smac_STATUS.bFirstPartOfCycleDone THEN
+										eCycleState:=E_ProcessCycle.AXIS_CMD_2;	
+										CMD_Smac.bExecute				:=FALSE;
+									END_IF
+
+E_ProcessCycle.AXIS_CMD_2:	//-------------------------------------------------------------------------------------AXIS_CMD_2
+							 		
+											stY_Axis.bSetToPosition[2]	:=TRUE;
+									
+
+									IF tonDelayExe.Q AND Axis_STATUS.bReady THEN
+											CMD_Axis.bExecute			:=TRUE;
+											eCycleState:=E_ProcessCycle.WAIT_AXIS_CMD_2;
+									END_IF	
+									
+									GVL_HMI.sMessageToOperator	:='Axis Y Moving to Position 2';
+
+E_ProcessCycle.WAIT_AXIS_CMD_2:	//----------------------------------------------------------------------------WAIT_AXIS_CMD_2
+						 		IF Axis_STATUS.bDone  AND GVL_PERSISTENT.bSMACEnable THEN
+											stY_Axis.bSetToPosition[2]	:=FALSE;
+											CMD_Axis.bExecute			:=FALSE;
+											eCycleState:=E_ProcessCycle.GRIPPERS_CMD_1;
+											ELSIF Axis_STATUS.bDone AND NOT GVL_PERSISTENT.bSMACEnable THEN 
+												stY_Axis.bSetToPosition[2]	:=FALSE;
+												CMD_Axis.bExecute			:=FALSE;
+												eCycleState:=E_ProcessCycle.CMD_KISLR;;
+									END_IF	
+E_ProcessCycle.GRIPPERS_CMD_1: //------------------------------------------------------------------------------GRIPPERS_CMD_1
+								
+									CMD_Smac.bFixtureGripper		:= TRUE;
+									CMD_Smac.bGuideGripper			:= TRUE;
+								
+								eCycleState:=E_ProcessCycle.WAIT_GRIPPERS_CMD_1;
+								
+								
+
+E_ProcessCycle.WAIT_GRIPPERS_CMD_1: //--------------------------------------------------------------------WAIT_GRIPPERS_CMD_1
+								IF stSmac.bGripperA_ClosedSensor AND stSmac.bGripperA_ClosedSensor AND 
+									(bScrewPresent OR bPuck_Present) THEN
+									eCycleState:=E_ProcessCycle.CMD_SMAC_KISLR;
+								ELSIF stSmac.bGripperA_ClosedSensor AND stSmac.bGripperA_ClosedSensor AND // *LAA ????????
+									(bScrewPresent OR bPuck_Present) THEN
+									eCycleState:=E_ProcessCycle.STORE_PROC_DATA;
+								END_IF
+
+E_ProcessCycle.CMD_SMAC_KISLR:	//-------------------------------------------------------------------------CMD_SMAC_AND_KISLR		//to finish
+							 		IF Kistler_STATUS.bReady THEN // AND Smac_STATUS.bReady
+											IF bReservoir_Present THEN
+												CMD_Kistler.bExecute		:=TRUE;
+												bReservoirPresent			:=TRUE;
+											END_IF
+											IF bScrewPresent THEN
+											stSmac.bSet_ScrewItIn		:=TRUE;
+											CMD_Smac.bExecute			:=TRUE;
+											END_IF
+									END_IF
+
+									IF tonDelayExe.Q THEN
+										
+											eCycleState:=E_ProcessCycle.WAIT_SMAC_KISLR;
+									END_IF				
+									GVL_HMI.sMessageToOperator	:='Kistler and Screw Process';
+
+E_ProcessCycle.WAIT_SMAC_KISLR:	//----------------------------------------------------------------------------WAIT_SMAC_KISLR		//to finish
+						 			IF (bKistlerDone OR NOT bReservoir_Present) AND (bSmacDone OR NOT bScrewPresent) THEN
+											CMD_Kistler.bExecute		:=FALSE;
+											stSmac.bSet_ScrewItIn		:=FALSE;
+											CMD_Smac.bExecute			:=FALSE;
+											//open guide gripper
+											eCycleState:=E_ProcessCycle.STORE_PROC_DATA;
+									END_IF	
+//**************************************LAA******************************************************************//			
+
+E_ProcessCycle.CMD_KISLR:	//-------------------------------------------------------------------------CMD_SMAC_AND_KISLR		//to finish
+							 		IF Kistler_STATUS.bReady THEN // AND Smac_STATUS.bReady
+											IF bReservoir_Present THEN
+												CMD_Kistler.bExecute		:=TRUE;
+												bReservoirPresent			:=TRUE;
+											END_IF
+									END_IF
+
+									IF tonDelayExe.Q THEN
+										
+											eCycleState:=E_ProcessCycle.WAIT_KISLR;
+									END_IF				
+									GVL_HMI.sMessageToOperator	:='Kistler processing';
+
+E_ProcessCycle.WAIT_KISLR:	//----------------------------------------------------------------------------WAIT_SMAC_KISLR		//to finish
+						 			IF (bKistlerDone OR NOT bReservoir_Present) THEN
+											CMD_Kistler.bExecute		:=FALSE;
+											eCycleState:=E_ProcessCycle.STORE_PROC_DATA;
+									END_IF	
+//**************************************LAA******************************************************************//			
+E_ProcessCycle.STORE_PROC_DATA:	//----------------------------------------------------------------------------STORE_PROC_DATA		//to finish
+		
+	bKistlerDone 			:= FALSE;
+	bSmacDone 				:= FALSE;
+	
+	IF bReservoirPresent THEN
+		stTotalReport.bKis_Pass								:=K_Master_Kistler.stKistlerReport.bKis_Pass;
+		stTotalReport.bKis_Fail								:=K_Master_Kistler.stKistlerReport.bKis_Fail;
+		stTotalReport.rKis_HighestRecordedForce				:=K_Master_Kistler.stKistlerReport.rKis_HighestRecordedForce;
+		stTotalReport.rKis_LowestRecordedForce				:=K_Master_Kistler.stKistlerReport.rKis_LowestRecordedForce;
+		stTotalReport.rKis_DistanceRecord					:=K_Master_Kistler.stKistlerReport.rKis_DistanceRecord;
+		stTotalReport.rKis_Settings_ForceUpperTreshold		:=K_Master_Kistler.stKistlerReport.rKis_Settings_ForceUpperTreshold;
+		stTotalReport.rKis_Settings_ForceLowerTreshold		:=K_Master_Kistler.stKistlerReport.rKis_Settings_ForceLowerTreshold;
+		stTotalReport.rKis_Settings_StartMeasurePoint		:=K_Master_Kistler.stKistlerReport.rKis_Settings_StartMeasurePoint;
+		stTotalReport.rKis_Settings_ReservoirBottomPoint	:=K_Master_Kistler.stKistlerReport.rKis_Settings_ReservoirBottomPoint;
+		IF stTotalReport.bKis_Pass THEN
+			stTotalReport.sKis_Result							:='PASS';
+		ELSIF stTotalReport.bKis_FaiL THEN
+			stTotalReport.sKis_Result							:='FAIL';
+		ELSE stTotalReport.sKis_Result							:='';
+		END_IF
+	ELSE
+		stTotalReport.bKis_Pass								:=FALSE;
+		stTotalReport.bKis_Fail								:=FALSE;
+		stTotalReport.rKis_HighestRecordedForce				:=0;
+		stTotalReport.rKis_LowestRecordedForce				:=0;
+		stTotalReport.rKis_Settings_ForceUpperTreshold		:=0;
+		stTotalReport.rKis_Settings_ForceLowerTreshold		:=0;
+		stTotalReport.rKis_Settings_StartMeasurePoint		:=0;
+		stTotalReport.rKis_Settings_ReservoirBottomPoint	:=0;
+		stTotalReport.sKis_Result							:='';
+	END_IF
+	IF GVL_PERSISTENT.bSMACEnable AND bScrewPresent THEN
+		stTotalReport.rSmac_Settings_LinearAcc				:=S_Master_SMAC.stSmacReport.rSmac_Settings_LinearAcc;
+		stTotalReport.rSmac_Settings_LinearVel				:=S_Master_SMAC.stSmacReport.rSmac_Settings_LinearVel;
+		stTotalReport.rSmac_Settings_RotativeAcc			:=S_Master_SMAC.stSmacReport.rSmac_Settings_RotativeAcc;
+		stTotalReport.rSmac_Settings_RotativeVel			:=S_Master_SMAC.stSmacReport.rSmac_Settings_RotativeVel;
+		stTotalReport.rSmac_Settings_LinearTorque			:=S_Master_SMAC.stSmacReport.rSmac_Settings_LinearTorque;
+		stTotalReport.rSmac_MaxDistanceReached				:=S_Master_SMAC.stSmacReport.rSmac_MaxDistanceReached;
+		stTotalReport.bSmac_Pass							:=S_Master_SMAC.stSmacReport.bSmac_Pass;
+		stTotalReport.bSmac_Fail							:=S_Master_SMAC.stSmacReport.bSmac_Fail;
+		IF stTotalReport.bSmac_Pass THEN
+			stTotalReport.sSmac_Result							:='PASS';
+		ELSIF stTotalReport.bSmac_Fail THEN
+			stTotalReport.sSmac_Result							:='FAIL';
+		ELSE stTotalReport.sSmac_Result							:='';
+		END_IF
+	ELSE
+		stTotalReport.rSmac_Settings_LinearAcc				:=0;
+		stTotalReport.rSmac_Settings_LinearVel				:=0;
+		stTotalReport.rSmac_Settings_RotativeAcc			:=0;
+		stTotalReport.rSmac_Settings_RotativeVel			:=0;
+		stTotalReport.rSmac_Settings_LinearTorque			:=0;
+		stTotalReport.rSmac_MaxDistanceReached				:=0;
+		stTotalReport.bSmac_Pass							:=FALSE;
+		stTotalReport.bSmac_Fail							:=FALSE;
+		stTotalReport.sSmac_Result							:='';
+	END_IF
+	
+	stTotalReport.sDate										:= GVL_MASTER.sSystemDate;
+	stTotalReport.sTime										:= GVL_MASTER.sSystemTime;
+	
+	//STATISTICS
+	IF bReservoirPresent AND stTotalReport.bKis_Pass AND NOT bStatisticsFlag[0] THEN
+		GVL_PERSISTENT.nKistlerGoodParts					:= GVL_PERSISTENT.nKistlerGoodParts + 1;
+		GVL_PERSISTENT.nKistlerTotalGoodParts				:= GVL_PERSISTENT.nKistlerTotalGoodParts + 1;
+		bStatisticsFlag[0]									:= TRUE;
+	END_IF
+	IF bReservoirPresent AND stTotalReport.bKis_Fail AND NOT bStatisticsFlag[0] THEN
+		GVL_PERSISTENT.nKistlerBadParts						:= GVL_PERSISTENT.nKistlerBadParts + 1;
+		GVL_PERSISTENT.nKistlerTotalBadParts				:= GVL_PERSISTENT.nKistlerTotalBadParts + 1;
+		bStatisticsFlag[0]									:= TRUE;
+	END_IF
+	
+	IF bScrewPresent AND stTotalReport.bSmac_Pass AND NOT bStatisticsFlag[1] THEN
+		GVL_PERSISTENT.nSmacGoodParts						:= GVL_PERSISTENT.nSmacGoodParts + 1;
+		GVL_PERSISTENT.nSmacTotalGoodParts					:= GVL_PERSISTENT.nSmacTotalGoodParts + 1;
+		bStatisticsFlag[1]									:= TRUE;
+	END_IF
+		IF bScrewPresent AND stTotalReport.bSmac_Fail AND NOT bStatisticsFlag[1] THEN
+		GVL_PERSISTENT.nSmacBadParts						:= GVL_PERSISTENT.nSmacBadParts + 1;
+		GVL_PERSISTENT.nSmacTotalBadParts					:= GVL_PERSISTENT.nSmacTotalBadParts + 1;
+		bStatisticsFlag[1]									:= TRUE;
+	END_IF
+	
+			
+			
+									eCycleState:=E_ProcessCycle.Saving_DATA;	
+E_ProcessCycle.Saving_DATA: //------------------------------------------------------------------------------------Saving_DATA
+									eCycleState:=E_ProcessCycle.GRIPPERS_CMD_2;
+									bStatisticsFlag[0]									:= FALSE;
+									bStatisticsFlag[1]									:= FALSE;
+									IF (bReservoirPresent AND stTotalReport.bKis_Pass) OR 
+										(bScrewPresent AND stTotalReport.bSmac_Pass)THEN
+										GVL_IO.qCycleIndicator_GreenLED						:= TRUE;
+									ELSIF (bReservoirPresent AND stTotalReport.bKis_Fail) OR 
+										(bScrewPresent AND stTotalReport.bSmac_Fail) THEN
+										GVL_IO.qCycleIndicator_RedLED						:= TRUE;		
+									END_IF
+E_ProcessCycle.GRIPPERS_CMD_2: //------------------------------------------------------------------------------GRIPPERS_CMD_1
+								
+								CMD_Smac.bFixtureGripper		:= FALSE;
+								CMD_Smac.bGuideGripper			:= FALSE;
+								
+								eCycleState:=E_ProcessCycle.WAIT_GRIPPERS_CMD_2;
+								
+								
+								
+
+E_ProcessCycle.WAIT_GRIPPERS_CMD_2: //--------------------------------------------------------------------WAIT_GRIPPERS_CMD_1
+								IF tonGrippersOpennedSignal.Q THEN
+								eCycleState:=E_ProcessCycle.AXIS_CMD_3;
+								END_IF
+			
+E_ProcessCycle.AXIS_CMD_3:	//-------------------------------------------------------------------------------------AXIS_CMD_3
+						 		IF Axis_STATUS.bReady THEN
+											stY_Axis.bSetToPosition[3]	:=TRUE;
+									END_IF
+
+									IF tonDelayExe.Q THEN
+											CMD_Axis.bExecute			:=TRUE;
+											eCycleState:=E_ProcessCycle.WAIT_AXIS_CMD_3;
+									END_IF		
+								GVL_HMI.sMessageToOperator	:='Take Nest please';
+
+E_ProcessCycle.WAIT_AXIS_CMD_3:	//----------------------------------------------------------------------------WAIT_AXIS_CMD_3
+							 		IF Axis_STATUS.bDone THEN
+											stY_Axis.bSetToPosition[3]	:=FALSE;
+											CMD_Axis.bExecute			:=FALSE;
+											eCycleState:=E_ProcessCycle.AXIS_HOME;
+									END_IF
+
+
+E_ProcessCycle.AXIS_HOME:	//-------------------------------------------------------------------------------------AXIS_HOME
+							 		IF Axis_STATUS.bReady THEN
+											stY_Axis.bSetToHome			:=TRUE;
+											Y_Master_Y_Axis.bRetract 	:=TRUE;
+									END_IF
+
+									IF tonDelayExe.Q THEN
+											CMD_Axis.bExecute			:=TRUE;
+											eCycleState:=E_ProcessCycle.WAIT_AXIS_HOME;
+									END_IF
+									GVL_HMI.sMessageToOperator	:='Axis Y Homing';
+
+E_ProcessCycle.WAIT_AXIS_HOME:	//----------------------------------------------------------------------------WAIT_AXIS_HOME
+							 		IF Axis_STATUS.bDone THEN
+											stY_Axis.bSetToHome			:=FALSE;
+											CMD_Axis.bExecute			:=FALSE;
+											Y_Master_Y_Axis.bRetract 	:=FALSE;
+											eCycleState:=E_ProcessCycle.IDLE;
+									END_IF
+									bFirstAutoCycle						:=TRUE;
+
+									
+								(*********************************************************RESET*****************************)
+E_ProcessCycle.RESET_ALL_CMD:	//------------------------------------------------------------------------------RESET_ALL_CMD
+
+											CMD_Axis.bExecute									:=FALSE;
+											CMD_Smac.bExecute									:=FALSE;
+											CMD_Kistler.bExecute								:=FALSE;
+											
+											stSmac.bSet_PickScrew								:=FALSE;											
+											stSmac.bSet_ScrewItIn								:=FALSE;
+											CMD_Smac.bFixtureGripper							:= FALSE;
+											CMD_Smac.bGuideGripper								:= FALSE;
+
+
+											stY_Axis.bSetToHome									:=FALSE;
+											Y_Master_Y_Axis.bRetract 							:=FALSE;
+											stY_Axis.bSetToPosition[1]							:=FALSE;
+											stY_Axis.bSetToPosition[2]							:=FALSE;
+											stY_Axis.bSetToPosition[3]							:=FALSE;
+											
+											bKistlerDone 										:= FALSE;
+											bSmacDone 											:= FALSE;
+											bScrewPresent										:= FALSE;
+											
+											
+											
+
+
+											eCycleState:=E_ProcessCycle.IDLE;
+											
+	
+ELSE
+eCycleState:=E_ProcessCycle.RESET_ALL_CMD;		
+END_CASE	// -------------------------------------------------------------------------------------------------------- END SM
+
+(************************************************************STATUS************************************************************)
+stMachineStatus.bProcessCycle := eCycleState <> E_ProcessCycle.IDLE AND eCycleState <> E_ProcessCycle.RESET_ALL_CMD;
+
+//---------------------------------------------------------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="C_Machine_CTRL">
+      <LineId Id="61" Count="3" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="C_Machine_CTRL.b_Machine_Status">
+      <LineId Id="24" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="198" Count="1" />
+      <LineId Id="101" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="265" Count="2" />
+      <LineId Id="197" Count="0" />
+      <LineId Id="191" Count="2" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="194" Count="1" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="308" Count="1" />
+      <LineId Id="306" Count="1" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="2" Count="2" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="106" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="108" Count="1" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="111" Count="1" />
+      <LineId Id="114" Count="1" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="127" Count="1" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="234" Count="1" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="122" Count="1" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="132" Count="4" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="147" Count="4" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="152" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="247" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="249" Count="2" />
+      <LineId Id="253" Count="0" />
+      <LineId Id="268" Count="1" />
+      <LineId Id="239" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="172" Count="1" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="168" Count="1" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="256" Count="5" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="176" Count="1" />
+      <LineId Id="214" Count="1" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="216" Count="0" />
+      <LineId Id="218" Count="1" />
+      <LineId Id="217" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="178" Count="2" />
+      <LineId Id="182" Count="2" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="211" Count="1" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="220" Count="0" />
+      <LineId Id="222" Count="1" />
+      <LineId Id="221" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="187" Count="1" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="225" Count="5" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="189" Count="1" />
+      <LineId Id="185" Count="1" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="283" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="280" Count="1" />
+      <LineId Id="298" Count="1" />
+      <LineId Id="297" Count="0" />
+      <LineId Id="275" Count="2" />
+      <LineId Id="284" Count="0" />
+      <LineId Id="286" Count="1" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="301" Count="1" />
+      <LineId Id="300" Count="0" />
+      <LineId Id="278" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="291" Count="1" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="289" Count="1" />
+      <LineId Id="288" Count="0" />
+      <LineId Id="304" Count="1" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="293" Count="2" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="296" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="79" Count="2" />
+      <LineId Id="83" Count="4" />
+      <LineId Id="89" Count="1" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="205" Count="2" />
+      <LineId Id="200" Count="1" />
+      <LineId Id="310" Count="3" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="91" Count="0" />
+    </LineIds>
+    <LineIds Name="C_Machine_CTRL.c_ProcessCycle">
+      <LineId Id="218" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="357" Count="0" />
+      <LineId Id="220" Count="3" />
+      <LineId Id="705" Count="0" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="430" Count="0" />
+      <LineId Id="429" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="227" Count="0" />
+      <LineId Id="193" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="387" Count="0" />
+      <LineId Id="572" Count="0" />
+      <LineId Id="191" Count="1" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="276" Count="0" />
+      <LineId Id="349" Count="0" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="417" Count="0" />
+      <LineId Id="415" Count="1" />
+      <LineId Id="402" Count="0" />
+      <LineId Id="404" Count="4" />
+      <LineId Id="401" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="105" Count="3" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="561" Count="0" />
+      <LineId Id="594" Count="2" />
+      <LineId Id="593" Count="0" />
+      <LineId Id="637" Count="1" />
+      <LineId Id="651" Count="0" />
+      <LineId Id="680" Count="0" />
+      <LineId Id="682" Count="6" />
+      <LineId Id="681" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="573" Count="0" />
+      <LineId Id="578" Count="0" />
+      <LineId Id="598" Count="2" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="635" Count="1" />
+      <LineId Id="652" Count="0" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="186" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="277" Count="0" />
+      <LineId Id="581" Count="1" />
+      <LineId Id="701" Count="1" />
+      <LineId Id="700" Count="0" />
+      <LineId Id="703" Count="1" />
+      <LineId Id="580" Count="0" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="109" Count="1" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="455" Count="0" />
+      <LineId Id="213" Count="0" />
+      <LineId Id="215" Count="0" />
+      <LineId Id="111" Count="1" />
+      <LineId Id="228" Count="0" />
+      <LineId Id="230" Count="0" />
+      <LineId Id="229" Count="0" />
+      <LineId Id="562" Count="1" />
+      <LineId Id="592" Count="0" />
+      <LineId Id="113" Count="1" />
+      <LineId Id="279" Count="2" />
+      <LineId Id="470" Count="0" />
+      <LineId Id="282" Count="0" />
+      <LineId Id="466" Count="0" />
+      <LineId Id="468" Count="1" />
+      <LineId Id="471" Count="0" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="465" Count="0" />
+      <LineId Id="117" Count="1" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="393" Count="1" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="395" Count="1" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="242" Count="0" />
+      <LineId Id="325" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="400" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="127" Count="1" />
+      <LineId Id="284" Count="6" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="583" Count="1" />
+      <LineId Id="131" Count="1" />
+      <LineId Id="291" Count="3" />
+      <LineId Id="696" Count="0" />
+      <LineId Id="698" Count="1" />
+      <LineId Id="697" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="419" Count="0" />
+      <LineId Id="433" Count="0" />
+      <LineId Id="458" Count="0" />
+      <LineId Id="424" Count="2" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="418" Count="0" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="431" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="432" Count="0" />
+      <LineId Id="473" Count="2" />
+      <LineId Id="421" Count="0" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="314" Count="1" />
+      <LineId Id="477" Count="0" />
+      <LineId Id="483" Count="0" />
+      <LineId Id="478" Count="0" />
+      <LineId Id="476" Count="0" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="399" Count="0" />
+      <LineId Id="479" Count="0" />
+      <LineId Id="316" Count="4" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="139" Count="1" />
+      <LineId Id="326" Count="0" />
+      <LineId Id="332" Count="0" />
+      <LineId Id="328" Count="0" />
+      <LineId Id="333" Count="0" />
+      <LineId Id="650" Count="0" />
+      <LineId Id="329" Count="1" />
+      <LineId Id="679" Count="0" />
+      <LineId Id="678" Count="0" />
+      <LineId Id="653" Count="5" />
+      <LineId Id="663" Count="10" />
+      <LineId Id="677" Count="0" />
+      <LineId Id="331" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="379" Count="0" />
+      <LineId Id="410" Count="1" />
+      <LineId Id="641" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="486" Count="3" />
+      <LineId Id="706" Count="0" />
+      <LineId Id="490" Count="2" />
+      <LineId Id="484" Count="0" />
+      <LineId Id="610" Count="4" />
+      <LineId Id="609" Count="0" />
+      <LineId Id="493" Count="0" />
+      <LineId Id="495" Count="6" />
+      <LineId Id="494" Count="0" />
+      <LineId Id="615" Count="0" />
+      <LineId Id="485" Count="0" />
+      <LineId Id="502" Count="1" />
+      <LineId Id="505" Count="3" />
+      <LineId Id="511" Count="0" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="512" Count="0" />
+      <LineId Id="617" Count="4" />
+      <LineId Id="616" Count="0" />
+      <LineId Id="515" Count="0" />
+      <LineId Id="517" Count="6" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="622" Count="0" />
+      <LineId Id="504" Count="0" />
+      <LineId Id="642" Count="0" />
+      <LineId Id="625" Count="0" />
+      <LineId Id="627" Count="0" />
+      <LineId Id="546" Count="0" />
+      <LineId Id="514" Count="0" />
+      <LineId Id="537" Count="1" />
+      <LineId Id="541" Count="0" />
+      <LineId Id="540" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="542" Count="3" />
+      <LineId Id="536" Count="0" />
+      <LineId Id="547" Count="0" />
+      <LineId Id="549" Count="3" />
+      <LineId Id="548" Count="0" />
+      <LineId Id="554" Count="3" />
+      <LineId Id="553" Count="0" />
+      <LineId Id="623" Count="0" />
+      <LineId Id="381" Count="1" />
+      <LineId Id="183" Count="0" />
+      <LineId Id="601" Count="1" />
+      <LineId Id="633" Count="1" />
+      <LineId Id="644" Count="5" />
+      <LineId Id="643" Count="0" />
+      <LineId Id="440" Count="2" />
+      <LineId Id="461" Count="0" />
+      <LineId Id="444" Count="1" />
+      <LineId Id="640" Count="0" />
+      <LineId Id="446" Count="4" />
+      <LineId Id="453" Count="0" />
+      <LineId Id="365" Count="1" />
+      <LineId Id="148" Count="0" />
+      <LineId Id="295" Count="6" />
+      <LineId Id="184" Count="0" />
+      <LineId Id="149" Count="0" />
+      <LineId Id="151" Count="1" />
+      <LineId Id="302" Count="3" />
+      <LineId Id="185" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="261" Count="1" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="263" Count="5" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="254" Count="1" />
+      <LineId Id="269" Count="2" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="560" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="208" Count="0" />
+      <LineId Id="338" Count="1" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="463" Count="1" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="335" Count="0" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="340" Count="2" />
+      <LineId Id="412" Count="2" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="533" Count="1" />
+      <LineId Id="558" Count="0" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="532" Count="0" />
+      <LineId Id="209" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="205" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="93" Count="4" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

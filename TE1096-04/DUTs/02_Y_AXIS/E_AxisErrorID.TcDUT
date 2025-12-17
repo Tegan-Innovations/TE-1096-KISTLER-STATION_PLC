@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_AxisErrorID" Id="{142458bc-e694-47c2-9125-c9251b7c5ecf}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_AxisErrorID :
+(
+	NO_ERROR			:=0,
+	POWER_UP_ERROR		:=10,
+	HOMING_ERROR		:=20,
+	MOVEMENT_ERROR		:=30,
+	TIMEOUT_ERROR		:=40
+	//---------------------o1
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

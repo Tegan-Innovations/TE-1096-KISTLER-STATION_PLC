@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PRG_Fault_SMAC" Id="{555cc3af-ba28-485f-a0a0-3fcc4c7f4d43}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Fault_SMAC
+VAR
+	i					: INT;
+	bTest				: BOOL;
+END_VAR
+VAR_IN_OUT
+  aAlarms  : ARRAY[0..3] OF ST_Events;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF GVL_PERSISTENT.bSMACEnable THEN 
+ACT_FaultTrig();
+END_IF
+
+(************************************** Faults reset **********************************************)
+IF   bResetButtonRisingEdge THEN 
+	FOR i := 0 TO 127 DO
+		GVL_MASTER.stAlarms[3].aEventFlags[i] := FALSE;
+	END_FOR
+END_IF
+//===============================================================
+//Initialize event texts on first scan
+IF NOT GVL_MASTER.stAlarms[3].bEventTextsSet THEN
+	SetEventTexts();
+	GVL_MASTER.stAlarms[3].bEventTextsSet := TRUE;
+END_IF
+
+
+(***************************************************************************************************)
+//Immediate fault
+GVL_MASTER.stAlarms[3].bImmediateFault := FALSE;
+FOR i := 0 TO 32DO
+	GVL_MASTER.stAlarms[3].bImmediateFault := GVL_MASTER.stAlarms[3].bImmediateFault OR GVL_MASTER.stAlarms[3].aEventFlags[i];
+END_FOR
+
+//Cycle stop fault
+GVL_MASTER.stAlarms[3].bCycleStopFault := FALSE;
+FOR i := 33 TO 79 DO
+	GVL_MASTER.stAlarms[3].bCycleStopFault := GVL_MASTER.stAlarms[3].bCycleStopFault OR GVL_MASTER.stAlarms[3].aEventFlags[i];
+END_FOR
+
+//Cycle stop REQUEST
+GVL_MASTER.stAlarms[3].bCycleStopRequest := FALSE;
+FOR i := 80 TO 99 DO
+	GVL_MASTER.stAlarms[3].bCycleStopRequest := GVL_MASTER.stAlarms[3].bCycleStopRequest OR GVL_MASTER.stAlarms[3].aEventFlags[i];
+END_FOR
+]]></ST>
+    </Implementation>
+    <Action Name="ACT_FaultTrig" Id="{5ced6ccf-eb80-4f52-980a-c990eb91b259}">
+      <Implementation>
+        <ST><![CDATA[
+//Station 3 - SMAC Linear Servo error
+IF stSmacIO.inStatusWordLinear.13 THEN 
+	stAlarms[3].aEventFlags[2] := TRUE;
+	bTest							:= TRUE;
+END_IF
+//Station 3 - SMAC Rotative Servo error
+IF stSmacIO.inStatusWordRotative.13 THEN 
+	stAlarms[3].aEventFlags[4] := TRUE;
+	bTest							:= TRUE;
+END_IF
+//Station 3 - SMAC STO Fault
+IF stSmacIO.inStatusWordRotative.15 OR stSmacIO.inStatusWordLinear.15 THEN 
+	stAlarms[3].aEventFlags[5] := TRUE;
+	bTest							:= TRUE;
+END_IF
+//Station 3 - SMAC I2T Fault
+IF stSmacIO.inStatusWordRotative.18 OR stSmacIO.inStatusWordLinear.18 THEN 
+	stAlarms[3].aEventFlags[6] := TRUE;
+	bTest							:= TRUE;
+END_IF
+//Station 3 - SMAC Over temperature Fault
+IF stSmacIO.inStatusWordRotative.19 OR stSmacIO.inStatusWordLinear.19 THEN 
+	stAlarms[3].aEventFlags[7] := TRUE;
+	bTest							:= TRUE;
+END_IF
+
+
+
+
+//Station 3 - SMAC Homing Time Out
+GVL_MASTER.stAlarms[3].aEventTimers[80]
+(IN := (S_Master_SMAC.eState = E_SmacState.HOMING),PT:= T#30S );
+IF GVL_MASTER.stAlarms[3].aEventTimers[80].Q  THEN 
+	GVL_MASTER.stAlarms[3].aEventFlags[80] := TRUE;
+END_IF
+//Station 3 - SMAC Linear Homing fail
+GVL_MASTER.stAlarms[3].aEventTimers[81]
+(IN := (S_Master_SMAC.eState = E_SmacState.HOMING) AND stSmacIO.inStatusWordLinear.7 ,PT:= T#20S );
+IF GVL_MASTER.stAlarms[3].aEventTimers[81].Q THEN 
+	stAlarms[3].aEventFlags[81] := TRUE;
+END_IF
+//Station 3 - SMAC Linear Phasing fail
+GVL_MASTER.stAlarms[3].aEventTimers[82]
+(IN := (S_Master_SMAC.eState = E_SmacState.HOMING) AND stSmacIO.inStatusWordLinear.9 ,PT:= T#20S );
+IF GVL_MASTER.stAlarms[3].aEventTimers[82].Q THEN
+	stAlarms[3].aEventFlags[82] := TRUE;
+END_IF
+//Station 3 - SMAC Rotative Homing fail
+GVL_MASTER.stAlarms[3].aEventTimers[83]
+(IN := (S_Master_SMAC.eState = E_SmacState.HOMING) AND stSmacIO.inStatusWordRotative.7 ,PT:= T#20S );
+IF GVL_MASTER.stAlarms[3].aEventTimers[83].Q THEN 
+	stAlarms[3].aEventFlags[83] := TRUE;
+END_IF
+//Station 3 - SMAC Rotative Phasing fail
+GVL_MASTER.stAlarms[3].aEventTimers[84]
+(IN := (S_Master_SMAC.eState = E_SmacState.HOMING) AND stSmacIO.inStatusWordRotative.9 ,PT:= T#20S );
+IF GVL_MASTER.stAlarms[3].aEventTimers[84].Q THEN 
+	stAlarms[3].aEventFlags[84] := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="SetEventTexts" Id="{440556e1-2869-4fbc-8381-5109ef053a3c}">
+      <Declaration><![CDATA[METHOD SetEventTexts : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Immediate Faults
+GVL_MASTER.stAlarms[3].aEventTexts[1] := 'Station 3 - SMAC Linear General Fault';
+GVL_MASTER.stAlarms[3].aEventTexts[2] := 'Station 3 - SMAC Linear Servo error';
+GVL_MASTER.stAlarms[3].aEventTexts[3] := 'Station 3 - SMAC Rotative General Fault';
+GVL_MASTER.stAlarms[3].aEventTexts[4] := 'Station 3 - SMAC Rotative Servo error';
+GVL_MASTER.stAlarms[3].aEventTexts[5] := 'Station 3 - SMAC STO Fault';
+GVL_MASTER.stAlarms[3].aEventTexts[6] := 'Station 3 - SMAC I2T Fault';
+GVL_MASTER.stAlarms[3].aEventTexts[7] := 'Station 3 - SMAC Over temperature Fault';
+GVL_MASTER.stAlarms[3].aEventTexts[8] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[9] := ''; 
+GVL_MASTER.stAlarms[3].aEventTexts[10] := ''; 
+GVL_MASTER.stAlarms[3].aEventTexts[11] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[12] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[13] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[14] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[15] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[16] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[17] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[18] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[19] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[20] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[21] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[22] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[28] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[29] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[30] := '';
+
+//Cycle Stop Requests
+
+GVL_MASTER.stAlarms[3].aEventTexts[80] := 'Station 3 - SMAC Homing Time Out';
+GVL_MASTER.stAlarms[3].aEventTexts[81] := 'Station 3 - SMAC Linear Homing fail';
+GVL_MASTER.stAlarms[3].aEventTexts[82] := 'Station 3 - SMAC Linear Phasing fail';
+GVL_MASTER.stAlarms[3].aEventTexts[84] := 'Station 3 - SMAC Rotative Homing fail';
+GVL_MASTER.stAlarms[3].aEventTexts[85] := 'Station 3 - SMAC Rotative Phasing fail';
+GVL_MASTER.stAlarms[3].aEventTexts[86] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[87] := ''; 
+GVL_MASTER.stAlarms[3].aEventTexts[88] := '';
+GVL_MASTER.stAlarms[3].aEventTexts[89] := '';
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="PRG_Fault_SMAC">
+      <LineId Id="54" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="14" Count="32" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Fault_SMAC.ACT_FaultTrig">
+      <LineId Id="99" Count="0" />
+      <LineId Id="104" Count="2" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="116" Count="2" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="126" Count="2" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="130" Count="2" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="134" Count="2" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="87" Count="7" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="159" Count="0" />
+      <LineId Id="138" Count="1" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="162" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="142" Count="1" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="146" Count="3" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="165" Count="0" />
+      <LineId Id="150" Count="1" />
+      <LineId Id="144" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Fault_SMAC.SetEventTexts">
+      <LineId Id="6" Count="0" />
+      <LineId Id="8" Count="30" />
+      <LineId Id="40" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

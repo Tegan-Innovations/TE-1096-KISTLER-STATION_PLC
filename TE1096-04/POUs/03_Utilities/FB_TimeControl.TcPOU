@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_TimeControl" Id="{61398d1a-2978-4106-99b0-e5770460c1f2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK PUBLIC FB_TimeControl
+VAR_INPUT
+	bEnable         :BOOL;
+	bReset          :BOOL;
+END_VAR
+VAR_OUTPUT 
+	nHour           :DINT;
+	nMin            :DINT;
+	nSec            :DINT;
+	nTotalSec       :DINT;
+END_VAR
+VAR
+	tpPulse1        :TP;
+	tpPulse2        :TP;
+	
+	
+    bMainStart      :BOOL;
+    bStart1         :BOOL;
+    bStart2         :BOOL;
+    bStop           :BOOL;
+    bPuls1          :BOOL;
+    bPuls2          :BOOL;
+
+    ftrigPuls1      :F_TRIG;
+    ftrigPuls2      :F_TRIG;
+    rtrigPulsMain   :R_TRIG;
+	
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[rtrigPulsMain(CLK:= bEnable);
+ftrigPuls1(CLK:= bPuls2);
+ftrigPuls2(CLK:= bPuls1);
+
+tpPulse1(IN:=(ftrigPuls1.Q OR rtrigPulsMain.Q) ,PT:= T#490MS);
+bPuls1:= tpPulse1.Q;
+
+tpPulse2(IN:=(ftrigPuls2.Q AND NOT bStop) ,PT:= T#490MS);
+bPuls2:=tpPulse2.Q;
+
+IF bEnable THEN
+	bMainStart := TRUE;
+ELSE 
+	bMainStart := FALSE;
+END_IF
+bStop := NOT bMainStart;
+
+IF bMainStart AND ftrigPuls1.Q THEN
+	nTotalSec := nTotalSec + 1;
+ELSIF bReset THEN
+	nTotalSec := 0;
+END_IF
+//Secend
+IF bMainStart AND ftrigPuls1.Q THEN
+	nSec := nSec + 1;
+	ELSIF (nSec = 60) THEN
+	nSec := 0;
+	ELSIF bReset THEN
+	nSec := 0;	
+END_IF
+//Minutes
+IF bMainStart THEN
+	nMin := (nTotalSec-(nHour*3600)) /60;
+	ELSIF bReset THEN
+	nMin := 0;
+END_IF
+//Hours
+IF bMainStart THEN
+	nHour := nTotalSec/3600;
+	ELSIF bReset THEN
+	nHour := 0;
+END_IF
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TimeControl">
+      <LineId Id="9" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="37" Count="6" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="1" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="71" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="64" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="68" Count="1" />
+      <LineId Id="76" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="67" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

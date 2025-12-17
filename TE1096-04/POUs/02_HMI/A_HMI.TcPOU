@@ -1,0 +1,844 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <POU Name="A_HMI" Id="{8aed360a-d73a-42f6-8825-27c3b619c8cd}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM A_HMI
+VAR
+	fbStringFormatter       :	Tc2_Utilities.FB_FormatString;
+	fbScaleSmacMan			: 	FB_Scale;
+	fbScaleKistlerMan		: 	FB_Scale;
+	fbScaleSmacCyc			: 	FB_Scale;
+	fbScaleKistlerCyc		: 	FB_Scale;
+	fbScaleScrew			: 	FB_Scale;
+	tonButtonPressed		: 	TON;
+	
+	sUserGroupID			:	STRING;
+	nSize					:	UDINT					:=9;
+	nLen					:	UDINT					:=18;
+	npos					:	UDINT					:=1;
+	tonUserLogOut			:	TON;
+	tUserLoggedIn			:	TON;
+	rUserLoggedIn			: 	R_TRIG;
+	bUserLoggedIn			:	BOOL;
+	closeChrome 			: 	NT_StartProcess;
+	OpenKistlerHMI 			: 	NT_StartProcess;
+	ntShutdown				: TC2_Utilities.NT_Shutdown;
+	j						: INT;
+	l						: INT;
+///////////////////////////////////////////////////////////////////////
+    FBChart : FB_Chart;  		(* Instance of the data capturing FB *)
+    Distance : REAL;             (* Distance input value *)
+    Force : REAL;                (* Force input value *)
+  	Showgraphtg:R_TRIG;
+	bshowgraph:BOOL;
+	SID:INT:=1;
+	Item:INT;
+	bSumSID:BOOL; 
+	bSubSID:BOOL;
+	bSumSIDtg:R_TRIG; 
+	bSubSIDtg:R_TRIG;
+	bEndstorege:BOOL;
+	Endstoragetg: R_TRIG;
+	rtrigProcessdata:R_TRIG;
+	stProccessReportLogKils				:ARRAY [1..1]OF ST_ProcessReport;
+	idx1:INT; 
+	idx2:INT;
+	idx3:INT; 
+	idx0: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ACT_StatusBanner();
+MapUnitEventsToHMI();
+ACT_ScreensNamesSet();
+ACT_Outputs();
+ACT_UserConf();
+ACT_Inputs();
+ACT_ShutdownAndQuit();
+ACT_StatisticsReset();
+ACT_DataGraph();
+ACT_KisltlerHMI();
+
+
+]]></ST>
+    </Implementation>
+    <Action Name="ACT_DataGraph" Id="{95186f28-6db9-4c96-b0bd-c65612ffca02}">
+      <Implementation>
+        <ST><![CDATA[
+FbChart(
+	StartSignal:= K_Master_Kistler.eState=E_KistlerState.PRESS_CYCLE , 
+	EndSignal:=  K_Master_Kistler.eState=E_KistlerState.PRESS_READY , 
+	DistanceInput:= K_Master_Kistler.rKistlerLive_X, 
+	ForceInput:=  K_Master_Kistler.rKistlerLive_Y, 
+	DatosOut=>  , 
+	bFinished=> ,  );
+
+//Show Graph 
+
+Showgraphtg(CLK:=K_Master_Kistler.eState=E_KistlerState.PRESS_READY); 
+(*
+IF Showgraphtg.Q THEN
+	bshowgraph:=TRUE; 
+	ELSIF K_Master_Kistler.eState=E_KistlerState.PRESS_CYCLE THEN
+		bshowgraph:=FALSE; 
+END_IF
+*)
+// Control Chart History 
+ 
+	bSumSIDtg(CLK:=bSumSID);
+	bSubSIDtg(CLK:=bSubSID);
+
+// Navegation Chart 	
+IF bSumSIDtg.Q THEN 
+	SID:=SID+1;
+
+	bSumSID:=FALSE;
+END_IF
+
+IF bSubSIDtg.Q THEN 
+	SID:=SID-1;
+
+	bSubSID:=FALSE;
+END_IF
+
+IF SID >10 THEN
+	SID:=1;
+END_IF
+
+IF SID < 1 THEN
+	SID:=10;
+END_IF
+
+
+//Storage Chart History 
+(*IF FbChart.bFinished THEN 
+	FOR STOI := 1 TO 99 DO	
+	GVL_PERSISTENT.GraphDataHistorystorage[GVL_PERSISTENT.h, STOI].x := FbChart.DatosOut[1, STOI].x;
+	GVL_PERSISTENT.GraphDataHistorystorage[GVL_PERSISTENT.h, STOI].y := FbChart.DatosOut[1, STOI].y;
+	bEndstorege:= TRUE; 
+END_FOR
+END_IF
+*)
+rtrigProcessdata(CLK:=C_Machine_CTRL.eCycleState=E_ProcessCycle.Saving_DATA);
+
+IF rtrigProcessdata.Q THEN 
+	
+	FOR idx0:=1 TO 100 DO 
+		GVL_HMI.Graphdata[1, idx0].x := 0;
+		GVL_HMI.Graphdata[1, idx0].y := 0;
+	END_FOR
+	
+	FOR idx1 := 10 TO 2 BY -1 DO
+    FOR idx2 := 1 TO 99 DO
+		GVL_PERSISTENT.GraphDataHistorystorage[idx1,idx2]:=GVL_PERSISTENT.GraphDataHistorystorage[idx1-1, idx2];
+	END_FOR
+	END_FOR
+	
+	FOR idx3 := 1 TO 99 DO	
+	
+	GVL_PERSISTENT.GraphDataHistorystorage[1, idx3].x := FbChart.DatosOut[1, idx3].x;
+	GVL_PERSISTENT.GraphDataHistorystorage[1, idx3].y := FbChart.DatosOut[1, idx3].y;
+	GVL_HMI.Graphdata[1, idx3].x := FbChart.DatosOut[1, idx3].x;
+	GVL_HMI.Graphdata[1, idx3].y := FbChart.DatosOut[1, idx3].y;
+	bEndstorege:= TRUE; 
+	END_FOR
+
+END_IF		
+
+Endstoragetg(CLK:=bEndstorege );
+
+IF Endstoragetg.Q THEN 
+	GVL_PERSISTENT.h:=	GVL_PERSISTENT.h+1;
+	bEndstorege:=FALSE;
+END_IF
+
+// Clean Chart
+FOR Item := 1 TO 99 DO
+	GVL_HMI.GraphDataHistory[1, Item].x := 0;
+	GVL_HMI.GraphDataHistory[1, Item].y := 0;
+END_FOR
+
+// Load Chart according SID index  
+FOR Item := 1 TO 99 DO
+	GVL_HMI.GraphDataHistory[1, Item].x := GVL_PERSISTENT.GraphDataHistorystorage[SID, Item].x;
+	GVL_HMI.GraphDataHistory[1, Item].y := GVL_PERSISTENT.GraphDataHistorystorage[SID, Item].y;
+END_FOR
+
+//Load Data in tab
+stProccessReportLogKils[1]:= GVL_PERSISTENT.stProccessReportLog[SID];]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_Inputs" Id="{550baafa-a0b6-451f-9cd5-d6c99a4a8f2b}">
+      <Implementation>
+        <ST><![CDATA[tonButtonPressed( IN :=	GVL_HMI.bSmacCyc1 				OR
+						GVL_HMI.bSmacCyc2 				OR
+						GVL_HMI.bY_AxisPosition1 		OR
+						GVL_HMI.bY_AxisPosition2 		OR
+						GVL_HMI.bY_AxisPosition3 		OR
+						GVL_HMI.bY_HomePosition			OR
+						GVL_HMI.bKistlerCycle			OR
+						GVL_HMI.bSmacSetValue			OR
+						GVL_HMI.bSmacHOME				OR
+						GVL_HMI.bMoveToPos				OR
+						GVL_HMI.bResetSmacGoodParts		OR
+						GVL_HMI.bResetSmacBadParts		OR
+						GVL_HMI.bResetKistlerGoodParts 	OR
+						GVL_HMI.bResetKistlerBadParts	OR
+						GVL_HMI.bQuitHmi				,
+					PT := T#500MS);
+					
+IF 	tonButtonPressed.Q THEN
+	GVL_HMI.bSmacCyc1 				:= FALSE;
+	GVL_HMI.bSmacCyc2 				:= FALSE;
+	GVL_HMI.bY_AxisPosition1		:= FALSE;
+	GVL_HMI.bY_AxisPosition2 		:= FALSE;
+	GVL_HMI.bY_AxisPosition3 		:= FALSE;
+	GVL_HMI.bY_HomePosition			:= FALSE;
+	GVL_HMI.bKistlerCycle			:= FALSE;
+	GVL_HMI.bSmacSetValue			:= FALSE;
+	GVL_HMI.bSmacHOME				:= FALSE;
+	GVL_HMI.bMoveToPos				:= FALSE;
+	GVL_HMI.bResetSmacGoodParts		:= FALSE;
+	GVL_HMI.bResetSmacBadParts		:= FALSE;
+	GVL_HMI.bResetKistlerGoodParts 	:= FALSE;
+	GVL_HMI.bResetKistlerBadParts	:= FALSE;
+	GVL_HMI.bQuitHmi				:= FALSE;
+END_IF		
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_KisltlerHMI" Id="{4b743a93-0cde-460d-85d8-b02e93cf261e}">
+      <Implementation>
+        <ST><![CDATA[OpenKistlerHMI(
+    NetId := '',
+	PathStr := 'C:\Windows\System32\cmd.exe',
+    DirName := 'C:\Windows\System32',
+    ComndLine := '/c start "" "C:\Users\ADMINISTRATOR\Desktop\Kistler"',
+    Start := GVL_HMI.bKistlerHMI,
+    TmOut := DEFAULT_ADS_TIMEOUT
+);
+(*OpenKistlerHMI( too Slow
+    NetId   := '',
+    PathStr := 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe',
+    DirName := 'C:\Windows\System32\WindowsPowerShell\v1.0',
+    ComndLine := '-WindowStyle Hidden -Command "Start-Process" C:\Users\ADMINISTRATOR\Desktop\Kistler.lnk',
+    Start   := GVL_HMI.bKistlerHMI,
+    TmOut   := DEFAULT_ADS_TIMEOUT
+);*)
+ 
+GVL_HMI.bKistlerHMI:= FALSE;
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_Outputs" Id="{bb1fc521-5fff-41ae-b34b-4e0881921285}">
+      <Implementation>
+        <ST><![CDATA[//SMAC
+GVL_HMI.nCurrentDistanceSmac 	:= (stSmacIO.inCurrentValueLinear /200);
+
+fbScaleSmacMan(	rRawData				:= stSmacIO.inCurrentPositionLinear,
+				rRawDataLowerOffLimit	:= 0,
+				rRawDataUpperOffLimit	:= S_Master_SMAC.I_O_fbSmacCycleMan.nScaledLinearSetPoint,
+				rScaleDataLowerOffLimit	:= -141,
+				rScaleDataUpperOffLimit	:= -58,
+				rY_Intercept			:= -141,
+				rScaleData				=> GVL_HMI.rSmacAnimationMan);
+				
+				
+fbScaleKistlerMan(	rRawData				:= GVL_HMI.rKistlerLiveReading_X,
+				rRawDataLowerOffLimit	:= 0,
+				rRawDataUpperOffLimit	:= 28.6,
+				rScaleDataLowerOffLimit	:= -120,
+				rScaleDataUpperOffLimit	:= 0,
+				rY_Intercept			:= -120,
+				rScaleData				=> GVL_HMI.rKistlerAnimationMan);
+				
+				
+fbScaleSmacCyc(	rRawData				:= stSmacIO.inCurrentPositionLinear,
+				rRawDataLowerOffLimit	:= 0,
+				rRawDataUpperOffLimit	:= S_Master_SMAC.I_O_fbSmacCycleMan.nScaledLinearSetPoint,
+				rScaleDataLowerOffLimit	:= -110,
+				rScaleDataUpperOffLimit	:= -10,
+				rY_Intercept			:= -110,
+				rScaleData				=> GVL_HMI.rSmacAnimationCyc);
+				
+				
+fbScaleKistlerCyc(	rRawData				:= GVL_HMI.rKistlerLiveReading_X,
+				rRawDataLowerOffLimit	:= 0,
+				rRawDataUpperOffLimit	:= 30,
+				rScaleDataLowerOffLimit	:= -80,
+				rScaleDataUpperOffLimit	:= 50,
+				rY_Intercept			:= -80,
+				rScaleData				=> GVL_HMI.rKistlerAnimationCyc);
+
+IF GVL_HMI.bScrewAnimation THEN
+	fbScaleScrew(	rRawData				:= stSmacIO.inCurrentPositionLinear,
+				rRawDataLowerOffLimit	:= 0,
+				rRawDataUpperOffLimit	:= S_Master_SMAC.I_O_fbSmacCycleMan.nScaledLinearSetPoint,
+				rScaleDataLowerOffLimit	:= 310,
+				rScaleDataUpperOffLimit	:= 400,
+				rY_Intercept			:= 330,
+				rScaleData				=> GVL_HMI.rScrewAnimation);
+				GVL_HMI.bScrewPartPresent:= TRUE;
+
+ELSE 			GVL_HMI.rScrewAnimation	:= 400;
+				GVL_HMI.bScrewPartPresent:= GVL_MASTER.bScrew_Present;
+END_IF
+			
+	GVL_HMI.bLinearServoEnabled			:= GVL_MODULES.stSmacIO.inStatusWordLinear.1;
+	GVL_HMI.bLinearHomingSuccess		:= GVL_MODULES.stSmacIO.inStatusWordLinear.6;
+	GVL_HMI.bLinearPhasingSuccess		:= GVL_MODULES.stSmacIO.inStatusWordLinear.8;
+	GVL_HMI.bLinearError				:= GVL_MODULES.stSmacIO.inStatusWordLinear.13;
+	
+	GVL_HMI.bRotativeServoEnabled		:= GVL_MODULES.stSmacIO.inStatusWordRotative.1;
+	GVL_HMI.bRotativeHomingSuccess		:= GVL_MODULES.stSmacIO.inStatusWordRotative.6;
+	GVL_HMI.bRotativePhasingSuccess		:= GVL_MODULES.stSmacIO.inStatusWordRotative.8;
+	GVL_HMI.bRotativeError				:= GVL_MODULES.stSmacIO.inStatusWordRotative.13;
+	
+	GVL_HMI.bSmacSTO1Fault				:= (GVL_MODULES.stSmacIO.inStatusWordLinear.16 OR
+											GVL_MODULES.stSmacIO.inStatusWordRotative.16);
+	GVL_HMI.bSmacSTO2Fault				:= (GVL_MODULES.stSmacIO.inStatusWordLinear.17 OR
+											GVL_MODULES.stSmacIO.inStatusWordRotative.17);
+	GVL_HMI.bSmacGeneralFault			:= (GVL_MODULES.stSmacIO.inStatusWordLinear.12 OR
+											GVL_MODULES.stSmacIO.inStatusWordRotative.12);
+	
+				
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_ScreensNamesSet" Id="{bdd8b759-ce51-4ba0-a909-eec108710075}">
+      <Implementation>
+        <ST><![CDATA[	
+	GVL_HMI.aManualScreens[0]			:='SMAC / AXIS Y';
+	GVL_HMI.aManualScreens[1]			:='KISTLER / AXIS Y';
+	
+	GVL_HMI.aSettingScreens[0]			:='KISTLER';
+	GVL_HMI.aSettingScreens[1]			:='SMAC';
+	GVL_HMI.aSettingScreens[2]			:='AXIS Y';
+	
+	
+	GVL_HMI.aIOScreens[0]			:='Overview';
+	GVL_HMI.aIOScreens[1]			:='HMI - CP2913-0000 | Beckhoff HMI';
+	GVL_HMI.aIOScreens[2]			:='PLC - C6015-0010 | Beckhoff PLC | Windows 10 Embedded';
+	GVL_HMI.aIOScreens[3]			:='Terminal 1- EK1100 | EtherCAT Coupler';
+	GVL_HMI.aIOScreens[4]			:='Terminal 2 - EL6070 | Licence';
+	GVL_HMI.aIOScreens[5]			:='Terminal 3 - EL6910 | Safe PLC';
+	GVL_HMI.aIOScreens[6]			:='TERMINAL 4 _ EL1918 - 8 Channel Digital Safety Inputs';
+	GVL_HMI.aIOScreens[7]			:='TERMINAL 5 _ EL1918 - 8 Channel Digital Safety Inputs';
+	GVL_HMI.aIOScreens[8]			:='TERMINAL 6 _ ELEL2904 - 4 Channel Digital Safety Outputs';
+	GVL_HMI.aIOScreens[9]			:='TERMINAL 7 _ ELEL2904 - 4 Channel Digital Safety Outputs';
+	GVL_HMI.aIOScreens[10]			:='TERMINAL 8 _ EL1809 - 16 Channel Digital Input Terminal';
+	GVL_HMI.aIOScreens[11]			:='TERMINAL 9 _ EL1809 - 16 Channel Digital Input Terminal';
+	GVL_HMI.aIOScreens[12]			:='TERMINAL 10 _ EL2809	- 16 Channel Digital Output Terminal';
+	GVL_HMI.aIOScreens[13]			:='TERMINAL 11 _ EL9576 - Brake Chopper Terminal';
+	GVL_HMI.aIOScreens[14]			:='TERMINAL 12 _ EL7211-0010 - Servo Motor Drive';
+	GVL_HMI.aIOScreens[15]			:='BOX 13 _ maXYnos - Drive and Force Sensor for Kistler Press';
+	GVL_HMI.aIOScreens[16]			:='BOX 14 _ SMAC - Linear amd Rotative axis for screw part';
+
+	
+		
+	
+
+	
+	
+	
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_ShutdownAndQuit" Id="{292c5418-1f43-470d-87f3-e2ce2f1deec6}">
+      <Implementation>
+        <ST><![CDATA[closeChrome(
+    NetId := '',
+    PathStr := 'C:\Windows\System32\mshta vbscript:Execute("CreateObject(""WScript.Shell"").Run ""powershell -c',
+    DirName := 'C:\Windows\System32\WindowsPowerShell\v1.0',
+    ComndLine := 'taskkill /F /IM chrome.exe /T"", 0: window.close")',
+    Start := GVL_HMI.bQuitHmi,
+    TmOut := DEFAULT_ADS_TIMEOUT
+);
+ 
+GVL_HMI.bQuitHmi:= FALSE;
+
+ntShutdown(NETID := GVL_HMI.ntAMSNetID, DELAY := 5, START := GVL_HMI.bShutDown);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_StatisticsReset" Id="{8be6679f-fada-44b0-86d0-ae5c2aac7c4e}">
+      <Implementation>
+        <ST><![CDATA[IF GVL_HMI.bResetSmacGoodParts THEN
+	GVL_PERSISTENT.nSmacGoodParts	:= 0;	
+END_IF
+IF GVL_HMI.bResetSmacBadParts THEN
+	GVL_PERSISTENT.nSmacBadParts	:= 0;	
+END_IF
+IF GVL_HMI.bResetKistlerGoodParts THEN
+	GVL_PERSISTENT.nKistlerGoodParts	:= 0;	
+END_IF
+IF GVL_HMI.bResetKistlerBadParts THEN
+	GVL_PERSISTENT.nKistlerBadParts	:= 0;	
+END_IF
+	
+	]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_StatusBanner" Id="{be37e595-1888-4230-8b3e-2192182a2641}">
+      <Implementation>
+        <ST><![CDATA[//Machine status banner action
+//SYSTEM POWER UP
+IF GVL_MASTER.stMachineStatus.bSystemPowerUp THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'SYSTEM POWER UP';		// fill colour WHITE, text colour BLACK
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nWHITE;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nBLACK;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sWHITE;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sBLACK;
+END_IF
+
+(* IMMEDIATE STOPPED *)
+IF GVL_MASTER.stMachineStatus.bImmediateStopped THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'IMMEDIATE STOPPED';		// fill colour BLACK, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nBLACK;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sBLACK;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF
+
+(* SYSTEM INITIALISING *)
+IF GVL_MASTER.stMachineStatus.bInitialising THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'SYSTEM INITIALIZING';		// fill colour YELLOW, text colour BLACK
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nYELLOW;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nBLACK;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sYELLOW;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sBLACK;
+END_IF
+
+(* SYSTEM READY TO START FLASH ON *)
+IF GVL_MASTER.stMachineStatus.bReadyToStart AND GVL_UTILITIES.bFlash1Hz THEN
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'SYSTEM READY TO START';		// fill colour GREEN, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nGREEN;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sGREEN;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;
+END_IF
+
+(* SYSTEM READY TO START FLASH OFF *)
+IF GVL_MASTER.stMachineStatus.bReadyToStart AND NOT GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'SYSTEM READY TO START';		// fill colour WHITE, text colour GREEN
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nWHITE;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nGREEN;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sWHITE;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sGREEN;
+END_IF
+
+(* SYSTEM AUTO CYCLE *)
+IF GVL_MASTER.stMachineStatus.bAutoCycle  THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'SYSTEM AUTO CYCLE';		// fill colour GREEN, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nGREEN;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sGREEN;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF
+
+(* STOPPING *)
+IF GVL_MASTER.stMachineStatus.bStopping AND GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'STOPPING';		// fill colour BLACK, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nBLACK;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sBLACK;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF
+
+(* STOPPING *)
+IF GVL_MASTER.stMachineStatus.bStopping AND NOT GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'STOPPING';		// fill colour WHITE, text colour BLACK
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nWHITE;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nBLACK;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sWHITE;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sBLACK;	
+END_IF
+
+(* CYCLE STOPPED *)
+IF GVL_MASTER.stMachineStatus.bCycleStopped THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'CYCLE STOPPED';		// fill colour BLACK, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nBLACK;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sBLACK;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF
+
+(* IMMEDIATE FAULT FLASH ON *)
+IF GVL_MASTER.stMachineStatus.bImmediateFault AND GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'IMMEDIATE FAULT';		// fill colour RED, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nRED;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sRED;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF
+
+(* IMMEDIATE FAULT FLASH OFF *)
+IF GVL_MASTER.stMachineStatus.bImmediateFault AND NOT GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'IMMEDIATE FAULT';		// fill colour WHITE, text colour BLACK
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nWHITE;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nBLACK;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sWHITE;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sBLACK;	
+END_IF
+
+(* CYCLE STOP FAULT FLASH ON *)
+IF GVL_MASTER.stMachineStatus.bCycleStopFault AND GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'CYCLE STOP FAULT';		// fill colour RED, text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nRED;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sRED;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF
+
+(* CYCLE STOP FAULT FLASH OFF *)
+IF GVL_MASTER.stMachineStatus.bCycleStopFault AND NOT GVL_UTILITIES.bFlash1Hz THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'CYCLE STOP FAULT';		// fill colour WHITE, text colour RED
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nWHITE;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nRED;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sWHITE;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sRED;	
+END_IF
+
+(* MANUAL MODE *)
+IF GVL_MASTER.stMachineStatus.bManualMode THEN	
+	GVL_MASTER.stMachineStatus.sMachineStatusText := 'MANUAL MODE';		// fill colour BLUE text colour WHITE
+	GVL_MASTER.stMachineStatus.nMachineStatusColour := nBLUE;
+	GVL_MASTER.stMachineStatus.nMachineStatusTxtCol := nWHITE;
+	GVL_MASTER.stMachineStatus.sBannerBckColor := sBLUE;
+	GVL_MASTER.stMachineStatus.sBannerTextColor := sWHITE;	
+END_IF]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_UserConf" Id="{3b22b230-e041-4dbb-834d-78d34a366633}">
+      <Implementation>
+        <ST><![CDATA[//Getting user group
+
+Tc2_Utilities.DELETE2( ADR(GVL_HMI.sUserGroup), ADR(sUserGroupID), NSize, Nlen, nPos) ;
+
+IF sUserGroupID = 'Administ' THEN
+	
+	GVL_HMI.sUserGroup2 := 'Administrator';//Final User String
+
+ELSE GVL_HMI.sUserGroup2 := sUserGroupID;
+	
+
+END_IF
+//Logout 
+
+tonUserLogOut( IN := (sUserGroupID = 'Administ' OR sUserGroupID ='Engineer') AND GVL_HMI.bUserLogedIntSignal , PT := T#10M);
+
+IF tonUserLogOut.Q AND (sUserGroupID = 'Administ' OR sUserGroupID ='Engineer') THEN
+	
+	GVL_HMI.bLogOut 	:= TRUE;
+
+	ELSE GVL_HMI.bLogOut := FALSE;
+
+END_IF
+
+tUserLoggedIn( IN := GVL_HMI.bUserLogedIntSignal, PT := T#2S);
+
+rUserLoggedIn( CLK := tUserLoggedIn.Q);
+
+IF rUserLoggedIn.Q THEN
+	bUserLoggedIn := TRUE;
+END_IF
+
+IF bUserLoggedIn THEN
+	
+	GVL_PERSISTENT.stUserLogHMI[GVL_PERSISTENT.UserId].UserLog := GVL_HMI.sUserName;
+	GVL_PERSISTENT.stUserLogHMI[GVL_PERSISTENT.UserId].UserLogTime := GVL_MASTER.sSystemTime;
+	GVL_PERSISTENT.stUserLogHMI[GVL_PERSISTENT.UserId].UserLogDate := GVL_MASTER.sSystemDate;
+	GVL_PERSISTENT.UserId := GVL_PERSISTENT.UserId + 1;
+	bUserLoggedIn := FALSE;
+
+END_IF
+
+IF GVL_PERSISTENT.stUserLogHMI[200].UserLog <> '' THEN
+	
+GVL_PERSISTENT.stUserLogHMI[0].UserLog 					:= GVL_PERSISTENT.stUserLogHMI[200].UserLog;
+GVL_PERSISTENT.stUserLogHMI[0].UserLogTime				:= GVL_PERSISTENT.stUserLogHMI[200].UserLogTime;
+GVL_PERSISTENT.stUserLogHMI[0].UserLogDate				:= GVL_PERSISTENT.stUserLogHMI[200].UserLogDate;
+GVL_PERSISTENT.stUserLogHMI[200].UserLog 				:= '';
+GVL_PERSISTENT.stUserLogHMI[200].UserLogTime 			:= '';
+GVL_PERSISTENT.stUserLogHMI[200].UserLogDate			:= '';
+GVL_PERSISTENT.UserId			:= 1;
+
+
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <Method Name="MapUnitEventsToHMI" Id="{1b25557d-d07f-4dfb-ae3c-b7c8c204b372}">
+      <Declaration><![CDATA[METHOD MapUnitEventsToHMI : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i		:INT; 	//Unit index
+	j		:INT;	//Unit event index
+	k		:INT; 	//HMI event index	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Set event texts first
+IF GVL_Master.stAlarms[0].bEventTextsSet AND
+   GVL_Master.stAlarms[1].bEventTextsSet AND
+   GVL_Master.stAlarms[2].bEventTextsSet AND
+   GVL_Master.stAlarms[3].bEventTextsSet AND
+   NOT GVL_HMI.bEventTextsSet 
+THEN
+	SetEventTexts();
+		
+	GVL_HMI.bEventTextsSet := TRUE;
+END_IF
+
+//Map events from master and stations into HMI events
+IF GVL_HMI.bEventTextsSet THEN
+	k := 0; 
+	FOR i := 0 TO 3 DO
+		FOR j := 0 TO 128 - 1 DO
+			GVL_HMI.aEventFlags[k] := GVL_Master.stAlarms[i].aEventFlags[j];
+			k := k + 1;
+		END_FOR
+	END_FOR
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="SetEventTexts" Id="{c058b487-2eaf-4976-bb69-902c63c6de3a}">
+      <Declaration><![CDATA[METHOD SetEventTexts : BOOL
+VAR_INPUT
+END_VAR
+VAR
+	i				:INT; 	//Unit index
+	j				:INT;	//HMI event index
+	k				:INT;	//
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Set global event texts based on unit event texts (master and stations
+k := 0;
+FOR i := 0 TO 3 DO
+	//For each unit (master, station1, station2)
+	//Alarm texts
+	FOR j := 0 TO 99 DO
+		fbStringFormatter(	sFormat := 'Alarm No. %d - %s', 
+					 	arg1 := F_INT(k), 
+						arg2 := F_String(GVL_Master.stAlarms[i].aEventTexts[j]),
+						sOut => GVL_HMI.aEventTexts[k]);
+						
+		k := k + 1; //Increment global events index
+	END_FOR
+	
+	//Messages
+	FOR j := 100 TO 127 DO
+		fbStringFormatter(	sFormat := 'Message No. %d - %s', 
+					 		arg1 := F_INT(k), 
+							arg2 := F_String(GVL_Master.stAlarms[i].aEventTexts[j]),
+							sOut => GVL_HMI.aEventTexts[k]);
+							
+		k := k + 1; //Increment global events index
+	END_FOR
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="A_HMI">
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="39" Count="1" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="155" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="87" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_DataGraph">
+      <LineId Id="48" Count="0" />
+      <LineId Id="50" Count="6" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="100" Count="2" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="106" Count="2" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="112" Count="6" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="144" Count="3" />
+      <LineId Id="151" Count="0" />
+      <LineId Id="162" Count="1" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="149" Count="1" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="222" Count="1" />
+      <LineId Id="225" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="192" Count="1" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="218" Count="1" />
+      <LineId Id="197" Count="1" />
+      <LineId Id="207" Count="1" />
+      <LineId Id="199" Count="1" />
+      <LineId Id="194" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="164" Count="1" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="171" Count="0" />
+      <LineId Id="167" Count="0" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="131" Count="2" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="134" Count="4" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="176" Count="0" />
+      <LineId Id="156" Count="0" />
+      <LineId Id="104" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_Inputs">
+      <LineId Id="1" Count="0" />
+      <LineId Id="14" Count="4" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="3" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="2" Count="2" />
+      <LineId Id="30" Count="4" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="51" Count="2" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_KisltlerHMI">
+      <LineId Id="9" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="12" Count="4" />
+      <LineId Id="46" Count="6" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_Outputs">
+      <LineId Id="8" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="11" Count="3" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="6" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="61" Count="1" />
+      <LineId Id="46" Count="14" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="38" Count="5" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="66" Count="10" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_ScreensNamesSet">
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="50" Count="1" />
+      <LineId Id="48" Count="1" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="23" Count="8" />
+      <LineId Id="36" Count="6" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="9" Count="2" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_ShutdownAndQuit">
+      <LineId Id="2" Count="10" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_StatisticsReset">
+      <LineId Id="2" Count="2" />
+      <LineId Id="6" Count="5" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_StatusBanner">
+      <LineId Id="2" Count="26" />
+      <LineId Id="36" Count="26" />
+      <LineId Id="72" Count="70" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_UserConf">
+      <LineId Id="2" Count="10" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="15" Count="17" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="34" Count="21" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.MapUnitEventsToHMI">
+      <LineId Id="10" Count="20" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.SetEventTexts">
+      <LineId Id="11" Count="22" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

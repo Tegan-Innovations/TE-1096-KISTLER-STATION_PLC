@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Task Name="PulseTask" Id="{877846fb-5884-4bb5-8a7d-e736551f7096}">
+    <!--CycleTime in micro seconds.-->
+    <CycleTime>2000</CycleTime>
+    <Priority>5</Priority>
+    <PouCall>
+      <Name>PRG_SysPulses</Name>
+    </PouCall>
+    <TaskFBGuid>{b94c986b-7dc5-47d4-930c-b2c7d17c0fbd}</TaskFBGuid>
+    <Fb_init>{13bbad0c-9635-455e-a5e1-dca40a3c0414}</Fb_init>
+    <Fb_exit>{54c8448b-7c66-49bb-a0ff-3fb79695905e}</Fb_exit>
+    <CycleUpdate>{f7e69986-50e0-4794-bf79-edc8886179fa}</CycleUpdate>
+    <PostCycleUpdate>{8dd698eb-3a2f-492c-a6bc-627027c58b41}</PostCycleUpdate>
+  </Task>
+</TcPlcObject>

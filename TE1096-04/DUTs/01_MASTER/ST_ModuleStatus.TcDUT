@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_ModuleStatus" Id="{f5453be2-f4e3-435c-9958-e4a94da5d0cd}">
+    <Declaration><![CDATA[TYPE ST_ModuleStatus :
+STRUCT
+//Universal Module STATUS Struct
+
+	bReady        			:BOOL;	// Module initialized and ready for CMD
+    bBusy         			:BOOL;	// Module is busy processing a request
+    bDone         			:BOOL;	// Operation successfully completed
+    bError        			:BOOL;	// Error occurred
+    nErrorID      			:INT;	// Error code (ideally enum-based)
+	
+	bActionInProggress		:BOOL;	// Device is Busy doing the Job
+    
+    bInPosition_1   		:BOOL;	// Module has reached target Setpoint_1
+	bInPosition_2   		:BOOL;	// Module has reached target Setpoint_2
+	bInPosition_3   		:BOOL;	// Module has reached target Setpoint_3
+	bInPosition_4   		:BOOL;	// Module has reached target Setpoint_4
+	
+	nCurrentTaskID			:UINT;	// Current Task ID
+    nCurrentState 			:UINT;	// Current State
+	
+	bFirstPartOfCycleDone	:BOOL; //SMAC
+
+	
+
+//-----------------------------------------------------------------------------------------oldschoo1	
+
+
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

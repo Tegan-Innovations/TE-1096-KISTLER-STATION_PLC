@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_KistlerData_Status" Id="{265d66e1-f6ff-4dbc-b2cb-d51b739cde65}">
+    <Declaration><![CDATA[TYPE ST_KistlerData_Status :
+STRUCT
+(*********************************Telegram Data***************************************)
+
+//Byte 0 – Mirror Basic Control
+      bStart_Mirror          			:BOOL; // 0.0 MIRROR-START
+      bTareY_Mirror          			:BOOL; // 0.1 MIRROR-TARE-Y
+      bZeroX_Mirror          			:BOOL; // 0.2 MIRROR-ZERO-X
+      bSTestX_Mirror         			:BOOL; // 0.3 MIRROR-S-TEST-X
+      bSTestY_Mirror         			:BOOL; // 0.4 MIRROR-S-TEST-Y
+      _r0_5                  			:BOOL; // 0.5 reserved
+      bMasterMeas_Mirror     			:BOOL; // 0.6 MIRROR-MASTER-MEAS
+      bIncZero_Mirror        			:BOOL; // 0.7 MIRROR-INC-ZERO
+      
+//Byte 1 – Mirror Login
+      bAckAdminGlobal_Mirror 			:BOOL; // 1.0 MIRROR-ACK-ADMIN-GLOBAL
+      bAckAdmin_Mirror       			:BOOL; // 1.1 MIRROR-ACK-ADMIN
+      _r1_2                  			:BOOL; // 1.2 reserved
+      bAccess_Mirror         			:BOOL; // 1.3 MIRROR-ACCESS
+      bAuto_Mirror           			:BOOL; // 1.4 MIRROR-AUTO
+      bStatReset_Mirror      			:BOOL; // 1.5 MIRROR-STAT-RESET
+      bStatDisable_Mirror    			:BOOL; // 1.6 MIRROR-STAT-DISABLE
+      bTareExtY_Mirror       			:BOOL; // 1.7 MIRROR-TARE-EXTENDED-Y
+      
+//Byte 2 – Mirror MP Selection
+      mpNumber_Mirror        			:ARRAY[0..6]OF BOOL; // MP-Number mirrored
+      _r2_7                  			:BOOL; // 2.7 reserved
+      
+//Byte 3 – Service & Brake
+      _r3_0to1               			:ARRAY[0..1]OF BOOL;
+      bResetSNGen_Mirror     			:BOOL; // 3.2 RESET-SN-GENERATOR (mirror)
+      _r3_3to4               			:ARRAY[3..4]OF BOOL;
+      bBrakeTestActive       			:BOOL; // 3.5 BRAKETEST-ACTIVE
+      bExportPvt_Mirror      			:BOOL; // 3.6 MIRROR-EXPORT-PVT-START
+      _r3_7                  			:BOOL; // 3.7 reserved
+      
+//Byte 4 – Mirror Configurable Inputs
+      bIUni_Mirror           			:ARRAY[0..7]OF BOOL; //4.0…4.7 MIRROR-I-UNI-0…7
+      
+//Byte 5 – Reserved
+      _byte5                 			:BYTE; // reserved
+      
+//Byte 6 – Global Status Flags
+      bReady                 			:BOOL; // 6.0 READY
+      bOkTotal               			:BOOL; // 6.1 OK-TOTAL
+      bNokTotal              			:BOOL; // 6.2 NOK-TOTAL
+      bNoPass                			:BOOL; // 6.3 NO-PASS
+      _r6_4to5               			:ARRAY[4..5]OF BOOL;
+      bWarning               			:BOOL; // 6.6 WARNING
+      bAlarm                 			:BOOL; // 6.7 ALARM
+	  
+	  
+//Byte 8 – O_UNI Digital Outputs
+	  bO_UNI           					:ARRAY[0..7]OF BOOL;
+      
+//Byte 7 – Switching / User Signals
+      bS1                    			:BOOL; // 7.0 S1
+      bS2                    			:BOOL; // 7.1 S2
+      _r7_2to7               			:ARRAY[2..7]OF BOOL;
+      
+//Byte 8 – Universal Outputs
+      _byte8                 			:BYTE; // O-UNI (user-configurable) or reserved
+      
+//Byte 9 – Mirror Drive/Sequence
+      bDriveEnable_Mirror    			:BOOL; // 9.0 MIRROR-DRIVE-ENABLE
+      bRunSequence_Mirror    			:BOOL; // 9.1 MIRROR-RUN-SEQUENCE
+      bDriveHome_Mirror      			:BOOL; // 9.2 MIRROR-DRIVE-TO-HOMEPOS
+      bDriveRef_Mirror       			:BOOL; // 9.3 MIRROR-DRIVE-TO-REFPOS
+      bJogFwd_Mirror         			:BOOL; // 9.4 MIRROR-JOG-FW
+      bJogBack_Mirror        			:BOOL; // 9.5 MIRROR-JOG-BW
+      bWaitRequest           			:BOOL; // 9.6 WAIT-REQUEST
+      bBrakeTestDone         			:BOOL; // 9.7 BRAKETEST-DONE
+      
+//Byte 10 – Sequence State
+      bSeqStopped            			:BOOL; // 10.0 SEQUENCE-STOPPED
+      bSeqEnd                			:BOOL; // 10.1 SEQUENCE-END
+      bOnlineEoNok           			:BOOL; // 10.2 ONLINE-EO-NOK
+      bSeqExtStop            			:BOOL; // 10.3 EXTERN-STOP
+      bSeqError              			:BOOL; // 10.4 SEQUENCE-ERROR
+      bDriveEnabled          			:BOOL; // 10.5 DRIVE-ENABLED
+      bHomePosReached        			:BOOL; // 10.6 HOMEPOS-REACHED
+      bRefPosReached         			:BOOL; // 10.7 REFPOS-REACHED
+      
+//Byte 11 – Servo & Safety
+      bStandstill            			:BOOL; // 11.0 STANDSTILL
+      bBrakeTestReq          			:BOOL; // 11.1 BRAKETEST-REQUIRED
+      bServoWarn             			:BOOL; // 11.2 SERVO-WARNING
+      bServoError            			:BOOL; // 11.3 SERVO-ERROR
+      bSMES_Or_STO           			:BOOL; // 11.4 SMES / STO
+      bSMST2                 			:BOOL; // 11.5 SMST2 active
+      bSMM1                  			:BOOL; // 11.6 SMM1 active
+      bUserModeActive        			:BOOL; // 11.7 USER-MODE-ACTIVE
+      
+//Byte 12 – Mirror Current Sequence
+      bCurrSeqMain_Mirror    			:BOOL; // 12.0 MIRROR-CURRENT-SEQUENCE-0
+      bCurrSeqSub_Mirror     			:BOOL; // 12.1 MIRROR-CURRENT-SEQUENCE-1
+      _r12_2to7              			:ARRAY[2..7]OF BOOL;
+      
+//Byte 13 – Sequence Label-ID
+      seqLabelID             			:BYTE; // 13.0…13.4 LABEL-ID (0…31),Upper bits reserved
+      
+//Byte 14 – Mirror CFG-MP
+      pageControl_Mirror     			:BYTE; // 14.0…14.6 MIRROR-CFG-MP, 14.7 reserved
+      
+//Byte 15 – Reserved
+      _byte15                			:BYTE; // reserved
+      
+//Byte 16 – Mirror CFG-ADDRESS
+      cfgAddress_Mirror      			:BYTE; // 16.0…16.7 MIRROR-CFG-ADDRESS
+      
+//Byte 17 – Mirror CFG-LENGTH
+      cfgLength_Mirror       			:BYTE; // 17.0…17.7 MIRROR-CFG-LENGTH
+      
+//Byte 18 – Mirror Page Select
+      cfgSelectPage_Mirror   			:BYTE; // 18.0…18.2 MIRROR-SELECT-PAGE, Rest reserved
+      
+//Byte 19 – Device / Transfer Flags
+      bTransmissionFault     			:BOOL; // 19.0 TRANSMISSION-FAULT
+      bAck                   			:BOOL; // 19.1 ACK
+      bDeviceAvailable       			:BOOL; // 19.2 DEVICE-AVAILABLE
+      _r19_3                 			:BOOL; // 19.3 reserved
+      bMpChanged             			:BOOL; // 19.4 CHANGED-SELECTED-MP
+      _r19_5                 			:BOOL; // 19.5 reserved
+      bGlobalChanged         			:BOOL; // 19.6 CHANGED-GLOBAL
+      bBackupComplete        			:BOOL; // 19.7 BACKUP-COMPLETE
+      
+(*************************************************************************************)
+      
+(*************************************Payload*****************************************)
+
+//Bytes 20 … 23  - live X value   (factory name  pvCurrentValueX)
+	 pvCurrentValueX                    :ARRAY[20..23]OF BYTE;
+	 
+//Bytes 24 … 27  - live Y value   (factory name  pvCurrentValueY)
+	 pvCurrentValueY                    :ARRAY[24..27]OF BYTE;
+	 
+//Bytes 28 … 35  - 8-byte Alarm/status field
+    statusAlarm     					:ARRAY[28..35]OF BYTE;
+	
+//Bytes 20…199 – Free Payload
+    spare           					:ARRAY[36..199]OF BYTE;
+//if u r reading this, then God <3 u  
+//---------------------------------------------------------------------------oldschoo1
+END_STRUCT
+END_TYPE
+	
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

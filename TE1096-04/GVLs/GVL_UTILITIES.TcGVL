@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_UTILITIES" Id="{5102b86e-dfcd-44c6-b3a3-657e87cfed68}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	
+	// System Oscilator Pulses at 2ms tick
+	
+	// 50% Duty Cycle
+	bFlash05Hz						:BOOL;
+	bFlash1Hz						:BOOL;
+	bFlash2Hz						:BOOL;
+	bFlash5Hz				   		:BOOL;
+	bFlash10Hz						:BOOL;
+	bFlash50Hz        		  		:BOOL;
+	bFlash250Hz      	      		:BOOL;
+
+	//Frictions
+	bFlash1p52Hz					:BOOL;	//1.52Hz
+	bFlash1p85Hz					:BOOL;	//1.85Hz
+	bFlash1p33Hz					:BOOL;	//1.33Hz
+	bFlash1p2Hz						:BOOL;	//1.19Hz
+	
+	// 70/30 Duty Cycle
+	bFlash1Hz_7030					:BOOL;
+
+	// 80/20 Duty Cycle
+	bFlash1Hz_8020					:BOOL;
+	
+//--------------------------------------------oldschoo1	
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

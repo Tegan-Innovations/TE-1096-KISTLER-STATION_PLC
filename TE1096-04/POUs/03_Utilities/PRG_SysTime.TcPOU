@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PRG_SysTime" Id="{7173042a-7f7f-45b8-b04e-de7c8939b16f}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_SysTime
+VAR
+	//Variables
+	bFirstRun						:BOOL:= TRUE;
+	bReadyToRead					:BOOL;
+
+	bUpdateSysTime					:BOOL; //Output of pulse generator
+	tSysTimeUpdatePeriod			:TIME := T#5S;
+	stTimeStamp						:TIMESTRUCT;
+	stNullTimeStamp					:TIMESTRUCT;
+	sRawDateTime					:STRING;
+	sSystemDate						:STRING;
+	sSystemTime						:STRING;
+	sDateTime						:STRING;
+
+	
+	//Functions
+	fbGetSystemTime					:TC2_Utilities.NT_GetTime;
+	fbRTClock						:TC2_Utilities.RTC_EX2;		//Local real-time clock
+	tonTimeUpdateGen				:TC2_Utilities.TON;			//Pulse generator for triggering fbGetSystemTime function
+	rtrigSysTimeCollected			:TC2_Utilities.R_TRIG;		//System time collected
+
+END_VAR
+VAR_OUTPUT
+		sDateTimeFormat				:STRING[40];
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Aux functions call
+tonTimeUpdateGen(	IN := NOT bUpdateSysTime,
+					PT := tSysTimeUpdatePeriod,
+					Q => bUpdateSysTime);
+
+//Get Current System Time
+fbGetSystemTime(NETID := ,
+				START := bFirstRun OR bUpdateSysTime,
+				TMOUT := ,
+				BUSY => ,
+				ERR => ,
+				ERRID => ,
+				TIMESTR => );
+				
+//Get system time done detection - one-shot
+rtrigSysTimeCollected(CLK := NOT fbGetSystemTime.BUSY);
+
+//Synchronize Real-Time clock with system time
+fbRTClock(	EN := rtrigSysTimeCollected.Q, 
+			PDT := fbGetSystemTime.TIMESTR,
+			CDT => stTimeStamp, 
+			Q => bReadyToRead);
+
+// System Date and Time in Proper Order 
+IF bReadyToRead THEN
+	sRawDateTime := SYSTEMTIME_TO_STRING(stTimeStamp);  // format: YYYY-MM-DD-hh:mm:ss.xxx
+	sSystemDate := CONCAT(CONCAT(CONCAT(CONCAT(MID(sRawDateTime, 2, 9), '.'),  MID(sRawDateTime, 2, 6)), '.'), LEFT(sRawDateTime, 4));
+	sSystemTime := MID(sRawDateTime, 8, 12);
+	sDateTime := CONCAT(CONCAT(sSystemDate, '  '), sSystemTime);
+	sDateTimeFormat	:= CONCAT(sDateTime, '    ');
+END_IF;
+
+bFirstRun := FALSE;
+
+//by unknown dev]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_SysTime">
+      <LineId Id="313" Count="3" />
+      <LineId Id="320" Count="28" />
+      <LineId Id="353" Count="0" />
+      <LineId Id="359" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

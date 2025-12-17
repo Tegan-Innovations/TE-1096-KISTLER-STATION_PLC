@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_ProcessCycle" Id="{efc1fb3f-e466-425d-af8e-a4df616b7389}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_ProcessCycle :
+(
+
+	
+IDLE					:=0,
+AXIS_CMD_1				:=10,
+WAIT_AXIS_CMD_1			:=15,
+SMAC_CMD_1				:=20,
+WAIT_SMAC_CMD_1			:=25,
+AXIS_CMD_2				:=30,
+WAIT_AXIS_CMD_2			:=35,
+GRIPPERS_CMD_1			:=37,
+WAIT_GRIPPERS_CMD_1		:=38,
+CMD_SMAC_KISLR			:=40,
+WAIT_SMAC_KISLR			:=45,
+STORE_PROC_DATA			:=50,
+Saving_DATA				:=53,
+GRIPPERS_CMD_2			:=55,
+WAIT_GRIPPERS_CMD_2		:=56,
+CMD_KISLR				:=58,
+WAIT_KISLR				:=59,
+AXIS_CMD_3				:=60,
+WAIT_AXIS_CMD_3			:=65,
+AXIS_HOME				:=70,
+WAIT_AXIS_HOME			:=75,
+RESET_ALL_CMD			:=80
+
+//----------------------------oldschoo1
+
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

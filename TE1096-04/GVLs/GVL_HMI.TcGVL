@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+  <GVL Name="GVL_HMI" Id="{54329c9b-aa0d-4d04-b252-8d69bfd2fb75}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+VAR_GLOBAL
+	
+	(*-----------------------------------------------------------------------------------------------------------------*)
+	// HMI System Info
+	sSoftwareVersion					: STRING;
+	sSoftwareDate						: STRING := 'Jul 2025' ;
+	sTC3Version							: STRING := 'v3.1.4024.53, Runtime v3.1.4024.53' ;
+	sVisualStudioVersion				: STRING := 'TcXaeShell' ;
+	sSystemName							: STRING := 'Stopper Insertion And Screw Station' ;
+	sProjectID							: STRING := 'TE1096-04-SISS' ;
+	sHMIServer                			: STRING := '' ;
+	//sIPAddress						: STRING;// := '192.168.7.170'; (Should NOT available on HMI) -o1
+	ntAMSNetID							: T_AmsNetId :='172.18.233.151.1.1';
+	sSafetyCRC							: STRING;
+	sTrayNameAndTotalTrays				: STRING;
+	sMessageToOperator					: STRING;
+	
+	(*-----------------------------------------------------------------------------------------------------------------*)
+	
+	
+	(*-----------------------------------------------------------------------------------------------------------------*)
+	
+	
+	
+	
+	(*-----------------------------------------------------------------------------------------------------------------*)
+	// Settings Menu for the Modules
+	
+	// Y-Axis
+	//MANUAL
+	bMoveToPos							:BOOL;
+	bY_AxisPosition1					:BOOL;
+	bY_AxisPosition2					:BOOL;
+	bY_AxisPosition3					:BOOL;
+	bY_HomePosition						:BOOL;
+	bEnableManualMode					:BOOL;
+	rtrigManualMode						:R_TRIG;
+	rTrigManualModeOff					:ARRAY[0..4] OF R_TRIG;
+	nRegionMain							:DINT;
+	nRegionSetting						:DINT;
+	bManualModeOff						:ARRAY[0..4] OF BOOL;
+	bY_AxisInPosition1					:BOOL;
+	bY_AxisInPosition2					:BOOL;
+	bY_AxisInPosition3					:BOOL;
+	bY_AxisInHomePosition				:BOOL;
+	bY_AxisInPosition1Man				:BOOL;
+	bY_AxisInPosition2Man				:BOOL;
+	bY_AxisInPosition3Man				:BOOL;
+	bY_AxisInHomePositionMan			:BOOL;
+	GraphData							:ARRAY [1..1,1..100] OF Stpoint;
+	GraphDataHistory					:ARRAY [1..1,1..100] OF Stpoint;
+	
+	
+	// Kistler
+	rKistlerLiveReading_X				:REAL;	//Travel
+	rKistlerLiveReading_Y				:REAL;	//Force
+	bKistlerCycle						:BOOL;
+	rKistlerAnimationMan				:LREAL;
+	rKistlerAnimationCyc				:LREAL;
+	rKisterldistanceHMI					:REAL; 
+	rKisterlForceHMI					:REAL; 
+	
+	
+	// Smac
+	nCurrentDistanceSmac				:LREAL;
+	nCurrentVelocity					:LREAL;
+	rSmacAnimationMan					:LREAL;
+	rSmacAnimationCyc					:LREAL;
+	
+	rScrewAnimation						:LREAL;
+	bScrewAnimation						:BOOL;
+	bScrewPartPresent					:BOOL;
+	bSmacCyc1							: BOOL;
+	bSmacCyc2							: BOOL;
+	bSmacHOME							: BOOL;
+	bSmacSetValue						: BOOL;
+	
+	bLinearServoEnabled					: BOOL;
+	bLinearHomingSuccess				: BOOL;
+	bLinearPhasingSuccess				: BOOL;
+	bLinearError						: BOOL;
+	
+	bRotativeServoEnabled				: BOOL;
+	bRotativeHomingSuccess				: BOOL;
+	bRotativePhasingSuccess				: BOOL;
+	bRotativeError						: BOOL;
+	
+	bSmacSTO1Fault						: BOOL;
+	bSmacSTO2Fault						: BOOL;
+	bSmacGeneralFault					: BOOL;
+	bSmacOverCurrentFault				: BOOL;
+	
+	(*-----------------------------------------------------------------------------------------------------------------*)
+	//General
+	aManualScreens						: ARRAY[0..1] OF STRING(200);
+	aSettingScreens						: ARRAY[0..2] OF STRING(200);
+	aIOScreens							: ARRAY[0..16] OF STRING(200);
+	bResetSmacGoodParts					: BOOL;
+	bResetKistlerGoodParts				: BOOL;
+	bResetSmacBadParts					: BOOL;
+	bResetKistlerBadParts				: BOOL;
+	
+	//User Log, Shut down, Quit HMI
+	bQuitHmi						: BOOL;
+	bKistlerHMI						: BOOL;
+	sUserGroup						: STRING;
+	sUserGroup2						: STRING;
+	sUserName						: STRING;
+	bLogOut							: BOOL;
+	bUserLogedIntSignal				: BOOL;
+	bShutDown						: BOOL; 
+	//Alarns
+	aEventTexts							: ARRAY [0..767] OF T_MaxSTring; //Event texts - set only once
+	bEventTextsSet						: BOOL;
+	aEventFlags							: ARRAY [0..767] OF BOOL;		//All event states combined from master na stations
+	aActiveEvents						: ARRAY [0..39] OF T_MaxSTring;	//Active events - connected to Alarm scree in HMI	
+	stActiveEventsHMI					: ARRAY [0..39] OF ST_ActiveEventsHMI;
+	
+
+
+END_VAR
+VAR_GLOBAL PERSISTENT
+	stAlarmHistory				:ARRAY [00..250] OF ST_AlarmHistory;
+	aEventLog					:ARRAY [0..250] OF T_MaxSTring;	//Event log - connected to alarm history in HMI	
+	aTimeLog					:ARRAY [0..250] OF T_MaxSTring;
+	aDateLog					:ARRAY [0..250] OF T_MaxSTring;
+	sSystemDate					: STRING;
+	sSystemTime					: STRING;
+	
+END_VAR	
+	]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Phasing_Home" Id="{0d54531d-6d2d-4097-94bc-5b146aff1822}">
+    <Declaration><![CDATA[TYPE ST_Phasing_Home :
+STRUCT
+			//INPUTS:
+		bEnable										: BOOL;
+		bAcknowledge								: BOOL;
+		bReset										: BOOL;	
+		bFunctionRequest							: BOOL;
+
+		//OUTPUTS:	
+		bFunctionEnabled							: BOOL;
+		bPhasingProcessDone							: BOOL;
+		bHomingProcessDone							: BOOL;
+		bAcknowledgeRequest							: BOOL;
+		bHomeError									: BOOL;
+		bPhasingError								: BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

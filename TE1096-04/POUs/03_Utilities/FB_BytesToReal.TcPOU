@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_BytesToReal" Id="{42401c10-c7bf-4ccb-b16e-36f5f1cd0c22}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BytesToReal
+VAR_INPUT
+    inBytes : ARRAY[0..3] OF BYTE; // input in format IEEE-754
+END_VAR
+
+VAR_OUTPUT
+    outReal : REAL; // Result 
+END_VAR
+
+VAR
+    pReal : POINTER TO REAL;
+    pByte : POINTER TO BYTE;
+    i : INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+pReal := ADR(outReal);
+pByte := ADR(inBytes[0]);
+(*
+FOR i := 0 TO 3 DO
+    pReal^[i] := pByte[i];
+END_FOR*)]]></ST>
+    </Implementation>
+    <LineIds Name="FB_BytesToReal">
+      <LineId Id="23" Count="5" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

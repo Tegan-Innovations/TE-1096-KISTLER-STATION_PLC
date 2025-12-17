@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <GVL Name="GVL_CONSTANTS" Id="{19f566aa-ea0f-4f31-8a1d-50bff7708b78}">
+    <Declaration><![CDATA[VAR_GLOBAL CONSTANT
+//SEBASTIAN ULLOA 22/07/25 INIT-----------------------------------------------------
+//Colors HMI
+	sWHITE                              :   STRING(40)  := '{"color":"rgba(255,255,255,255)"}';
+    sBLACK                              :   STRING(40)  := '{"color":"rgba(0,0,0,1)"}';
+    sYELLOW                             :   STRING(40)  := '{"color":"rgba(255,255,0,1)"}';
+    sGREEN                             	:   STRING(40)  := '{"color":"rgba(70,166,63,1)"}';
+	sLGREEN                             :   STRING(40)  := '{"color":"rgba(58,211,20,1)"}';
+    sORANGE                             :   STRING(40)  := '{"color":"rgba(255,153,51,1)"}';
+    sNYPROORANGE                        :   STRING(40)  := '{"color":"rgba(255,140,0,1)"}';
+    sRED                                :   STRING(40)  := '{"color":"rgba(255,0,0,1)"}';
+	sLRED                               :   STRING(40)  := '{"color":"rgba(233,53,44,1)"}';
+    sBLUE                               :   STRING(40)  := '{"color":"rgba(0,0,255,1)"}';
+	sLBLUE                              :   STRING(40)  := '{"color":"rgba(0,162,232,1)"}';
+    sGREY                               :   STRING(40)  := '{"color":"rgba(164,158,158,1)"}';
+    sScreenGREY                         :   STRING(40)  := '{"color":"rgba(225,225,225,1)"}';
+    sDARKGREY                           :   STRING(40)  := '{"color":"rgba(50,50,50,1)"}';
+    sPURPLE                             :   STRING(40)  := '{"color":"rgba(128,0,128,1)"}';
+    sVIOLET                             :   STRING(40)  := '{"color":"rgba(204,153,255,1)"}';
+    sTRANSP                             :   STRING(40)  := '{"color":"rgba(255,255,255,0)"}';
+    sGREENPass                          :   STRING(40)  := '{"color":"rgba(0,153,51,1)"}';
+    sREDFail                            :   STRING(40)  := '{"color":"rgba(244,68,68,255)"}';
+    sBLUEInProgress                     :   STRING(40)  := '{"color":"rgba(54,100,221,1)"}';
+	sGREENISHTEAColor					:	STRING(40)  := '{"color":"rgba(60,192,134,255)"}'	;
+
+	nBLACK								: 	DWORD 	:= 	16#FF000000;	 // format: TTRRGGBB where T -> 00 = full transparency and FF = full opaque
+	nWHITE								: 	DWORD 	:= 	16#FFFFFFFF;
+	nYELLOW								: 	DWORD 	:= 	16#FFFFFF00; 
+	nGREEN								: 	DWORD 	:= 	16#FF008A00;
+	nLIGHTGREEN                         :   DWORD   :=  16#FF98FB89;
+	nORANGE								: 	DWORD 	:= 	16#FFFFA500;
+	nNYPROORANGE						:	DWORD	:=	16#FFF05322;
+	nRED								: 	DWORD 	:= 	16#FFFF0000;
+	nBLUE								: 	DWORD 	:= 	16#FF0000FF;
+	nLIGHTBLUE                          :   DWORD   :=  16#FF08ADF4;
+	nGREY								: 	DWORD 	:= 	16#FFA9A9A9;	
+	nDARKGREY							:	DWORD	:=	16#FF808080;
+	nPURPLE								:	DWORD	:=	16#FF800080;
+	nVIOLET								:	DWORD	:=	16#FFEE82EE;
+	nTRANSP								:	DWORD	:=	16#00FFFFFF;	// full transparent WHITE
+	
+	nLCColNormal						:	DWORD	:= 16#10008A00;		// light curtain green
+	nLCColBroken						:	DWORD	:= 16#64FF0000;		// light curtain red	
+//SEBASTIAN ULLOA 22/07/25 END-----------------------------------------------------
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

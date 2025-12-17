@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Chart" Id="{e16c24a0-2f05-4910-b5bc-d65b1ffeb27b}">
+    <Declaration><![CDATA[TYPE ST_Chart :
+STRUCT
+        Distance : REAL;
+        Force    : REAL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

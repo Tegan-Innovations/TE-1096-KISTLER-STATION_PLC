@@ -1,0 +1,998 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="S_Master_SMAC" Id="{e9c13e85-b7ea-4c18-8786-d25414b50222}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM S_Master_SMAC
+VAR	 
+eState								: E_SmacState;
+	
+/////////////////////////////////////////////INITIALIZATION FUNCTION/////////////////////////////////////////////////////
+	fbSmacInitialization_L							: FB_SmacInitialization;
+	I_O_fbSmacInitialization_L						:ST_Phasing_Home;
+
+	fbSmacInitialization_R							: FB_SmacInitialization;
+	I_O_fbSmacInitialization_R						:ST_Phasing_Home;
+
+/////////////////////////////////////////////CYCLE/MANUAL FUNCTION/////////////////////////////////////////////////////
+	fbSmacCycleMan									: FB_SmacCycleMan;
+	bTest											: BOOL;
+/////////////////////////////////////////////CTRL SMAC/////////////////////////////////////////////////////
+	nHomeState										: DINT;	
+	nCyclePickState									: DINT;
+	nCycleScrewkState								: DINT;
+	nHomeStateManual								: DINT;	
+	nCyclePickStateManual							: DINT;
+	nCycleScrewkStateManual							: DINT;
+	bLinealHomed									: BOOL;
+	bRotativeHomed									: BOOL;
+	bFirstCycle										: BOOL;
+	
+	
+	aCycleFlag										: ARRAY[0..10] OF BOOL;
+
+/////////////////////////////////////////////ERROR FUNCTION/////////////////////////////////////////////////////	
+	fbErrorRST										: FB_ErrorReset;
+	bEnbale_ErrorRST								: BOOL;
+	bResetErrors									: BOOL;
+	bAllErrorsCleared								: BOOL;
+/////////////////////////////////////////////TIMERS / TRIGGERS/////////////////////////////////////////////////////
+	tonResetError									:Tc2_Standard.TON;
+	tonAbortModule									:Tc2_Standard.TON;
+	tonCaseDelay									: ARRAY[0..40] OF TON;
+	rTrigCase										: ARRAY[0..10] OF R_TRIG;
+	CMDTrig											: ARRAY[0..10] OF R_TRIG;										
+/////////////////////////////////////////////GRIPPERS CONTROL/////////////////////////////////////////////////////
+	bCatchPiece							:BOOL;	//If set to TRUE - gripper OPEN || FALSE - gripper CLOSED
+	bGuideScrew							:BOOL;	//If set to TRUE - gripper OPEN || FALSE - gripper CLOSED
+	bGripperGuide_Timeout				:BOOL;	//Gripper didn't close in 3sec
+	bGripperFixture_Timeout				:BOOL;	//Gripper didn't close in 3sec
+	fbGripper_Guide						:FB_GripperCtrl;	
+	fbGripper_Fixture					:FB_GripperCtrl;
+
+END_VAR//---------------------------------------------------------------------------------------oldschoo1
+VAR_OUTPUT
+	stSmacReport						:ST_ProcessReport;
+END_VAR
+
+//--------------------IN/OUT----------------------------------------*
+VAR_INPUT
+	bCloseGripper						: BOOL;
+	CMD									:ST_ModuleCMD;	
+END_VAR
+VAR_OUTPUT
+	STATUS								:ST_ModuleStatus;
+	I_O_fbSmacCycleMan					: ST_CYC_MAN;
+END_VAR
+
+
+
+
+//----------------------------------------------------------oldschoo1
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[PRG_Fault_SMAC(aAlarms := GVL_Master.stAlarms);
+b_Ctrl_Smac();
+c_FunctionProcess();
+d_TimTrig();
+
+
+
+]]></ST>
+    </Implementation>
+    <Action Name="a_StringDefinitions" Id="{d280c89d-ed1a-4069-a1bc-5559c561d7d0}">
+      <Implementation>
+        <ST><![CDATA[
+//////////////////////////////////////////STATUS STRING DEFINITIONS/////////////////////////////////////////////////////
+
+	stSmacIO.sStatus[0]:='Initialization done';
+	stSmacIO.sStatus[1]:='Servo enabled';
+	stSmacIO.sStatus[2]:='';
+	stSmacIO.sStatus[3]:='Motion execution acknowledge bit';
+	stSmacIO.sStatus[4]:='Trajectory complete';
+	stSmacIO.sStatus[5]:='';
+	stSmacIO.sStatus[6]:='Homing Success';
+	stSmacIO.sStatus[7]:='Homing failure';
+	stSmacIO.sStatus[8]:='Phasing Succes';
+	stSmacIO.sStatus[9]:='Phasing failure';
+	stSmacIO.sStatus[10]:='Macro execution error';
+	stSmacIO.sStatus[11]:='Macro execution';
+	stSmacIO.sStatus[12]:='General fault';
+	stSmacIO.sStatus[13]:='Servo error';
+	stSmacIO.sStatus[14]:='STO fault';
+	stSmacIO.sStatus[15]:='STO status';
+	stSmacIO.sStatus[16]:='STO Input 1 de-energized';
+	stSmacIO.sStatus[17]:='STO Input 2 de-energized';
+	stSmacIO.sStatus[18]:='I2T fault';
+	stSmacIO.sStatus[19]:='Driver overtemperature fault';
+	stSmacIO.sStatus[20]:='Initialization done';
+	
+//////////////////////////////////////////MODE OF OPERATION STRING DEFINITIONS/////////////////////////////////////////////////////
+	
+	stSmacIO.sModeOfOperation[0] :='';
+	stSmacIO.sModeOfOperation[1] :='Absolute position move';
+	stSmacIO.sModeOfOperation[2] :='Relative position move';
+	stSmacIO.sModeOfOperation[3] :='Velocity move';
+	stSmacIO.sModeOfOperation[4] :='Torque move';
+	stSmacIO.sModeOfOperation[5] :='Current move/QM1';
+	stSmacIO.sModeOfOperation[6] :='Homing';
+	stSmacIO.sModeOfOperation[7] :='Phasing';
+	stSmacIO.sModeOfOperation[8] :='Current move/QM2';
+	stSmacIO.sModeOfOperation[9] :='';
+	stSmacIO.sModeOfOperation[10] :='Macro execution**';
+	
+//////////////////////////////////////////CONTRO WORD STRING DEFINITIONS/////////////////////////////////////////////////////
+
+stSmacIO.sControlWord[0] :='';
+stSmacIO.sControlWord[1] :='Start motion/macro start';
+stSmacIO.sControlWord[2] :='Stop motion';
+stSmacIO.sControlWord[3] :='Motor off';
+stSmacIO.sControlWord[4] :='Motor on';
+stSmacIO.sControlWord[5] :='Fault reset';
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="b_Ctrl_Smac" Id="{ed1ca0da-bb44-4a29-9b4f-e40d75958aab}">
+      <Implementation>
+        <ST><![CDATA[
+IF cmd.bAbort OR NOT stSafety.bSafety_OK OR NOT cmd.bEnable   THEN
+	eState									:= E_SmacState.ABORTED;
+END_IF
+
+IF CMDTrig[4].Q THEN
+	eState									:= E_SmacState.RESET_ERROR;
+END_IF
+
+IF eState = E_SmacState.MANUAL THEN
+	I_O_fbSmacCycleMan.bManual_fbSmacCycleMan := TRUE;
+ELSE I_O_fbSmacCycleMan.bManual_fbSmacCycleMan := FALSE;
+END_IF
+
+IF CMD.bManualMode THEN
+	eState									:= E_SmacState.MANUAL;
+END_IF
+									
+
+CMDTrig[0]( CLK := cmd.bAbort OR NOT stSafety.bSafety_OK OR NOT cmd.bEnable );
+CMDTrig[1]( CLK := CMD.bEnable AND tonCaseDelay[3].Q );
+CMDTrig[2]( CLK := CMD.bExecute);
+CMDTrig[3]( CLK := CMD.bManualMode);
+CMDTrig[4]( CLK := CMD.bReset);
+
+		
+(*******************************************************CTRL***********************************************************)
+// Axis CTRL State Machine
+CASE eState OF //--------------------------------------------------------------------------------------------------SM
+	
+E_SmacState.ABORTED://-------------------------------------------------------------------------------------------ABORTED:
+
+						IF tonCaseDelay[22].Q THEN
+							eState 												:= E_SmacState.ERROR;						
+						END_IF
+
+						IF  CMD.bEnable THEN
+							eState 												:= E_SmacState.HOMING;
+						END_IF
+						//RESETTING
+						I_O_fbSmacInitialization_R.bFunctionRequest				:= FALSE;
+						I_O_fbSmacInitialization_L.bFunctionRequest				:= FALSE;
+						I_O_fbSmacInitialization_R.bReset						:= TRUE;
+						I_O_fbSmacInitialization_L.bReset						:= TRUE;
+						I_O_fbSmacInitialization_L.bAcknowledge					:= FALSE;
+						I_O_fbSmacInitialization_R.bAcknowledge					:= FALSE;
+						
+						I_O_fbSmacCycleMan.bAutoCycleRequest					:= FALSE;
+						I_O_fbSmacCycleMan.bResetAutoCycle						:= TRUE;
+						I_O_fbSmacCycleMan.bInitSecondPart						:= FALSE;
+						I_O_fbSmacCycleMan.bAutoCycleAcknowledge				:= FALSE;
+						aCycleFlag[1]											:= FALSE;
+						aCycleFlag[2]											:= FALSE;
+						aCycleFlag[3]											:= FALSE;
+						
+						nHomeState												:= 0;
+						nCyclePickState											:= 0;
+						nCycleScrewkState										:= 0;
+						
+						bCloseGripper											:= FALSE;
+						
+						IF tonCaseDelay[3].Q THEN
+							I_O_fbSmacInitialization_R.bReset					:= FALSE;
+							I_O_fbSmacInitialization_L.bReset					:= FALSE;
+							I_O_fbSmacInitialization_R.bEnable					:= FALSE;
+							I_O_fbSmacInitialization_L.bEnable					:= FALSE;
+							
+							I_O_fbSmacCycleMan.bResetAutoCycle					:= FALSE;
+							I_O_fbSmacCycleMan.bCycProcess						:= FALSE;
+							
+							I_O_fbSmacCycleMan.bResetAutoCycle					:= FALSE;
+							I_O_fbSmacCycleMan.bCycProcess						:= FALSE;
+						END_IF
+						
+
+E_SmacState.HOMING://---------------------------------------------------------------------------------------------HOMING:
+////////////////////////////////////////////////////LINEAL HOME////////////////////////////////////////////////////
+						CASE 	nHomeState	OF
+								
+						0:
+						IF aCycleFlag[1] THEN
+							eState 												:= E_SmacState.AXIS_READY;
+						ELSE nHomeState											:= 200;
+						END_IF
+						200:
+						I_O_fbSmacInitialization_L.bEnable						:= TRUE;
+						IF tonCaseDelay[6].Q THEN
+							nHomeState											:= 300;
+						END_IF
+						300:
+						I_O_fbSmacInitialization_L.bFunctionRequest				:= TRUE;
+						IF tonCaseDelay[7].Q THEN
+							nHomeState											:= 400;
+						END_IF
+						400:
+						IF I_O_fbSmacInitialization_L.bAcknowledgeRequest THEN
+							I_O_fbSmacInitialization_L.bAcknowledge				:= TRUE;
+							nHomeState											:= 500;
+							bLinealHomed										:= TRUE;
+						ELSIF I_O_fbSmacInitialization_L.bPhasingError OR I_O_fbSmacInitialization_L.bHomeError THEN
+							nHomeState											:= 500;
+						END_IF
+						500:
+						I_O_fbSmacInitialization_L.bReset						:= TRUE;
+						IF tonCaseDelay[8].Q THEN
+							nHomeState											:= 600;
+						END_IF
+						600:
+						I_O_fbSmacInitialization_L.bEnable						:= FALSE;
+						I_O_fbSmacInitialization_L.bReset						:= FALSE;
+						I_O_fbSmacInitialization_L.bFunctionRequest				:= FALSE;
+						I_O_fbSmacInitialization_L.bAcknowledge					:= FALSE;
+						IF bLinealHomed THEN
+							nHomeState											:= 1200;
+						END_IF
+						
+						1200:
+						I_O_fbSmacInitialization_R.bEnable						:= TRUE;
+						IF tonCaseDelay[9].Q THEN
+							nHomeState											:= 1300;
+						END_IF
+						1300:
+						I_O_fbSmacInitialization_R.bFunctionRequest				:= TRUE;
+						IF tonCaseDelay[10].Q THEN
+							nHomeState											:= 1400;
+						END_IF
+						1400:
+						IF I_O_fbSmacInitialization_R.bAcknowledgeRequest THEN
+							I_O_fbSmacInitialization_R.bAcknowledge				:= TRUE;
+							nHomeState											:= 1500;
+							bRotativeHomed										:= TRUE;
+						ELSIF I_O_fbSmacInitialization_R.bPhasingError OR I_O_fbSmacInitialization_R.bHomeError THEN
+							nHomeState											:= 1500;
+						END_IF
+						1500:
+						I_O_fbSmacInitialization_R.bReset						:= TRUE;
+						IF tonCaseDelay[11].Q THEN
+							nHomeState											:= 1600;
+						END_IF
+						1600:
+						I_O_fbSmacInitialization_R.bEnable						:= FALSE;
+						I_O_fbSmacInitialization_R.bReset						:= FALSE;
+						I_O_fbSmacInitialization_R.bFunctionRequest				:= FALSE;
+						I_O_fbSmacInitialization_R.bAcknowledge					:= FALSE;
+						IF bRotativeHomed AND bLinealHomed THEN
+							bRotativeHomed										:= FALSE;
+							bLinealHomed										:= FALSE;
+							aCycleFlag[1]										:= TRUE;
+							nHomeState											:= 0;
+						END_IF
+						
+						5000://ERROR
+
+						IF tonCaseDelay[12].Q THEN
+							eState 												:= E_SmacState.ABORTED;
+						END_IF
+						END_CASE
+	
+						IF I_O_fbSmacInitialization_R.bHomeError OR I_O_fbSmacInitialization_R.bPhasingError OR
+							I_O_fbSmacInitialization_L.bHomeError OR I_O_fbSmacInitialization_L.bPhasingError OR CMDTrig[0].Q THEN
+							nHomeState											:= 5000;
+						END_IF
+
+		
+E_SmacState.AXIS_READY://-------------------------------------------------------------------------------------AXIS_READY:
+							
+							aCycleFlag[1]										:= FALSE;
+							aCycleFlag[3]										:= FALSE;
+							//GO TO FIRST PART OF THE CYCLE
+							IF (CMDTrig[2].Q AND stSmac.bSet_PickScrew) OR rTrigCase[1].Q THEN
+									eState := E_SmacState.Cycle_Pick_Part;
+							END_IF
+										
+							
+E_SmacState.Cycle_Pick_Part://---------------------------------------------------------------------------Cycle_Pick_Part:		
+							CASE nCyclePickState OF
+							0:
+							IF aCycleFlag[2] THEN
+							eState 												:= E_SmacState.Cycle_Screw;
+							ELSE nCyclePickState								:= 200;
+							END_IF
+							200:
+							IF NOT bFirstCycle THEN
+								nCyclePickState									:= 300;
+							ELSE nCyclePickState								:= 400;
+							END_IF
+							300:
+							I_O_fbSmacCycleMan.bSetValues						:= TRUE;
+							IF tonCaseDelay[15].Q THEN
+								nCyclePickState									:= 400;
+							END_IF
+							400:
+							I_O_fbSmacCycleMan.bCycProcess						:= TRUE;
+							IF tonCaseDelay[16].Q THEN
+								nCyclePickState									:= 500;
+							END_IF
+							500:
+							I_O_fbSmacCycleMan.bAutoCycleRequest				:= TRUE; 
+							IF tonCaseDelay[17].Q THEN
+								nCyclePickState									:= 600;
+							END_IF
+							600:
+							IF I_O_fbSmacCycleMan.bFirstPartDoneFlag THEN
+								aCycleFlag[2]									:= TRUE;
+								nCyclePickState									:= 0;
+							END_IF
+							
+							5000://ERROR
+							IF tonCaseDelay[18].Q THEN
+								eState 											:= E_SmacState.ABORTED;
+							END_IF
+							END_CASE
+	
+							IF I_O_fbSmacCycleMan.bCycError  THEN
+								nCyclePickState										:= 5000;
+							END_IF
+
+						
+							
+							
+E_SmacState.Cycle_Screw://-----------------------------------------------------------------------------------Cycle_Screw:
+							aCycleFlag[2]										:= FALSE;
+							CASE nCycleScrewkState OF
+							0:	
+							IF aCycleFlag[3] THEN//second part request
+								eState 											:= E_SmacState.RECORD_CYCLE_DATA;
+							ELSE nCycleScrewkState								:= 100;
+							END_IF
+							100:
+							IF I_O_fbSmacCycleMan.bFirstPartDoneFlag AND CMDTrig[2].Q AND stSmac.bSet_ScrewItIn THEN
+								I_O_fbSmacCycleMan.bInitSecondPart				:= TRUE;
+								nCycleScrewkState								:= 200;
+							END_IF
+							200:
+							bCloseGripper									:= I_O_fbSmacCycleMan.bOpenGuideGripper;
+							IF I_O_fbSmacCycleMan.bAutoCycleAcknowledgeRequest THEN
+								I_O_fbSmacCycleMan.bAutoCycleAcknowledge		:= TRUE;
+								nCycleScrewkState								:= 300;
+								
+							END_IF
+							300:
+							IF I_O_fbSmacCycleMan.bCycleProcessDone THEN
+								nCycleScrewkState								:= 400;
+								I_O_fbSmacCycleMan.bAutoCycleAcknowledge		:= FALSE;
+								I_O_fbSmacCycleMan.bAutoCycleRequest			:= FALSE;
+								I_O_fbSmacCycleMan.bInitSecondPart				:= FALSE;
+								I_O_fbSmacCycleMan.bSetValues					:= FALSE;
+								I_O_fbSmacCycleMan.bResetAutoCycle				:= TRUE;
+								nCycleScrewkState								:= 400;
+							END_IF 
+							400:
+							IF tonCaseDelay[18].Q THEN
+								I_O_fbSmacCycleMan.bResetAutoCycle				:= FALSE;
+								I_O_fbSmacCycleMan.bCycProcess					:= FALSE;
+								nCycleScrewkState								:= 500;
+							END_IF
+							500:
+							nCycleScrewkState									:= 0;
+							aCycleFlag[3]										:= TRUE;
+							
+							5000://ERROR
+							IF tonCaseDelay[18].Q THEN
+								eState 											:= E_SmacState.ABORTED;
+							END_IF
+							END_CASE
+	
+							IF I_O_fbSmacCycleMan.bCycError THEN
+								nCycleScrewkState								:= 5000;
+							END_IF
+
+E_SmacState.RECORD_CYCLE_DATA://-----------------------------------------------------------------------------RECORD_CYCLE_DATA:
+
+							
+							stSmacReport.rSmac_Settings_LinearAcc				:= I_O_fbSmacCycleMan.nScaledLinearAcc;
+							stSmacReport.rSmac_Settings_LinearVel				:= I_O_fbSmacCycleMan.nScaledLinearVel;
+							stSmacReport.rSmac_Settings_LinearTorque			:= I_O_fbSmacCycleMan.nScaledLinearTorque;
+							stSmacReport.rSmac_Settings_RotativeAcc				:= I_O_fbSmacCycleMan.nScaledRotativeAcc;
+							stSmacReport.rSmac_Settings_RotativeVel				:= I_O_fbSmacCycleMan.nScaledRotativeVel;
+							
+							stSmacReport.bSmac_Pass								:= I_O_fbSmacCycleMan.bPass;
+							stSmacReport.bSmac_Fail								:= I_O_fbSmacCycleMan.bFail;
+				
+							stSmacReport.rSmac_MaxDistanceReached				:= I_O_fbSmacCycleMan.MaxDistanceReached;
+							IF tonCaseDelay[13].Q THEN
+								eState 											:= E_SmacState.AXIS_READY;
+ 							END_IF
+							
+
+E_SmacState.RESET_ERROR://-----------------------------------------------------------------------------------------------ERROR:
+							IF bAllErrorsCleared AND tonCaseDelay[4].Q THEN
+								bEnbale_ErrorRST								:= FALSE;
+							ELSE bEnbale_ErrorRST								:= TRUE;
+							END_IF
+							IF bFlash1Hz AND bEnbale_ErrorRST THEN
+								bResetErrors									:= TRUE;
+							ELSE bResetErrors									:= FALSE;
+							END_IF
+							IF tonCaseDelay[5].Q AND tonCaseDelay[4].Q THEN
+								eState := E_SmacState.ABORTED;
+							END_IF
+
+E_SmacState.MANUAL://---------------------------------------------------------------------------------------------------MANUAL:
+							IF NOT CMD.bManualMode THEN
+								eState := E_SmacState.ABORTED;
+							END_IF
+							
+ELSE 
+eState := E_AxisState.ABORTED;
+END_CASE //------------------------------------------------------------------------------------------------------END_CASE
+
+(******************************************************STATUS************************************************************)
+// Module Status
+status.bReady					:= eState = E_SmacState.AXIS_READY;
+
+status.bBusy					:= 	eState = E_SmacState.Cycle_Screw	OR
+				   					eState = E_SmacState.Cycle_Pick_Part OR
+				   					eState = E_SmacState.HOMING;
+status.bFirstPartOfCycleDone	:=	I_O_fbSmacCycleMan.bFirstPartDoneFlag;	
+		   
+status.bDone					:= 	eState =	E_SmacState.RECORD_CYCLE_DATA;
+
+status.bError					:= 	I_O_fbSmacInitialization_L.bHomeError OR I_O_fbSmacInitialization_R.bHomeError OR
+								I_O_fbSmacInitialization_L.bPhasingError OR I_O_fbSmacInitialization_R.bPhasingError OR
+								I_O_fbSmacCycleMan.bCycError OR stSmacIO.inStatusWordRotative.13 OR stSmacIO.inStatusWordLinear.13  ;
+//--------------------------------------------------GRIPPERS-------------------------------------------------------------oldschoo1
+
+IF CMD_Smac.bFixtureGripper OR (I_O_fbSmacCycleMan.bCloseFixtureGripper AND eState = E_AxisState.MANUAL_MODE) THEN
+	bCatchPiece					:= TRUE;
+ELSE bCatchPiece					:= FALSE;
+END_IF
+
+IF (CMD_Smac.bGuideGripper AND NOT bCloseGripper ) OR 
+	(I_O_fbSmacCycleMan.bCloseGuideGripper AND eState = E_AxisState.MANUAL_MODE)THEN
+	bGuideScrew					:= TRUE;
+ELSE bGuideScrew					:= FALSE;
+END_IF
+									
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="c_FunctionProcess" Id="{cb31e280-c9f0-495e-8973-5eb73320880b}">
+      <Implementation>
+        <ST><![CDATA[//LINEAR PHASING AND HOME
+fbSmacInitialization_L(	//INPUTS:
+						bEnable 				:= I_O_fbSmacInitialization_L.bEnable,
+						bAcknowledge 			:= I_O_fbSmacInitialization_L.bAcknowledge,
+						bReset					:= I_O_fbSmacInitialization_L.bReset,
+						bFunctionRequest		:= I_O_fbSmacInitialization_L.bFunctionRequest,
+						nStatusWord				:= stSmacIO.inStatusWordLinear,
+						nCurrentModeOfOperation	:= stSmacIO.inModeOfOperationLinear,							
+						
+						//OUTPUTS	
+						bFunctionEnabled		=> I_O_fbSmacInitialization_L.bFunctionEnabled,
+						bPhasingProcessDone		=> I_O_fbSmacInitialization_L.bPhasingProcessDone,
+						bHomingProcessDone		=> I_O_fbSmacInitialization_L.bHomingProcessDone,
+						bAcknowledgeRequest		=> I_O_fbSmacInitialization_L.bAcknowledgeRequest,
+						bHomeError				=> I_O_fbSmacInitialization_L.bHomeError,
+						bPhasingError			=> I_O_fbSmacInitialization_L.bPhasingError,
+						//IN/OUT
+						nControlWord			:= stSmacIO.qnControlWordLinear,								
+						nModeOfOperation		:= stSmacIO.qnModeOfOperationLinear);
+						
+//ROTATIVE PHASING AND HOME						
+fbSmacInitialization_R(	//INPUTS:
+						bEnable 				:= I_O_fbSmacInitialization_R.bEnable,
+						bAcknowledge 			:= I_O_fbSmacInitialization_R.bAcknowledge,
+						bReset					:= I_O_fbSmacInitialization_R.bReset,
+						bFunctionRequest		:= I_O_fbSmacInitialization_R.bFunctionRequest,
+						nStatusWord				:= stSmacIO.inStatusWordRotative,
+						nCurrentModeOfOperation	:= stSmacIO.inModeOfOperationRotative,							
+						
+						//OUTPUTS	
+						bFunctionEnabled		=> I_O_fbSmacInitialization_R.bFunctionEnabled,
+						bPhasingProcessDone		=> I_O_fbSmacInitialization_R.bPhasingProcessDone,
+						bHomingProcessDone		=> I_O_fbSmacInitialization_R.bHomingProcessDone,
+						bAcknowledgeRequest		=> I_O_fbSmacInitialization_R.bAcknowledgeRequest,
+						bHomeError				=> I_O_fbSmacInitialization_R.bHomeError,
+						bPhasingError			=> I_O_fbSmacInitialization_R.bPhasingError,
+						//IN/OUT
+						nControlWord			:= stSmacIO.qnControlWordRotative,								
+						nModeOfOperation		:= stSmacIO.qnModeOfOperationRotative);
+//CYCLE / MANUAL						
+fbSmacCycleMan(			//INPUTS:
+						nLinearVel				:= I_O_fbSmacCycleMan.nLinearVel,
+						nLinearAcc				:= I_O_fbSmacCycleMan.nLinearAcc,
+						nLinearSetPoint			:= I_O_fbSmacCycleMan.nLinearSetPoint,
+						nLinearTorque			:= I_O_fbSmacCycleMan.nLinearTorque,
+						bRotativeWorkPosition	:= I_O_fbSmacCycleMan.nRotativeWorkPosition,
+						
+						nRotativeVel			:= I_O_fbSmacCycleMan.nRotativeVel,
+						nRotativeAcc			:= I_O_fbSmacCycleMan.nRotativeAcc,
+						nRotativeSetPoint		:=  GVL_PERSISTENT.nSmacRotativeSetPoint,
+						
+						bCycProcess				:= I_O_fbSmacCycleMan.bCycProcess,
+						bAutoCycleAcknowledge	:= I_O_fbSmacCycleMan.bAutoCycleAcknowledge,
+						bAutoCycleRequest		:= I_O_fbSmacCycleMan.bAutoCycleRequest,
+						bResetAutoCycle			:= I_O_fbSmacCycleMan.bResetAutoCycle,
+						bInitSecondPart			:= I_O_fbSmacCycleMan.bInitSecondPart,
+						bSetValues				:= GVL_HMI.bSmacSetValue OR (NOT bFirstCycle AND I_O_fbSmacCycleMan.bSetValues),
+						bFixtureGripperClosed	:= stSmac.bGripperB_ClosedSensor,
+						bGuideGripperClosed		:= stSmac.bGripperA_ClosedSensor,
+						bManual					:= I_O_fbSmacCycleMan.bManual_fbSmacCycleMan,
+						
+						nDistanceSetPoint		:= I_O_fbSmacCycleMan.nDistanceSetPoint,				
+						nDistanceTolerance		:= 500, //I_O_fbSmacCycleMan.nDistanceTolerance,
+						bPickCycleMan			:= GVL_HMI.bSmacCyc1,
+						bScrewCycleMan			:= GVL_HMI.bSmacCyc2,
+						bHomeMan				:= GVL_HMI.bSmacHOME,
+						//OUTPUTS
+						bAutoCycleAcknowledgeRequest 	=> I_O_fbSmacCycleMan.bAutoCycleAcknowledgeRequest,
+						bCycleProcessDone				=> I_O_fbSmacCycleMan.bCycleProcessDone,
+						bFirstPartDoneFlag				=> I_O_fbSmacCycleMan.bFirstPartDoneFlag,
+						bCycError						=> I_O_fbSmacCycleMan.bCycError,
+						bOpenGuideGripper				=> I_O_fbSmacCycleMan.bOpenGuideGripper,
+						bCloseGuideGripper				=> I_O_fbSmacCycleMan.bCloseGuideGripper,
+						bCloseFixtureGripper			=> I_O_fbSmacCycleMan.bCloseFixtureGripper,
+						bPass							=> I_O_fbSmacCycleMan.bPass,										
+						bFail							=> I_O_fbSmacCycleMan.bFail,
+						
+						nScaledLinearVel				=> I_O_fbSmacCycleMan.nScaledLinearVel,			
+						nScaledLinearAcc				=> I_O_fbSmacCycleMan.nScaledLinearAcc,						
+						nScaledLinearSetPoint			=> I_O_fbSmacCycleMan.nScaledLinearSetPoint,						
+						nScaledLinearTorque				=> I_O_fbSmacCycleMan.nScaledLinearTorque,					
+	
+						nScaledRotativeVel				=> I_O_fbSmacCycleMan.nScaledRotativeVel,						
+						nScaledRotativeAcc				=> I_O_fbSmacCycleMan.nScaledRotativeAcc,					
+						nScaledRotativeSetPoint			=> I_O_fbSmacCycleMan.nScaledRotativeSetPoint,
+						MaxDistanceReached				=> I_O_fbSmacCycleMan.MaxDistanceReached,	
+						bScrewAnimation					=> GVL_HMI.bScrewAnimation,
+						//IN/OUT
+						stSmacIO				:= stSmacIO);
+						
+							
+									
+												
+//ERROR RESET
+fbErrorRST(				//INPUTS
+						bEnbale					:= bEnbale_ErrorRST,
+						bResetErrors			:= bResetErrors,
+						//OUTPUTS
+						bAllErrorsCleared		=> bAllErrorsCleared,
+						//IN/OUT
+						stSmacIO				:= stSmacIO,
+						bHomeError_L			:= I_O_fbSmacInitialization_L.bHomeError,
+						bHomeError_R			:= I_O_fbSmacInitialization_R.bHomeError,
+						bPhasingError_L			:= I_O_fbSmacInitialization_L.bPhasingError,
+						bPhasingError_R			:= I_O_fbSmacInitialization_R.bPhasingError,
+						bCycleError				:= I_O_fbSmacCycleMan.bCycError);
+
+// Grippers CTRL
+fbGripper_Fixture	 (bCloseGrip		:=bCatchPiece,
+					  bClosedSensor		:=stSmac.bGripperB_ClosedSensor,
+					  bOpen_Sig			=>stSmac.bGripperB_Open,
+					  bClose_Sig		=>stSmac.bGripperB_Close,
+					  bTimeout			=>bGripperFixture_Timeout);
+
+
+fbGripper_Guide	     (bCloseGrip		:=bGuideScrew,
+					  bClosedSensor		:=stSmac.bGripperA_ClosedSensor,
+					  bOpen_Sig			=>(stSmac.bGripperA_Open ),
+					  bClose_Sig		=>stSmac.bGripperA_Close,
+					  bTimeout			=>bGripperGuide_Timeout);
+						
+						]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="d_TimTrig" Id="{c5245bf9-327c-4c9a-83c0-3a10a0300d92}">
+      <Implementation>
+        <ST><![CDATA[//TIMERS
+
+tonCaseDelay[0](IN := (eState =E_SmacState.HOMING) , PT := T#1S);
+tonCaseDelay[1(*10*)](IN := eState = E_SmacState.Cycle_Screw , PT := T#1S);
+tonCaseDelay[16](IN := eState = E_SmacState.Cycle_Pick_Part , PT := T#500MS);
+tonCaseDelay[3](IN := (eState = E_SmacState.ABORTED) , PT := T#1S);
+tonCaseDelay[4](IN := eState = E_SmacState.ERROR , PT := T#1S);
+tonCaseDelay[13](IN := eState = E_SmacState.RECORD_CYCLE_DATA , PT := T#500MS);
+
+
+tonCaseDelay[5](IN :=bAllErrorsCleared , PT := T#500MS);
+tonCaseDelay[6](IN := nHomeState = 200 , PT := T#500MS);
+tonCaseDelay[7](IN := nHomeState = 300 , PT := T#500MS);
+tonCaseDelay[8](IN := nHomeState = 500 , PT := T#500MS);
+tonCaseDelay[9](IN := nHomeState = 1200 , PT := T#500MS);
+tonCaseDelay[10](IN := nHomeState = 1300 , PT := T#500MS);
+tonCaseDelay[11](IN := nHomeState = 1500 , PT := T#500MS);
+tonCaseDelay[12](IN := nHomeState = 5000 , PT := T#2S);
+
+tonCaseDelay[15](IN := nCyclePickState = 300 , PT := T#500MS);
+tonCaseDelay[16](IN := nCyclePickState = 400 , PT := T#500MS);  //??? the Same line 5
+tonCaseDelay[17](IN := nCyclePickState = 500 , PT := T#500MS);
+tonCaseDelay[18](IN := nCycleScrewkState = 400 , PT := T#500MS);
+
+
+tonCaseDelay[21](IN := (stSmacIO.qnControlWordLinear = 2) , PT := T#1S);
+tonCaseDelay[22](IN :=  stSmacIO.inStatusWordRotative.15 OR stSmacIO.inStatusWordRotative.16 OR
+						 stSmacIO.inStatusWordRotative.17 OR stSmacIO.inStatusWordLinear.15 OR
+						 stSmacIO.inStatusWordLinear.16 OR stSmacIO.inStatusWordLinear.17 
+						, PT := T#500MS);
+
+tonCaseDelay[23](IN :=cmd.bAbort OR NOT stSafety.bSafety_OK OR NOT cmd.bEnable , PT := T#1S);
+tonCaseDelay[24](IN :=I_O_fbSmacCycleMan.bCycleProcessDone , PT := T#3S);
+
+
+tonCaseDelay[26](IN := nHomeStatemanual = 200 , PT := T#500MS);
+tonCaseDelay[27](IN := nHomeStatemanual = 300 , PT := T#500MS);
+tonCaseDelay[28](IN := nHomeStatemanual = 500 , PT := T#500MS);
+tonCaseDelay[29](IN := nHomeStatemanual = 1200 , PT := T#500MS);
+tonCaseDelay[30](IN := nHomeStatemanual = 1300 , PT := T#500MS);
+tonCaseDelay[31](IN := nHomeStatemanual = 1500 , PT := T#500MS);
+tonCaseDelay[32](IN := nHomeStatemanual = 5000 , PT := T#2S);
+
+tonCaseDelay[35](IN := nCyclePickStatemanual = 300 , PT := T#500MS);
+tonCaseDelay[36](IN := nCyclePickStatemanual = 400 , PT := T#500MS);  //??? the Same line 5
+tonCaseDelay[37](IN := nCyclePickStatemanual = 500 , PT := T#500MS);
+tonCaseDelay[38](IN := nCycleScrewkStatemanual = 400 , PT := T#500MS);
+
+
+//TRIGGERS
+rTrigCase[0](CLK := eState = E_SmacState.ABORTED);
+
+ 
+
+
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="S_Master_SMAC">
+      <LineId Id="313" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="235" Count="0" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="381" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="24" Count="0" />
+    </LineIds>
+    <LineIds Name="S_Master_SMAC.a_StringDefinitions">
+      <LineId Id="52" Count="0" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="4" Count="5" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="10" Count="4" />
+      <LineId Id="17" Count="6" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="31" Count="8" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="46" Count="4" />
+      <LineId Id="53" Count="0" />
+    </LineIds>
+    <LineIds Name="S_Master_SMAC.b_Ctrl_Smac">
+      <LineId Id="988" Count="0" />
+      <LineId Id="537" Count="0" />
+      <LineId Id="990" Count="1" />
+      <LineId Id="993" Count="0" />
+      <LineId Id="992" Count="0" />
+      <LineId Id="994" Count="1" />
+      <LineId Id="1346" Count="0" />
+      <LineId Id="1341" Count="0" />
+      <LineId Id="1344" Count="0" />
+      <LineId Id="1347" Count="0" />
+      <LineId Id="1345" Count="0" />
+      <LineId Id="1348" Count="0" />
+      <LineId Id="1342" Count="0" />
+      <LineId Id="1349" Count="1" />
+      <LineId Id="1343" Count="0" />
+      <LineId Id="997" Count="0" />
+      <LineId Id="996" Count="0" />
+      <LineId Id="998" Count="3" />
+      <LineId Id="1006" Count="0" />
+      <LineId Id="538" Count="5" />
+      <LineId Id="1380" Count="0" />
+      <LineId Id="1052" Count="2" />
+      <LineId Id="1042" Count="0" />
+      <LineId Id="832" Count="2" />
+      <LineId Id="550" Count="0" />
+      <LineId Id="1276" Count="5" />
+      <LineId Id="1293" Count="0" />
+      <LineId Id="1291" Count="1" />
+      <LineId Id="1330" Count="1" />
+      <LineId Id="1282" Count="0" />
+      <LineId Id="1308" Count="0" />
+      <LineId Id="1334" Count="0" />
+      <LineId Id="1333" Count="0" />
+      <LineId Id="1309" Count="2" />
+      <LineId Id="1375" Count="1" />
+      <LineId Id="1290" Count="0" />
+      <LineId Id="1283" Count="4" />
+      <LineId Id="1296" Count="0" />
+      <LineId Id="1294" Count="1" />
+      <LineId Id="1304" Count="2" />
+      <LineId Id="1289" Count="0" />
+      <LineId Id="1275" Count="0" />
+      <LineId Id="576" Count="1" />
+      <LineId Id="722" Count="0" />
+      <LineId Id="938" Count="0" />
+      <LineId Id="1061" Count="0" />
+      <LineId Id="1063" Count="0" />
+      <LineId Id="1065" Count="1" />
+      <LineId Id="1069" Count="0" />
+      <LineId Id="1067" Count="0" />
+      <LineId Id="1070" Count="0" />
+      <LineId Id="1075" Count="0" />
+      <LineId Id="1072" Count="2" />
+      <LineId Id="1076" Count="1" />
+      <LineId Id="1079" Count="1" />
+      <LineId Id="1078" Count="0" />
+      <LineId Id="1081" Count="2" />
+      <LineId Id="1085" Count="3" />
+      <LineId Id="1084" Count="0" />
+      <LineId Id="1071" Count="0" />
+      <LineId Id="1091" Count="0" />
+      <LineId Id="1090" Count="0" />
+      <LineId Id="1095" Count="1" />
+      <LineId Id="1093" Count="0" />
+      <LineId Id="1138" Count="0" />
+      <LineId Id="1097" Count="0" />
+      <LineId Id="1141" Count="0" />
+      <LineId Id="1155" Count="0" />
+      <LineId Id="1098" Count="2" />
+      <LineId Id="1094" Count="0" />
+      <LineId Id="1101" Count="0" />
+      <LineId Id="1111" Count="22" />
+      <LineId Id="1139" Count="0" />
+      <LineId Id="1134" Count="0" />
+      <LineId Id="1140" Count="0" />
+      <LineId Id="1157" Count="0" />
+      <LineId Id="1135" Count="0" />
+      <LineId Id="1160" Count="1" />
+      <LineId Id="1136" Count="0" />
+      <LineId Id="1153" Count="0" />
+      <LineId Id="1104" Count="0" />
+      <LineId Id="1103" Count="0" />
+      <LineId Id="1102" Count="0" />
+      <LineId Id="1303" Count="0" />
+      <LineId Id="1146" Count="0" />
+      <LineId Id="1152" Count="0" />
+      <LineId Id="1148" Count="0" />
+      <LineId Id="1062" Count="0" />
+      <LineId Id="1060" Count="0" />
+      <LineId Id="1059" Count="0" />
+      <LineId Id="1203" Count="0" />
+      <LineId Id="1205" Count="0" />
+      <LineId Id="1204" Count="0" />
+      <LineId Id="776" Count="0" />
+      <LineId Id="824" Count="0" />
+      <LineId Id="836" Count="1" />
+      <LineId Id="870" Count="0" />
+      <LineId Id="1258" Count="0" />
+      <LineId Id="871" Count="0" />
+      <LineId Id="838" Count="1" />
+      <LineId Id="825" Count="0" />
+      <LineId Id="1009" Count="0" />
+      <LineId Id="841" Count="0" />
+      <LineId Id="840" Count="0" />
+      <LineId Id="911" Count="0" />
+      <LineId Id="1162" Count="0" />
+      <LineId Id="1172" Count="2" />
+      <LineId Id="1165" Count="0" />
+      <LineId Id="1175" Count="2" />
+      <LineId Id="1179" Count="0" />
+      <LineId Id="1178" Count="0" />
+      <LineId Id="1166" Count="0" />
+      <LineId Id="1180" Count="3" />
+      <LineId Id="1167" Count="0" />
+      <LineId Id="1185" Count="3" />
+      <LineId Id="1184" Count="0" />
+      <LineId Id="1189" Count="0" />
+      <LineId Id="1191" Count="1" />
+      <LineId Id="1190" Count="0" />
+      <LineId Id="1195" Count="0" />
+      <LineId Id="1168" Count="0" />
+      <LineId Id="1196" Count="0" />
+      <LineId Id="1193" Count="1" />
+      <LineId Id="1207" Count="0" />
+      <LineId Id="1209" Count="0" />
+      <LineId Id="1335" Count="0" />
+      <LineId Id="1221" Count="4" />
+      <LineId Id="1227" Count="0" />
+      <LineId Id="1208" Count="0" />
+      <LineId Id="1164" Count="0" />
+      <LineId Id="1163" Count="0" />
+      <LineId Id="1206" Count="0" />
+      <LineId Id="866" Count="0" />
+      <LineId Id="887" Count="1" />
+      <LineId Id="1202" Count="0" />
+      <LineId Id="1231" Count="0" />
+      <LineId Id="1233" Count="0" />
+      <LineId Id="1243" Count="0" />
+      <LineId Id="1245" Count="0" />
+      <LineId Id="1244" Count="0" />
+      <LineId Id="1234" Count="0" />
+      <LineId Id="1246" Count="1" />
+      <LineId Id="1249" Count="0" />
+      <LineId Id="1248" Count="0" />
+      <LineId Id="1235" Count="0" />
+      <LineId Id="1378" Count="0" />
+      <LineId Id="1236" Count="0" />
+      <LineId Id="1251" Count="0" />
+      <LineId Id="1253" Count="0" />
+      <LineId Id="1377" Count="0" />
+      <LineId Id="1252" Count="0" />
+      <LineId Id="1237" Count="1" />
+      <LineId Id="1312" Count="0" />
+      <LineId Id="1255" Count="0" />
+      <LineId Id="1318" Count="3" />
+      <LineId Id="1323" Count="0" />
+      <LineId Id="1256" Count="0" />
+      <LineId Id="1324" Count="1" />
+      <LineId Id="1329" Count="0" />
+      <LineId Id="1326" Count="0" />
+      <LineId Id="1328" Count="0" />
+      <LineId Id="1327" Count="0" />
+      <LineId Id="1273" Count="0" />
+      <LineId Id="1316" Count="1" />
+      <LineId Id="1313" Count="0" />
+      <LineId Id="1260" Count="0" />
+      <LineId Id="1264" Count="0" />
+      <LineId Id="1267" Count="5" />
+      <LineId Id="1232" Count="0" />
+      <LineId Id="1198" Count="2" />
+      <LineId Id="1352" Count="0" />
+      <LineId Id="1357" Count="1" />
+      <LineId Id="1372" Count="0" />
+      <LineId Id="1365" Count="0" />
+      <LineId Id="1367" Count="1" />
+      <LineId Id="1370" Count="0" />
+      <LineId Id="1369" Count="0" />
+      <LineId Id="1356" Count="0" />
+      <LineId Id="1371" Count="0" />
+      <LineId Id="1354" Count="0" />
+      <LineId Id="1353" Count="0" />
+      <LineId Id="1355" Count="0" />
+      <LineId Id="1201" Count="0" />
+      <LineId Id="1197" Count="0" />
+      <LineId Id="828" Count="0" />
+      <LineId Id="972" Count="0" />
+      <LineId Id="974" Count="0" />
+      <LineId Id="976" Count="0" />
+      <LineId Id="975" Count="0" />
+      <LineId Id="973" Count="0" />
+      <LineId Id="977" Count="0" />
+      <LineId Id="979" Count="0" />
+      <LineId Id="978" Count="0" />
+      <LineId Id="980" Count="2" />
+      <LineId Id="1338" Count="0" />
+      <LineId Id="1337" Count="0" />
+      <LineId Id="1339" Count="0" />
+      <LineId Id="1373" Count="1" />
+      <LineId Id="971" Count="0" />
+      <LineId Id="729" Count="1" />
+      <LineId Id="728" Count="0" />
+      <LineId Id="597" Count="0" />
+      <LineId Id="653" Count="6" />
+      <LineId Id="661" Count="0" />
+      <LineId Id="1014" Count="0" />
+      <LineId Id="662" Count="2" />
+      <LineId Id="1007" Count="1" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="1016" Count="0" />
+      <LineId Id="1021" Count="0" />
+      <LineId Id="1031" Count="0" />
+      <LineId Id="1034" Count="0" />
+      <LineId Id="1033" Count="0" />
+      <LineId Id="1036" Count="1" />
+      <LineId Id="1351" Count="0" />
+      <LineId Id="1038" Count="1" />
+      <LineId Id="1035" Count="0" />
+      <LineId Id="1030" Count="0" />
+      <LineId Id="1028" Count="0" />
+      <LineId Id="390" Count="0" />
+    </LineIds>
+    <LineIds Name="S_Master_SMAC.c_FunctionProcess">
+      <LineId Id="2" Count="4" />
+      <LineId Id="9" Count="19" />
+      <LineId Id="31" Count="30" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="100" Count="1" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="110" Count="2" />
+      <LineId Id="137" Count="1" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="62" Count="3" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="104" Count="1" />
+      <LineId Id="113" Count="1" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="127" Count="6" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="135" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="107" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="77" Count="3" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="87" Count="12" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="S_Master_SMAC.d_TimTrig">
+      <LineId Id="46" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="53" Count="2" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="87" Count="1" />
+      <LineId Id="106" Count="1" />
+      <LineId Id="109" Count="1" />
+      <LineId Id="108" Count="0" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="76" Count="2" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="81" Count="2" />
+      <LineId Id="119" Count="1" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="121" Count="5" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="129" Count="2" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="4" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

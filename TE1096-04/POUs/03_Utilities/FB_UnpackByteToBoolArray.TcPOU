@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_UnpackByteToBoolArray" Id="{c523551d-309a-402b-9c4e-707ae2a9da6e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_UnpackByteToBoolArray
+VAR_INPUT
+	inputByte : BYTE;
+END_VAR
+VAR_IN_OUT
+    outputBits : ARRAY[0..7]OF BOOL;
+END_VAR
+VAR
+    idx : INT;
+END_VAR
+//-----------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR idx := 0 TO 7 
+DO
+outputBits[idx] := (inputByte AND SHL(1, idx)) <> 0;
+END_FOR
+//------------------------------------------oldschoo1
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="FB_UnpackByteToBoolArray">
+      <LineId Id="20" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="23" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

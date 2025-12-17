@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_SafetyPLC" Id="{4ec69c34-df11-40ce-bec6-07a45a284c62}">
+    <Declaration><![CDATA[TYPE ST_SafetyPLC :
+STRUCT
+// Struct: Safety PLC
+	
+
+	// Safety CMDs	
+	bRunSafety                          :BOOL;  // Start Safety CMD
+	bAckSafetyError						:BOOL;	// Safety Error Acknowledge
+
+	bTwoHands_MonitorCMD  	            :BOOL;  // 2Hands needed to trigger Parts Proccessing 
+	bLightBeam_MuteCMD					:BOOL;	// SICK Safety LightBeam - Muting active
+	bLockDoor_CMD						:BOOL;	// CMD to lock the Door
+	
+	// Safety Status
+	bSafetyRunning                      :BOOL;  // TwinSAFE running
+	bSafetyFB_Error	 					:BOOL;	// TwinSAFE modules Feedback Error
+	bSafetyCom_Error 					:BOOL;	// TwinSAFE Communication error	
+	bSafety_OK							:BOOL;	// All safety gear OK
+	
+	// Safety Gear
+    bEStop_OK	                        :BOOL;  // E-Stop OK
+	bEStop_Pressed						:BOOL;	// E-Stop Pressed
+	bDoorClosed							:BOOL;	// Door Closed
+	bDoorLocked							:BOOL;	// Door Locked
+	bDoorOpen							:BOOL;	// Door Open
+	bLightBeam_Crossed					:BOOL;	// SICK Safety LightBeam - Crosed!
+	bTwoHands_Signal					:BOOL;	// TwoHands - Both Buttons activated
+
+	// Terminal Inputs
+	bE_Stop_Ch1							:BOOL;	// E-Stop ch1
+	bE_Stop_Ch2							:BOOL;	// E-Stop ch2                               	
+	bResetButton						:BOOL;	// Reset Button	
+	bDoorInterlock_Ch1					:BOOL;	// Door Closed ch1
+	bDoorInterlock_Ch2					:BOOL;	// Door Closed ch2	                                	
+	bDoorInterlock_FB					:BOOL;	// Door Feedback Sig.
+	bIndraDrive_Contactor_FB			:BOOL;	// Kistler drive Safety Contactor Feedback
+	bSmacSTO_FB							:BOOL;	// SMACK Safe Torque OFF Feedback
+	bTouchBtn_1_NC						:BOOL;	// Safety Touch Button 1 
+	bTouchBtn_2_NC						:BOOL;	// Safety Touch Button 2                               	
+	bTouchBtn_1_NO						:BOOL;	// Safety Touch Button 1
+	bTouchBtn_2_NO						:BOOL;	// Safety Touch Button 2
+	bPilz2_FB							:BOOL;	// Pilz Safety Relay 2 Feedback
+	bAxis_1_SafetyRelayFB				:BOOL;	// AXIS 1 Safety Relay Feedback
+	
+	
+	
+	nSafetyTerminalStatus				:UINT;	//Ethercat Terminal Status
+
+		//-------------------------------------------------------------------------------oldschoo1
+		
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_AxisState" Id="{c9bfc7ac-d799-45b3-b1e9-ed421f1ac0dc}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_AxisState :
+(
+
+	ABORTED				:=10,
+	ENABLE_POWER		:=20,
+	RESET_ERROR			:=30,
+	HOMING				:=33,
+	AXIS_READY			:=40,
+	GET_TARGET			:=50,
+	MOVE_ABS			:=60,
+	MOVING_ABS			:=70,
+	MOVE_REL			:=80,
+	MOVING_REL			:=90,
+	IN_TARGET_POS		:=100,
+	ERROR				:=110,
+	MANUAL_MODE			:=120
+//------------------------------oldschoo1	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

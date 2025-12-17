@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="PRG_MasterSystemTime" Id="{db4faa6b-46f4-4ac2-a6ab-de4cd3a70939}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_MasterSystemTime
+VAR
+		//Variables
+	bReadyToRead				:BOOL;
+	bFirstScan					:BOOL := TRUE;
+	bUpdateSysTime				:BOOL; //Output of pulse generator
+	tSysTimeUpdatePeriod		:TIME := T#5S;
+	stTimeStamp					:TIMESTRUCT;
+	stNullTimeStamp				:TIMESTRUCT;
+	sRawDateTime				:STRING;
+	sSystemDate					:STRING;
+	sSystemTime					:STRING;
+	sDateTime					:STRING;
+	sDateTimeSpaces				:STRING;
+	
+	stTimeTest                  :TIMESTRUCT;
+	sttimeTest2                 :TIMESTRUCT;
+	sTestTime                   :STRING;
+	nSectTest                   :DINT;
+	bStartTest                  :BOOL;
+	bStsrtTest2                 :BOOL;
+	
+	
+	//Functions
+	fbGetSystemTime				:TC2_Utilities.NT_GetTime;
+	fbRTClock					:TC2_Utilities.RTC_EX2;		//Local real-time clock
+	tonTimeUpdateGen			:TC2_Utilities.TON;			//Pulse generator for triggering fbGetSystemTime function
+	rtrigSysTimeCollected		:TC2_Utilities.R_TRIG;		//System time collected
+
+    fbTimerControl              :FB_TimeControl;
+	bStartTimeTest              :BOOL;
+	bResetTimeTest              :BOOL;
+	nTimeHourTest               :DINT;
+	nTimeMinTest                :DINT;
+	nTimeSecTest                :DINT;
+	nTimeTotalSecTest           :DINT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Aux functions call
+tonTimeUpdateGen(	IN := NOT bUpdateSysTime,
+					PT := tSysTimeUpdatePeriod,
+					Q => bUpdateSysTime);
+
+//bReadyToRead :=  Tc2_System.MEMCMP( ADR( stTimeStamp), ADR (stNullTimeStamp), SIZEOF(stTimeStamp)) <> 0 AND NOT  fbGetSystemTime.BUSY;	
+			(*keczi*)	(*zrobione po to zeby w wypadku jak po starcie PLC na HMI mial pokazywac czas alarmu '00:00:00', zebyb poczekal az faktycznie pokazuje date i czas*)
+
+//Get Current System Time
+fbGetSystemTime(NETID := ,
+				START := bFirstScan OR bUpdateSysTime,
+				TMOUT := ,
+				BUSY => ,
+				ERR => ,
+				ERRID => ,
+				TIMESTR => );
+				
+//Get system time done detection - one-shot
+rtrigSysTimeCollected(CLK := NOT fbGetSystemTime.BUSY);
+
+//Synchronize Real-Time clock with system time
+fbRTClock(	EN := rtrigSysTimeCollected.Q, 
+			PDT := fbGetSystemTime.TIMESTR,
+			CDT => stTimeStamp, 
+			Q => bReadyToRead);
+
+// System Date and Time in Proper Order 
+IF bReadyToRead THEN
+	sRawDateTime := SYSTEMTIME_TO_STRING(stTimeStamp);  // format: YYYY-MM-DD-hh:mm:ss.xxx
+	sSystemDate := CONCAT(CONCAT(CONCAT(CONCAT(MID(sRawDateTime, 2, 9), '.'),  MID(sRawDateTime, 2, 6)), '.'), LEFT(sRawDateTime, 4));
+	sSystemTime := MID(sRawDateTime, 8, 12);
+	sDateTime := CONCAT(CONCAT(sSystemDate, '  '), sSystemTime);
+	sDateTimeSpaces	:= CONCAT(sDateTime, '    ');
+	
+	//Time to write to CSV Files
+	//nSystemTime := sSystemTime;
+END_IF;
+
+bFirstScan := FALSE;
+
+IF bStartTest THEN
+	sTestTime:= SYSTEMTIME_TO_STRING(stTimeTest);
+END_IF
+
+fbTimerControl( bEnable  :=  bStartTimeTest,
+	            bReset   :=  bResetTimeTest,
+				nHour     => nTimeHourTest,
+				nMin      => nTimeMinTest,
+				nSec      => nTimeSecTest,
+				nTotalSec => nTimeTotalSecTest );
+
+GVL_MASTER.sSystemDate 		:= sSystemDate;
+GVL_MASTER.sSystemTime		:= sSystemTime;]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_MasterSystemTime">
+      <LineId Id="6" Count="50" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="94" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

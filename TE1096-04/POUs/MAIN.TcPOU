@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MAIN" Id="{e7fb6707-82b6-4a45-b743-0b2a74a45279}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM MAIN
+VAR
+	// 
+	
+
+	//----------------------------------------------------------------------oldschoo1
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[(* 	for Jabil, Bray @ Tegan Innovations, Waterford - July2025. Ireland
+ 	m/c TE1096-04 SISS _rev1.0
+	>> design by oldschoo1
+	>> smac and hmi by seb	*)
+
+ 
+// Calling:
+A_Master();
+   A_HMI();
+D_FaultHandling(); 
+   
+//Get System Time
+//PRG_SysTime();
+PRG_MasterSystemTime();
+//--------------------------------------------------------------------------oldschoo1
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="MAIN">
+      <LineId Id="2" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="141" Count="1" />
+      <LineId Id="111" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="132" Count="1" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="150" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="45" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

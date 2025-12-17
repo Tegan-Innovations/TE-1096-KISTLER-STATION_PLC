@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ErrorReset" Id="{6158f349-3279-41a3-9438-bb7194c818ec}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ErrorReset
+VAR_INPUT
+	bEnbale							: BOOL;
+	bResetErrors					: BOOL;
+END_VAR
+VAR_OUTPUT
+	bAllErrorsCleared				: BOOL;
+END_VAR
+VAR
+	tonCaseDelay									: ARRAY[0..10] OF TON;
+	rTrigCase										: ARRAY[0..10] OF R_TRIG;
+END_VAR
+VAR_IN_OUT
+	stSmacIO						: ST_SMAC_I_O;
+	bHomeError_L					: BOOL;
+	bHomeError_R					: BOOL;
+	bPhasingError_L					: BOOL;
+	bPhasingError_R					: BOOL;
+	bCycleError						: BOOL;
+	
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bEnbale THEN
+	ACT_ErrorReset();
+END_IF]]></ST>
+    </Implementation>
+    <Action Name="ACT_ErrorReset" Id="{a262ee29-d167-466d-a381-4ddba3c5f31f}">
+      <Implementation>
+        <ST><![CDATA[IF bResetErrors THEN
+	
+	bHomeError_L							:= FALSE;				
+	bHomeError_R							:= FALSE;
+	bPhasingError_L							:= FALSE;
+	bPhasingError_R							:= FALSE;
+	bCycleError								:= FALSE;
+
+stSmacIO.qnControlWordLinear				:= 5;
+
+IF tonCaseDelay[0].Q THEN
+	stSmacIO.qnControlWordRotative				:= 5;
+END_IF
+
+
+IF (bHomeError_L				= FALSE) AND 
+	(bHomeError_R				= FALSE) AND
+	(bPhasingError_L			= FALSE) AND
+	(bPhasingError_R			= FALSE) AND
+	(bCycleError				= FALSE) AND NOT
+	stSmacIO.inStatusWordLinear.13		 AND NOT
+	stSmacIO.inStatusWordRotative.13	 THEN
+	bAllErrorsCleared			:= TRUE;
+ELSE bAllErrorsCleared			:= FALSE;
+END_IF
+END_IF
+
+
+
+
+
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_TimTrig" Id="{93658345-a537-4237-a6f8-2a15bd6122e2}">
+      <Implementation>
+        <ST><![CDATA[//TIMERS
+	tonCaseDelay[0](IN := stSmacIO.qnControlWordLinear	= 5, PT:= T#500MS);]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="FB_ErrorReset">
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_ErrorReset.ACT_ErrorReset">
+      <LineId Id="1" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="15" Count="2" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="37" Count="5" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="8" Count="4" />
+      <LineId Id="3" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ErrorReset.ACT_TimTrig">
+      <LineId Id="2" Count="0" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

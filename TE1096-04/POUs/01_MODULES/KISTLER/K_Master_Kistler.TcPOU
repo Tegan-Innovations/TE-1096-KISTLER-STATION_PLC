@@ -1,0 +1,1047 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="K_Master_Kistler" Id="{31167433-36dd-4ff7-865b-3aecef2bd9ad}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM K_Master_Kistler
+VAR
+	
+	bFirstRun							:BOOL:=TRUE;
+	
+	//Module CTRL
+	eState								:E_KistlerState:=E_KistlerState.ENABLE_PLC_CTRL;
+	eErrorID							:E_KistlerErrorID;
+	
+	//Parameters
+	fHomePositionTolerance				:REAL:= 1.5;	// > 2mm may cause Pack insertion issues
+	fbForceMonitor						:FB_ForceMonitor;
+	FBDistanceMonitor					: FB_DistanceMonitor;
+	fUVT_00								:REAL;
+	fUVT_01								:REAL;	
+	fDistanceSetpoint					:REAL;
+	//Timers && Triggers
+	tonAbortModule						:Tc2_Standard.TON;
+	tonResetError						:Tc2_Standard.TON;
+	tonEnableDrive						:Tc2_Standard.TON;
+	tonActionDone						:Tc2_Standard.TON;
+	tonActionTimeout					:Tc2_Standard.TON;
+	tonPowerUpTimeout					:Tc2_Standard.TON;	
+	tonDelaySignals						:ARRAY[1..11]OF Tc2_Standard.TON;
+	
+	rcmdbExecute						:R_TRIG;
+	
+	//EtherCAT - Kistler CTRL
+	stSendCMD							:ST_KistlerData_CMD;
+	
+
+	//Com Data Proccessing
+	stTemp								:ST_KistlerData_Temporary;//Temp. only
+	fbUnpack							:ARRAY[0..199]OF FB_UnpackByteToBoolArray;
+	fbByte2Real							:FB_ArrayOfByte2Real;
+	fbRealPosition2Byte					:FB_Real2ArrayOfByte;
+	fbRealSpeed2Byte					:FB_Real2ArrayOfByte;
+	fbPositiontosend					:FB_Byte_To_Bits;
+	fbSpeedtosend						:FB_Byte_To_Bits;
+	
+	// Live readings Local
+	rKistlerLive_X						:REAL;	//Travel
+	rKistlerLive_Y						:REAL;	//Force
+	
+	// Process Record
+	bForceMonitorActive					:BOOL;	//Recording Start/Stop
+	
+	
+	//Support variables
+	idx1								:INT;	//indexer
+	idx2								:INT;	//indexer
+	idx3								:INT;	//indexer
+	
+	//Manual
+	trigCycleMan						:R_TRIG;
+	tonRstCycSignalMan					:TON;
+	bTest								:BOOL;
+	
+	rPosition							:FB_BytesToReal;
+	rSpeed								:FB_BytesToReal;
+	
+	bDistancePass						: BOOL;
+	bDistanceFail						: BOOL;
+	
+END_VAR
+VAR_OUTPUT
+	stKistlerReport						:ST_ProcessReport;
+END_VAR
+
+
+//--------------------IN/OUT-----------------------------------------------------------------*
+VAR_INPUT	
+	CMD									:ST_ModuleCMD;	
+END_VAR
+VAR_OUTPUT	
+	STATUS								:ST_ModuleStatus;
+	stReceived							:ST_KistlerData_Status;	
+END_VAR
+//-----------------------------------------------------------------------------------oldschoo1]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[PRG_Fault_Kistler(aAlarms := GVL_Master.stAlarms);
+//Call for Actions
+a_Unpack_Received();
+b_Ctrl_Kistler();
+d_Monitor_ProcessForce();
+f_Pack_DataToSend();
+
+
+// Map to HMI
+GVL_HMI.rKistlerLiveReading_X		:= rKistlerLive_X;	//Realtime X travel distance
+GVL_HMI.rKistlerLiveReading_Y		:= rKistlerLive_Y;	//Realtime Y force reading
+
+fDistanceSetpoint				:= GVL_PERSISTENT.rReservoir_BottomPosition - GVL_PERSISTENT.rReservoir_Bottomlimitoffset;
+
+//--------------------------------------------------------------------------oldschoo1
+]]></ST>
+    </Implementation>
+    <Action Name="a_Unpack_Received" Id="{78d8a971-c08f-4147-916a-332514b5a972}">
+      <Implementation>
+        <ST><![CDATA[//Thanks for the Telegram, it's been received:)
+FOR idx1:= 0 TO 199 
+DO 
+fbUnpack[idx1].inputByte := GVL_MODULES.stKistler.st_TelegramDataIn[idx1];
+fbUnpack[idx1](outputBits := stTemp.arrInBits[idx1]);
+END_FOR
+//---------------------------------------------------------------oldschoo1
+
+//  Byte 0  –  Basic CTRL Mirror  ---------------------------------------
+stReceived.bStart_Mirror						:= stTemp.arrInBits[0][0];
+stReceived.bTareY_Mirror						:= stTemp.arrInBits[0][1];
+stReceived.bZeroX_Mirror						:= stTemp.arrInBits[0][2];
+stReceived.bSTestX_Mirror						:= stTemp.arrInBits[0][3];
+stReceived.bSTestY_Mirror						:= stTemp.arrInBits[0][4];
+stReceived.bMasterMeas_Mirror					:= stTemp.arrInBits[0][6];
+stReceived.bIncZero_Mirror						:= stTemp.arrInBits[0][7];
+
+//  Byte 1  –  Login Mirror  --------------------------------------------
+stReceived.bAckAdminGlobal_Mirror				:= stTemp.arrInBits[1][0];
+stReceived.bAckAdmin_Mirror						:= stTemp.arrInBits[1][1];
+stReceived.bAccess_Mirror						:= stTemp.arrInBits[1][3];
+stReceived.bAuto_Mirror							:= stTemp.arrInBits[1][4];
+stReceived.bStatReset_Mirror					:= stTemp.arrInBits[1][5];
+stReceived.bStatDisable_Mirror					:= stTemp.arrInBits[1][6];
+stReceived.bTareExtY_Mirror						:= stTemp.arrInBits[1][7];
+
+//  Byte 2  –  Measurement Program No. Mirror  --------------------------
+stReceived.mpNumber_Mirror[0]					:= stTemp.arrInBits[2][0];
+stReceived.mpNumber_Mirror[1]					:= stTemp.arrInBits[2][1];
+stReceived.mpNumber_Mirror[2]					:= stTemp.arrInBits[2][2];
+stReceived.mpNumber_Mirror[3]					:= stTemp.arrInBits[2][3];
+stReceived.mpNumber_Mirror[4]					:= stTemp.arrInBits[2][4];
+stReceived.mpNumber_Mirror[5]					:= stTemp.arrInBits[2][5];
+stReceived.mpNumber_Mirror[6]					:= stTemp.arrInBits[2][6];
+
+//  Byte 3  –  Service / Brake  -----------------------------------------
+stReceived.bResetSNGen_Mirror					:= stTemp.arrInBits[3][2];
+stReceived.bBrakeTestActive						:= stTemp.arrInBits[3][5];
+stReceived.bExportPvt_Mirror					:= stTemp.arrInBits[3][6];
+
+//  Byte 4  –  Configurable Inputs Mirror  ------------------------------
+stReceived.bIUni_Mirror[0]						:= stTemp.arrInBits[4][0];
+stReceived.bIUni_Mirror[1]						:= stTemp.arrInBits[4][1];
+stReceived.bIUni_Mirror[2]						:= stTemp.arrInBits[4][2];
+stReceived.bIUni_Mirror[3]						:= stTemp.arrInBits[4][3];
+stReceived.bIUni_Mirror[4]						:= stTemp.arrInBits[4][4];
+stReceived.bIUni_Mirror[5]						:= stTemp.arrInBits[4][5];
+stReceived.bIUni_Mirror[6]						:= stTemp.arrInBits[4][6];
+stReceived.bIUni_Mirror[7]						:= stTemp.arrInBits[4][7];
+
+//  Byte 6  –  Global Status  -------------------------------------------
+stReceived.bReady								:= stTemp.arrInBits[6][0];
+stReceived.bOkTotal								:= stTemp.arrInBits[6][1];
+stReceived.bNokTotal							:= stTemp.arrInBits[6][2];
+stReceived.bNoPass								:= stTemp.arrInBits[6][3];
+stReceived.bWarning								:= stTemp.arrInBits[6][6];
+stReceived.bAlarm								:= stTemp.arrInBits[6][7];
+
+//  Byte 7  –  Switching Signals  ---------------------------------------
+stReceived.bS1									:= stTemp.arrInBits[7][0];
+stReceived.bS2									:= stTemp.arrInBits[7][1];
+
+//  Byte 8  –  O_UNI  ---------------------------------------------------
+stReceived.bO_UNI[0]							:= stTemp.arrInBits[8][0];
+stReceived.bO_UNI[1]							:= stTemp.arrInBits[8][1];
+
+//  Byte 9  –  Drive / Sequence Mirror  ---------------------------------
+stReceived.bDriveEnable_Mirror					:= stTemp.arrInBits[9][0];
+stReceived.bRunSequence_Mirror					:= stTemp.arrInBits[9][1];
+stReceived.bDriveHome_Mirror					:= stTemp.arrInBits[9][2];
+stReceived.bDriveRef_Mirror						:= stTemp.arrInBits[9][3];
+stReceived.bJogFwd_Mirror						:= stTemp.arrInBits[9][4];
+stReceived.bJogBack_Mirror						:= stTemp.arrInBits[9][5];
+stReceived.bWaitRequest							:= stTemp.arrInBits[9][6];
+stReceived.bBrakeTestDone						:= stTemp.arrInBits[9][7];
+
+//  Byte 10 –  Sequence State  -------------------------------------------
+stReceived.bSeqStopped							:= stTemp.arrInBits[10][0];
+stReceived.bSeqEnd								:= stTemp.arrInBits[10][1];
+stReceived.bOnlineEoNok							:= stTemp.arrInBits[10][2];
+stReceived.bSeqExtStop							:= stTemp.arrInBits[10][3];
+stReceived.bSeqError							:= stTemp.arrInBits[10][4];
+stReceived.bDriveEnabled						:= stTemp.arrInBits[10][5];
+stReceived.bHomePosReached						:= stTemp.arrInBits[10][6];
+stReceived.bRefPosReached						:= stTemp.arrInBits[10][7];
+
+//  Byte 11 –  Servo / Safety  -------------------------------------------
+stReceived.bStandstill							:= stTemp.arrInBits[11][0];
+stReceived.bBrakeTestReq						:= stTemp.arrInBits[11][1];
+stReceived.bServoWarn							:= stTemp.arrInBits[11][2];
+stReceived.bServoError							:= stTemp.arrInBits[11][3];
+stReceived.bSMES_Or_STO							:= stTemp.arrInBits[11][4];
+stReceived.bSMST2								:= stTemp.arrInBits[11][5];
+stReceived.bSMM1								:= stTemp.arrInBits[11][6];
+stReceived.bUserModeActive						:= stTemp.arrInBits[11][7];
+
+//  Byte 12 –  Current Sequence Mirror  ----------------------------------
+stReceived.bCurrSeqMain_Mirror					:= stTemp.arrInBits[12][0];
+stReceived.bCurrSeqSub_Mirror					:= stTemp.arrInBits[12][1];
+
+//  Byte 19 –  Device / Transfer Flags  ----------------------------------
+stReceived.bTransmissionFault					:= stTemp.arrInBits[19][0];
+stReceived.bAck									:= stTemp.arrInBits[19][1];
+stReceived.bDeviceAvailable						:= stTemp.arrInBits[19][2];
+stReceived.bMpChanged							:= stTemp.arrInBits[19][4];
+stReceived.bGlobalChanged						:= stTemp.arrInBits[19][6];
+stReceived.bBackupComplete						:= stTemp.arrInBits[19][7];
+
+(************************************Payload**************************************)
+//  Bytes 20-27 –  Live XY values  ----------------------------------------------*
+FOR idx3:= 20 TO 23					
+DO
+stReceived.pvCurrentValueX[idx3] := FUN_PackBoolArrayToByte(stTemp.arrInBits[idx3]);
+																		    END_FOR
+							     fbByte2Real.arrBytes := stReceived.pvCurrentValueX;
+							     fbByte2Real();rKistlerLive_X := fbByte2Real.rValue;
+																			
+FOR idx3:= 24 TO 27					
+DO
+stReceived.pvCurrentValueY[idx3] := FUN_PackBoolArrayToByte(stTemp.arrInBits[idx3]);
+																			END_FOR
+							     fbByte2Real.arrBytes := stReceived.pvCurrentValueY;
+							     fbByte2Real();rKistlerLive_Y := fbByte2Real.rValue;
+//--------------------------------------------------------------------------oldschoo1
+
+rPosition(inBytes:= , outReal=> );
+rSpeed(inBytes:= , outReal=> );]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="b_Ctrl_Kistler" Id="{67b2caf9-7312-44d9-b804-de27fa75f99c}">
+      <Implementation>
+        <ST><![CDATA[// Timmers && Triggers
+tonActionDone     (IN:= FALSE,
+			       PT:= T#100MS);
+tonActionTimeout  (IN:= eState=E_KistlerState.WAIT_CYCLE_DONE,
+			       PT:= T#90S);
+tonPowerUpTimeout (IN:= eState=E_KistlerState.ENABLE_DRIVE,
+				   PT:=T#20S);				   
+tonResetError     (IN:= stReceived.bServoError OR stReceived.bAlarm,
+			       PT:= T#500MS);
+tonAbortModule	  (IN:= cmd.bAbort OR (NOT stSafety.bSafety_OK) OR (NOT cmd.bEnable),
+				   PT:= T#100MS);
+				   
+//Signal pulses && delays				  
+tonDelaySignals[1](IN:= eState=E_KistlerState.ENABLE_PLC_CTRL AND stSendCMD.bAckAdminGlobal,
+				   PT:= T#100MS);
+tonDelaySignals[2](IN:= eState=E_KistlerState.RESET_ERROR AND (stReceived.bAlarm OR stReceived.bServoError) AND NOT tonDelaySignals[3].Q,
+				   PT:= T#1S);
+tonDelaySignals[3](IN:= eState=E_KistlerState.RESET_ERROR AND stSendCMD.bAckAdmin,
+				   PT:= T#1S);
+tonDelaySignals[4](IN:= eState=E_KistlerState.ENABLE_DRIVE,
+				   PT:= T#100MS);
+tonDelaySignals[5](IN:= eState=E_KistlerState.SET_PARAMETERS,
+				   PT:=T#330MS);
+tonDelaySignals[6](IN:=eState=E_KistlerState.RECORD_CYCLE_DATA, 
+				   PT:=T#50MS);				   
+tonDelaySignals[7](IN:=eState=E_KistlerState.ERROR, 
+				   PT:=T#330MS);
+tonDelaySignals[8](IN:=eState=E_KistlerState.PRESS_CYCLE, 
+				   PT:=T#330MS);
+tonDelaySignals[9](IN:=eState=E_KistlerState.GOTO_HOME_POS, 
+				   PT:=T#330MS);
+tonDelaySignals[10](IN:=eState=E_KistlerState.SET_PARAMETERS AND stReceived.bTareY_Mirror AND tonDelaySignals[5].Q, 
+				   PT:=T#3S);
+tonDelaySignals[11]( IN := NOT stReceived.bAlarm, PT := T#1S);
+
+rcmdbExecute( CLK := cmd.bExecute);
+(*****************************************************RESET**********************************************************)
+// Reset Errors
+(*IF cmd.bReset OR tonResetError.Q THEN
+ 			  
+			status.bError 	:= TRUE;
+            eState := E_KistlerState.RESET_ERROR;
+			END_IF*)
+
+// Abort Action
+IF tonAbortModule.q THEN
+	
+			stSendCMD.bDriveEnable	:= FALSE;
+			stSendCMD.bAckAdmin		:= FALSE;
+			stSendCMD.bDriveToRef	:= FALSE;
+			stSendCMD.bTareY 		:= FALSE;
+			stSendCMD.bRunSequence  := FALSE;
+			eState := E_KistlerState.ABORTED;
+			END_IF	
+(*******************************************************CTRL**********************************************************)
+IF CMD.bManualMode THEN
+	eState := E_KistlerState.MANUAL;
+END_IF
+// Kistler CTRL State Machine
+CASE eState OF //-----------------------------------------------------------------------------------------------------SM
+
+E_KistlerState.ENABLE_PLC_CTRL://-----------------------------------------------------------------------ENABLE_PLC_CTRL:
+
+						IF stReceived.bReady AND NOT bSystemPoweringUP THEN
+								stSendCMD.bAuto:=TRUE; 
+						ELSIF NOT stReceived.bReady THEN
+								status.nErrorID:= TO_INT(eErrorID=E_KistlerErrorID.COMUNICATION_ERROR);
+						END_IF
+								
+						IF stReceived.bAuto_Mirror THEN
+								stSendCMD.bAckAdminGlobal:=TRUE;
+						END_IF
+						IF tonDelaySignals[1].Q THEN
+ 								stSendCMD.bAckAdminGlobal:=FALSE;
+								eState := E_KistlerState.ABORTED;
+								END_IF
+
+E_KistlerState.ABORTED://---------------------------------------------------------------------------------------ABORTED:
+					
+						IF (NOT stReceived.bAuto_Mirror) AND 
+						   (NOT cmd.bAbort) AND stSafety.bSafety_OK AND cmd.bEnable THEN
+								eState := E_KistlerState.ENABLE_PLC_CTRL;
+							
+						ELSIF stReceived.bAuto_Mirror AND 
+							 (NOT cmd.bAbort) AND stSafety.bSafety_OK AND cmd.bEnable THEN
+								eState := E_KistlerState.ENABLE_DRIVE;
+						END_IF
+								
+
+E_KistlerState.ENABLE_DRIVE://-----------------------------------------------------------------------------ENABLE_DRIVE:
+	
+						c_Select_Program();
+
+						IF tonDelaySignals[4].Q THEN
+								stSendCMD.bDriveEnable:=TRUE; END_IF
+						
+						IF stReceived.bDriveEnabled THEN
+								eState := E_KistlerState.RESET_ERROR;
+								
+						ELSIF (NOT stReceived.bDriveEnabled) AND tonPowerUpTimeout.Q THEN
+								status.nErrorID:= TO_INT(eErrorID=E_KistlerErrorID.ENABLE_DRIVE_ERROR);
+								eState := E_KistlerState.ERROR;
+						END_IF
+
+E_KistlerState.RESET_ERROR://-------------------------------------------------------------------------------RESET_ERROR:
+					
+						IF stReceived.bAlarm OR stReceived.bServoError  THEN
+								IF tonDelaySignals[2].Q THEN
+								stSendCMD.bAckAdmin:=TRUE; END_IF
+						END_IF
+		
+						IF tonDelaySignals[3].Q THEN
+								stSendCMD.bAckAdmin:=FALSE; END_IF
+								
+						IF (tonDelaySignals[11].Q) AND (NOT stReceived.bServoError) THEN
+								stSendCMD.bAckAdmin:=FALSE;
+								status.nErrorID:= TO_INT(eErrorID=E_KistlerErrorID.NO_ERROR);
+								eState := E_KistlerState.GOTO_HOME_POS;
+						END_IF
+						
+E_KistlerState.GOTO_HOME_POS://---------------------------------------------------------------------------GOTO_HOME_POS:
+
+						IF NOT stReceived.bHomePosReached AND stReceived.bReady AND
+								tonDelaySignals[9].Q THEN
+
+								stSendCMD.bDriveToRef:= TRUE;
+						END_IF
+						
+						IF stReceived.bHomePosReached OR rKistlerLive_X < fHomePositionTolerance THEN
+
+								stSendCMD.bDriveToRef:= FALSE;
+								eState := E_KistlerState.SET_PARAMETERS;
+						END_IF
+	
+E_KistlerState.SET_PARAMETERS://-------------------------------------------------------------------------SET_PARAMETERS:
+
+						stSendCMD.bTareY := TRUE;
+						fUVT_00:= GVL_PERSISTENT.rReservoir_BottomPosition;
+						fUVT_01:= GVL_PERSISTENT.rKistlerForce_Speed;
+						
+						IF stReceived.bTareY_Mirror AND tonDelaySignals[5].Q THEN
+								stSendCMD.bTareY := FALSE;
+								eState := E_KistlerState.PRESS_READY;
+						END_IF
+
+E_KistlerState.PRESS_READY://-------------------------------------------------------------------------------PRESS_READY:
+
+						IF stReceived.bReady AND rcmdbExecute.Q THEN
+								eState := E_KistlerState.PRESS_CYCLE;
+						END_IF
+
+						
+E_KistlerState.PRESS_CYCLE://-------------------------------------------------------------------------------PRESS_CYCLE:
+
+
+						stSendCMD.bRunSequence := TRUE;
+						
+						IF stReceived.bRunSequence_Mirror  AND tonDelaySignals[8].Q THEN
+								eState := E_KistlerState.WAIT_CYCLE_DONE;
+						END_IF
+						
+E_KistlerState.WAIT_CYCLE_DONE://-----------------------------------------------------------------------WAIT_PRESS_DONE:
+						
+						IF stReceived.bSeqEnd AND NOT stReceived.bSeqError THEN
+
+								stSendCMD.bRunSequence := FALSE;	
+								eState := E_KistlerState.RECORD_CYCLE_DATA;
+						
+						ELSIF stReceived.bSeqError THEN
+								status.nErrorID:= TO_INT(eErrorID=E_KistlerErrorID.PROCESS_ERROR);
+								eState := E_KistlerState.ERROR;
+	
+						ELSIF tonActionTimeout.Q THEN
+								status.nErrorID:= TO_INT(eErrorID=E_KistlerErrorID.ACTION_TIMEOUT_ERROR);
+								eState := E_KistlerState.ERROR;		
+						END_IF
+					
+E_KistlerState.RECORD_CYCLE_DATA://-------------------------------------------------------------------RECORD_CYCLE_DATA:
+
+			 			
+
+			stKistlerReport.bKis_Pass := fbForceMonitor.bPass AND bDistancePass;
+			stKistlerReport.bKis_Fail := fbForceMonitor.bFail OR bDistanceFail;
+			stKistlerReport.rKis_HighestRecordedForce := fbForceMonitor.fHighestRecordedForce;
+			stKistlerReport.rKis_LowestRecordedForce := fbForceMonitor.fLowestRecordedForce;
+			stKistlerReport.rKis_DistanceRecord:=FBDistanceMonitor.MaxDistance;
+			stKistlerReport.rKis_Settings_ForceUPPERtreshold := GVL_PERSISTENT.rKistlerForce_UpperLimit;
+			stKistlerReport.rKis_Settings_ForceLOWERtreshold := GVL_PERSISTENT.rKistlerForce_LowerLimit;
+			stKistlerReport.rKis_Settings_StartMeasurePoint := GVL_PERSISTENT.rReservoir_ContactPosition;
+			stKistlerReport.rKis_Settings_ReservoirBottomPoint := GVL_PERSISTENT.rReservoir_BottomPosition;
+			
+						IF tonDelaySignals[6].Q THEN
+								eState := E_KistlerState.PRESS_READY; END_IF	
+				
+E_KistlerState.JOG_MODE:;
+E_KistlerState.ERROR://-------------------------------------------------------------------------------------------ERROR:
+						stSendCMD.bDriveEnable	:= FALSE;
+						stSendCMD.bAckAdmin		:= FALSE;
+						stSendCMD.bDriveToRef	:= FALSE;
+						stSendCMD.bTareY 		:= FALSE;
+						stSendCMD.bRunSequence  := FALSE;
+						
+						IF tonDelaySignals[7].Q THEN
+					 			eState := E_KistlerState.ABORTED; END_IF
+E_KistlerState.MANUAL:
+						g_Manual();
+						IF NOT CMD.bManualMode THEN
+							eState := E_KistlerState.ABORTED;
+						END_IF
+								
+ELSE 
+eState := E_KistlerState.ABORTED;
+END_CASE //-----------------------------------------------------------------------------------------------------END_CASE
+
+// -------------------------------------------HMI Show Record -------------------------------------------------------//
+				IF 	eState = E_KistlerState.PRESS_READY AND (stKistlerReport.bKis_Pass OR stKistlerReport.bKis_Fail) THEN 
+					
+					GVL_HMI.rKisterldistanceHMI:= FBDistanceMonitor.MaxDistance;
+					GVL_HMI.rKisterlForceHMI:=stKistlerReport.rKis_HighestRecordedForce;
+					ELSE 
+						GVL_HMI.rKisterldistanceHMI:= GVL_HMI.rKistlerLiveReading_X;
+						GVL_HMI.rKisterlForceHMI:= GVL_HMI.rKistlerLiveReading_Y;
+					END_IF
+
+
+(******************************************************STATUS***********************************************************)
+// Module Status
+status.bReady				:= eState = E_KistlerState.PRESS_READY AND 
+							   			stReceived.bReady;
+
+status.bBusy				:= eState <> E_KistlerState.ABORTED		AND
+				   			   eState <> E_KistlerState.PRESS_READY AND
+				   			   eState <> E_KistlerState.ERROR;
+				   
+status.bActionInProggress	:= eState = E_KistlerState.PRESS_CYCLE OR
+				   			   eState = E_KistlerState.WAIT_CYCLE_DONE OR
+							   eState = E_KistlerState.RECORD_CYCLE_DATA;
+							   
+status.bDone				:= eState = E_KistlerState.RECORD_CYCLE_DATA;
+
+status.bError				:= eState = E_KistlerState.ERROR OR 
+				   			   stReceived.bServoError; 				 
+//-------------------------------------------------------------------------------------------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="c_Select_Program" Id="{df235374-6848-4124-9804-3b5b436df9f9}">
+      <Implementation>
+        <ST><![CDATA[// MP No.selection is 6-bits binary
+stSendCMD.mpNumber[0]:=1;  
+stSendCMD.mpNumber[1]:=1;  
+stSendCMD.mpNumber[2]:=0;  
+stSendCMD.mpNumber[3]:=0;  
+stSendCMD.mpNumber[4]:=0;  
+stSendCMD.mpNumber[5]:=0;  
+stSendCMD.mpNumber[6]:=0; 
+//------------------------oldschoo1]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="d_Monitor_ProcessForce" Id="{f6ea1dca-bb60-4cff-9a56-e6453c69cec2}">
+      <Implementation>
+        <ST><![CDATA[
+//Trigger
+bForceMonitorActive := (eState=E_KistlerState.PRESS_CYCLE OR eState=E_KistlerState.WAIT_CYCLE_DONE);(*AND 
+					   (rKistlerLive_X > GVL_PERSISTENT.rReservoir_ContactPosition AND
+						rKistlerLive_X < GVL_PERSISTENT.rReservoir_BottomPosition) AND stReceived.bO_UNI[0]*);
+
+//Monitor
+fbForceMonitor(
+				bEnable := eState=E_KistlerState.PRESS_CYCLE OR eState=E_KistlerState.WAIT_CYCLE_DONE
+							OR eState = E_KistlerState.RECORD_CYCLE_DATA,//stReceived.bAuto_Mirror,
+				bActive := bForceMonitorActive,
+				bReset	:= eState=E_KistlerState.PRESS_READY OR 
+						   eState=E_KistlerState.ERROR OR cmd.bReset,
+				fDistanceSetpoint := fDistanceSetpoint,
+				fDistance := rKistlerLive_X,
+ 
+				fForceInput 		  := rKistlerLive_Y,
+				bPass				  =>,
+				bFail				  =>,
+				fHighestRecordedForce =>,
+				fLowestRecordedForce  =>,
+				fThreshold_UpperLimit := GVL_PERSISTENT.rKistlerForce_UpperLimit,
+				fThreshold_LowerLimit := GVL_PERSISTENT.rKistlerForce_LowerLimit,
+				fDebounceTolerance	  := GVL_PERSISTENT.rMeasurementTolerance );
+				
+//------------------------------------------------------------------------------------------------oldschoo1
+
+
+FBDistanceMonitor(
+	StartSignal:= eState=E_KistlerState.PRESS_CYCLE , 
+	EndSignal:= stReceived.bSeqEnd,//eState=E_KistlerState.PRESS_READY, 
+	DistanceMaxSetpoint:= , 
+	DistanceInput:= rKistlerLive_X,
+	fDistanceSetpoint := fDistanceSetpoint, 
+	MaxDistance=> , 
+	IsMeasuring=>,
+	bDistancePass =>bDistancePass,
+	bDistanceFail => bDistanceFail);]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="f_Pack_DataToSend" Id="{fdd00f4c-47d1-4c0f-bc27-f0b3df28b9e5}">
+      <Implementation>
+        <ST><![CDATA[//  Byte 0  –  Basic CTRL  ----------------------------------------------*
+stTemp.arrOutBits[0][0] 					:= stSendCMD.bStart;
+stTemp.arrOutBits[0][1] 					:= stSendCMD.bTareY;
+											   stSendCMD.bZeroX:=0; //Carefull, Teach Global 0 Position!!!
+stTemp.arrOutBits[0][2] 					:= stSendCMD.bZeroX;//*
+stTemp.arrOutBits[0][3] 					:= stSendCMD.bSTestX;
+stTemp.arrOutBits[0][4] 					:= stSendCMD.bSTestY;
+stTemp.arrOutBits[0][5] 					:= 0;
+stTemp.arrOutBits[0][6] 					:= stSendCMD.bMasterMeas;
+stTemp.arrOutBits[0][7] 					:= stSendCMD.bIncZero;
+//  Byte 1  –  Login / Mode  ---------------------------------------------*
+stTemp.arrOutBits[1][0] 					:= stSendCMD.bAckAdminGlobal;
+stTemp.arrOutBits[1][1] 					:= stSendCMD.bAckAdmin;
+stTemp.arrOutBits[1][2] 					:= 0;
+stTemp.arrOutBits[1][3] 					:= stSendCMD.bAccess;
+stTemp.arrOutBits[1][4] 					:= stSendCMD.bAuto;		//Set false to use TeachingPendant
+stTemp.arrOutBits[1][5] 					:= stSendCMD.bStatReset;
+stTemp.arrOutBits[1][6] 					:= stSendCMD.bStatDisable;
+stTemp.arrOutBits[1][7] 					:= stSendCMD.bTareExtY;
+//  Byte 2  –  Measurement Program No.  ----------------------------------*
+stTemp.arrOutBits[2][0] 					:= stSendCMD.mpNumber[0];  
+stTemp.arrOutBits[2][1] 					:= stSendCMD.mpNumber[1];
+stTemp.arrOutBits[2][2] 					:= stSendCMD.mpNumber[2];
+stTemp.arrOutBits[2][3] 					:= stSendCMD.mpNumber[3];
+stTemp.arrOutBits[2][4] 					:= stSendCMD.mpNumber[4];
+stTemp.arrOutBits[2][5] 					:= stSendCMD.mpNumber[5];
+stTemp.arrOutBits[2][6] 					:= stSendCMD.mpNumber[6];
+stTemp.arrOutBits[2][7] 					:= 0;  
+ 
+//	Bytes - 3,4,5,6,7,8//Reserved  ---------------------------------------*
+FOR idx1:= 3 TO 8 
+DO
+	FOR idx2:= 0 TO 7 
+	DO
+    stTemp.arrOutBits[idx1][idx2]:=FALSE;END_FOR END_FOR
+
+//  Byte 9  –  Drive CTRL  -----------------------------------------------*
+stTemp.arrOutBits[9][0] 					:= stSendCMD.bDriveEnable;
+stTemp.arrOutBits[9][1] 					:= stSendCMD.bRunSequence;
+stTemp.arrOutBits[9][2] 					:= stSendCMD.bDriveToHome;
+stTemp.arrOutBits[9][3] 					:= stSendCMD.bDriveToRef;
+stTemp.arrOutBits[9][4] 					:= stSendCMD.bJogFwd;
+stTemp.arrOutBits[9][5] 					:= stSendCMD.bJogBack;
+stTemp.arrOutBits[9][6] 					:= stSendCMD.bContinueWait;
+stTemp.arrOutBits[9][7] 					:= stSendCMD.bBrakeTest;
+//  Byte 10  –  Extended Stop  -------------------------------------------*
+stTemp.arrOutBits[10][0] 					:= 0;
+stTemp.arrOutBits[10][1] 					:= 0;
+stTemp.arrOutBits[10][2] 					:= 0;
+stTemp.arrOutBits[10][3] 					:= stSendCMD.bSeqExtStopReq;
+stTemp.arrOutBits[10][4] 					:= 0;
+stTemp.arrOutBits[10][5] 					:= 0;
+stTemp.arrOutBits[10][6] 					:= 0;
+stTemp.arrOutBits[10][7] 					:= 0;
+
+// Byte - 11 // Reserved_2  ----------------------------------------------*
+FOR idx3:= 0 TO 7 
+DO
+   stTemp.arrOutBits[11][idx3]:=FALSE;END_FOR
+
+//  Byte 12  –  Sequence Flags  ------------------------------------------*
+stTemp.arrOutBits[12][0] 					:= stSendCMD.bCurrSeqMain;
+stTemp.arrOutBits[12][1] 					:= stSendCMD.bCurrSeqSub;
+stTemp.arrOutBits[12][2] 					:= 0;
+stTemp.arrOutBits[12][3] 					:= 0;
+stTemp.arrOutBits[12][4] 					:= 0;
+stTemp.arrOutBits[12][5] 					:= 0;
+stTemp.arrOutBits[12][6] 					:= 0;
+stTemp.arrOutBits[12][7] 					:= 0;
+
+// Byte - 13 // Reserved_3  ----------------------------------------------*
+FOR idx3:= 0 TO 7 
+DO
+   stTemp.arrOutBits[13][idx3]:=FALSE;END_FOR
+
+//  Byte 14  –  Page CTRL (CFG-MP)  --------------------------------------*
+stTemp.arrOutBits[14][0] 					:= stSendCMD.mpNumber[0];
+stTemp.arrOutBits[14][1] 					:= stSendCMD.mpNumber[1];
+stTemp.arrOutBits[14][2] 					:= stSendCMD.mpNumber[2];
+stTemp.arrOutBits[14][3] 					:= stSendCMD.mpNumber[3];
+stTemp.arrOutBits[14][4] 					:= stSendCMD.mpNumber[4];
+stTemp.arrOutBits[14][5] 					:= stSendCMD.mpNumber[5];
+stTemp.arrOutBits[14][6] 					:= stSendCMD.mpNumber[6];
+stTemp.arrOutBits[14][7] 					:= 0;
+// Byte - 15 // Reserved_4  ----------------------------------------------*
+FOR idx3:= 0 TO 7 
+DO
+   stTemp.arrOutBits[15][idx3]:=FALSE;END_FOR
+   
+//  Byte 16  –  CFG-Address  ---------------------------------------------*
+stTemp.arrOutBits[16][0] 					:= 0;
+stTemp.arrOutBits[16][1] 					:= 0;
+stTemp.arrOutBits[16][2] 					:= 0;
+stTemp.arrOutBits[16][3] 					:= 0;
+stTemp.arrOutBits[16][4] 					:= 0;
+stTemp.arrOutBits[16][5] 					:= 0;
+stTemp.arrOutBits[16][6] 					:= 0;
+stTemp.arrOutBits[16][7] 					:= 0;
+//  Byte 17  –  CFG-Lenght  ----------------------------------------------*
+stTemp.arrOutBits[17][0] 					:= 0;
+stTemp.arrOutBits[17][1] 					:= 0;
+stTemp.arrOutBits[17][2] 					:= 0;
+stTemp.arrOutBits[17][3] 					:= 0;
+stTemp.arrOutBits[17][4] 					:= 1;
+stTemp.arrOutBits[17][5] 					:= 0;
+stTemp.arrOutBits[17][6] 					:= 0;
+stTemp.arrOutBits[17][7] 					:= 1;
+//  Byte 18  –  Select Page  ---------------------------------------------*
+stTemp.arrOutBits[18][0] 					:= 0;
+stTemp.arrOutBits[18][1] 					:= 0;
+stTemp.arrOutBits[18][2] 					:= 0;
+stTemp.arrOutBits[18][3] 					:= 0;
+stTemp.arrOutBits[18][4] 					:= 0;
+stTemp.arrOutBits[18][5] 					:= 0;
+stTemp.arrOutBits[18][6] 					:= 0;
+stTemp.arrOutBits[18][7] 					:= 0;
+//  Byte 19  –  Save / Strobe / Backup  ----------------------------------*
+stTemp.arrOutBits[19][0] 					:= 1;
+stTemp.arrOutBits[19][1] 					:= bFlash250Hz;
+stTemp.arrOutBits[19][2] 					:= 0;
+stTemp.arrOutBits[19][3] 					:= 0;
+stTemp.arrOutBits[19][4] 					:= 0;
+stTemp.arrOutBits[19][5] 					:= 0;
+stTemp.arrOutBits[19][6] 					:= 0;
+stTemp.arrOutBits[19][7] 					:= 0;
+
+(******************************************Payload**********************************************)
+// Byte 136 - 139 - pMeasureTravelBottom  -----------------------------------------------------*
+
+(*Position*)
+stTemp.arrOutBits[36][0]:=fbPositiontosend.Result[0];
+stTemp.arrOutBits[36][1]:=fbPositiontosend.Result[1];
+stTemp.arrOutBits[36][2]:=fbPositiontosend.Result[2];
+stTemp.arrOutBits[36][3]:=fbPositiontosend.Result[3];
+stTemp.arrOutBits[36][4]:=fbPositiontosend.Result[4];
+stTemp.arrOutBits[36][5]:=fbPositiontosend.Result[5];
+stTemp.arrOutBits[36][6]:=fbPositiontosend.Result[6];
+stTemp.arrOutBits[36][7]:=fbPositiontosend.Result[7];
+stTemp.arrOutBits[37][0]:=fbPositiontosend.Result[8];
+stTemp.arrOutBits[37][1]:=fbPositiontosend.Result[9];
+stTemp.arrOutBits[37][2]:=fbPositiontosend.Result[10];
+stTemp.arrOutBits[37][3]:=fbPositiontosend.Result[11];
+stTemp.arrOutBits[37][4]:=fbPositiontosend.Result[12];
+stTemp.arrOutBits[37][5]:=fbPositiontosend.Result[13];
+stTemp.arrOutBits[37][6]:=fbPositiontosend.Result[14];
+stTemp.arrOutBits[37][7]:=fbPositiontosend.Result[15];
+stTemp.arrOutBits[38][0]:=fbPositiontosend.Result[16];
+stTemp.arrOutBits[38][1]:=fbPositiontosend.Result[17];
+stTemp.arrOutBits[38][2]:=fbPositiontosend.Result[18];
+stTemp.arrOutBits[38][3]:=fbPositiontosend.Result[19];
+stTemp.arrOutBits[38][4]:=fbPositiontosend.Result[20];
+stTemp.arrOutBits[38][5]:=fbPositiontosend.Result[21];
+stTemp.arrOutBits[38][6]:=fbPositiontosend.Result[22];
+stTemp.arrOutBits[38][7]:=fbPositiontosend.Result[23];
+stTemp.arrOutBits[39][0]:=fbPositiontosend.Result[24];
+stTemp.arrOutBits[39][1]:=fbPositiontosend.Result[25];
+stTemp.arrOutBits[39][2]:=fbPositiontosend.Result[26];
+stTemp.arrOutBits[39][3]:=fbPositiontosend.Result[27];
+stTemp.arrOutBits[39][4]:=fbPositiontosend.Result[28];
+stTemp.arrOutBits[39][5]:=fbPositiontosend.Result[29];
+stTemp.arrOutBits[39][6]:=fbPositiontosend.Result[30];
+stTemp.arrOutBits[39][7]:=fbPositiontosend.Result[31];
+
+(*Speed*)
+stTemp.arrOutBits[40][0]:=fbSpeedtosend.Result[0];
+stTemp.arrOutBits[40][1]:=fbSpeedtosend.Result[1];
+stTemp.arrOutBits[40][2]:=fbSpeedtosend.Result[2];
+stTemp.arrOutBits[40][3]:=fbSpeedtosend.Result[3];
+stTemp.arrOutBits[40][4]:=fbSpeedtosend.Result[4];
+stTemp.arrOutBits[40][5]:=fbSpeedtosend.Result[5];
+stTemp.arrOutBits[40][6]:=fbSpeedtosend.Result[6];
+stTemp.arrOutBits[40][7]:=fbSpeedtosend.Result[7];
+stTemp.arrOutBits[41][0]:=fbSpeedtosend.Result[8];
+stTemp.arrOutBits[41][1]:=fbSpeedtosend.Result[9];
+stTemp.arrOutBits[41][2]:=fbSpeedtosend.Result[10];
+stTemp.arrOutBits[41][3]:=fbSpeedtosend.Result[11];
+stTemp.arrOutBits[41][4]:=fbSpeedtosend.Result[12];
+stTemp.arrOutBits[41][5]:=fbSpeedtosend.Result[13];
+stTemp.arrOutBits[41][6]:=fbSpeedtosend.Result[14];
+stTemp.arrOutBits[41][7]:=fbSpeedtosend.Result[15];
+stTemp.arrOutBits[42][0]:=fbSpeedtosend.Result[16];
+stTemp.arrOutBits[42][1]:=fbSpeedtosend.Result[17];
+stTemp.arrOutBits[42][2]:=fbSpeedtosend.Result[18];
+stTemp.arrOutBits[42][3]:=fbSpeedtosend.Result[19];
+stTemp.arrOutBits[42][4]:=fbSpeedtosend.Result[20];
+stTemp.arrOutBits[42][5]:=fbSpeedtosend.Result[21];
+stTemp.arrOutBits[42][6]:=fbSpeedtosend.Result[22];
+stTemp.arrOutBits[42][7]:=fbSpeedtosend.Result[23];
+stTemp.arrOutBits[43][0]:=fbSpeedtosend.Result[24];
+stTemp.arrOutBits[43][1]:=fbSpeedtosend.Result[25];
+stTemp.arrOutBits[43][2]:=fbSpeedtosend.Result[26];
+stTemp.arrOutBits[43][3]:=fbSpeedtosend.Result[27];
+stTemp.arrOutBits[43][4]:=fbSpeedtosend.Result[28];
+stTemp.arrOutBits[43][5]:=fbSpeedtosend.Result[29];
+stTemp.arrOutBits[43][6]:=fbSpeedtosend.Result[30];
+stTemp.arrOutBits[43][7]:=fbSpeedtosend.Result[31];
+
+
+
+fbRealPosition2Byte(rValue:=fUVT_00);
+fbRealSpeed2Byte(rValue:=fUVT_01);
+fbPositiontosend(fbReal2Byte:=fbRealPosition2Byte.arrBytes );
+fbSpeedtosend(fbReal2Byte:=fbRealSpeed2Byte.arrBytes );
+
+
+(*
+//fbReal2Byte(rValue:=fUVT_00);
+FOR idx1 := 0 TO 3 
+DO
+    FOR idx2 := 0 TO 7 
+	DO
+    stTemp.arrOutBits[136 + idx1][idx2]:=((fbRealPosition2Byte.arrBytes[idx1] AND SHL(1, idx2))<>0);
+    	 stTemp.arrOutBits[140 + idx1][idx2]:=((fbRealSpeed2Byte.arrBytes[idx1] AND SHL(1, idx2))<>0);																			
+																									END_FOR
+END_FOR
+*)
+
+(****************************************Pack to Telegram****************************************)
+FOR idx3:= 0 TO 199//							|
+DO
+GVL_MODULES.stKistler.st_TelegramDataOut[idx3] := FUN_PackBoolArrayToByte(stTemp.arrOutBits[idx3]);
+																							END_FOR
+																		
+//-----------------------------------------------------------------------------------------oldschoo1
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="g_Manual" Id="{cfbaecda-fd76-4031-9c0a-f22c236b1f34}">
+      <Implementation>
+        <ST><![CDATA[
+trigCycleMan( CLK := GVL_HMI.bKistlerCycle );
+tonRstCycSignalMan( IN := stSendCMD.bRunSequence, PT := T#500MS);
+IF trigCycleMan.Q THEN	
+	stSendCMD.bRunSequence := TRUE;
+ELSIF stReceived.bSeqEnd AND tonRstCycSignalMan.Q THEN
+	stSendCMD.bRunSequence := FALSE;
+END_IF
+]]></ST>
+      </Implementation>
+    </Action>
+    <LineIds Name="K_Master_Kistler">
+      <LineId Id="229" Count="0" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="161" Count="4" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="166" Count="1" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="104" Count="0" />
+    </LineIds>
+    <LineIds Name="K_Master_Kistler.a_Unpack_Received">
+      <LineId Id="12" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="22" Count="40" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="67" Count="10" />
+      <LineId Id="192" Count="2" />
+      <LineId Id="191" Count="0" />
+      <LineId Id="81" Count="33" />
+      <LineId Id="133" Count="7" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="143" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="172" Count="2" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="188" Count="0" />
+      <LineId Id="187" Count="0" />
+      <LineId Id="189" Count="0" />
+      <LineId Id="176" Count="2" />
+      <LineId Id="175" Count="0" />
+      <LineId Id="190" Count="0" />
+      <LineId Id="182" Count="0" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="196" Count="0" />
+      <LineId Id="195" Count="0" />
+      <LineId Id="197" Count="0" />
+    </LineIds>
+    <LineIds Name="K_Master_Kistler.b_Ctrl_Kistler">
+      <LineId Id="343" Count="20" />
+      <LineId Id="527" Count="1" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="573" Count="0" />
+      <LineId Id="567" Count="1" />
+      <LineId Id="590" Count="0" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="595" Count="0" />
+      <LineId Id="594" Count="0" />
+      <LineId Id="614" Count="0" />
+      <LineId Id="613" Count="0" />
+      <LineId Id="652" Count="0" />
+      <LineId Id="617" Count="0" />
+      <LineId Id="616" Count="0" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="366" Count="12" />
+      <LineId Id="603" Count="0" />
+      <LineId Id="602" Count="0" />
+      <LineId Id="379" Count="3" />
+      <LineId Id="623" Count="1" />
+      <LineId Id="383" Count="21" />
+      <LineId Id="605" Count="0" />
+      <LineId Id="405" Count="2" />
+      <LineId Id="606" Count="0" />
+      <LineId Id="408" Count="1" />
+      <LineId Id="588" Count="0" />
+      <LineId Id="410" Count="27" />
+      <LineId Id="556" Count="0" />
+      <LineId Id="438" Count="5" />
+      <LineId Id="596" Count="0" />
+      <LineId Id="444" Count="10" />
+      <LineId Id="518" Count="1" />
+      <LineId Id="580" Count="0" />
+      <LineId Id="628" Count="0" />
+      <LineId Id="523" Count="1" />
+      <LineId Id="579" Count="0" />
+      <LineId Id="525" Count="1" />
+      <LineId Id="455" Count="5" />
+      <LineId Id="516" Count="0" />
+      <LineId Id="463" Count="1" />
+      <LineId Id="585" Count="0" />
+      <LineId Id="465" Count="1" />
+      <LineId Id="529" Count="0" />
+      <LineId Id="532" Count="0" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="533" Count="0" />
+      <LineId Id="468" Count="3" />
+      <LineId Id="538" Count="0" />
+      <LineId Id="593" Count="0" />
+      <LineId Id="537" Count="0" />
+      <LineId Id="472" Count="0" />
+      <LineId Id="534" Count="1" />
+      <LineId Id="531" Count="0" />
+      <LineId Id="539" Count="0" />
+      <LineId Id="530" Count="0" />
+      <LineId Id="475" Count="4" />
+      <LineId Id="649" Count="0" />
+      <LineId Id="565" Count="0" />
+      <LineId Id="650" Count="0" />
+      <LineId Id="552" Count="1" />
+      <LineId Id="558" Count="0" />
+      <LineId Id="560" Count="0" />
+      <LineId Id="648" Count="0" />
+      <LineId Id="561" Count="1" />
+      <LineId Id="576" Count="0" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="630" Count="0" />
+      <LineId Id="554" Count="0" />
+      <LineId Id="482" Count="0" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="489" Count="1" />
+      <LineId Id="607" Count="3" />
+      <LineId Id="569" Count="0" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="491" Count="1" />
+      <LineId Id="621" Count="1" />
+      <LineId Id="625" Count="2" />
+      <LineId Id="604" Count="0" />
+      <LineId Id="493" Count="2" />
+      <LineId Id="578" Count="0" />
+      <LineId Id="637" Count="0" />
+      <LineId Id="640" Count="2" />
+      <LineId Id="645" Count="0" />
+      <LineId Id="643" Count="1" />
+      <LineId Id="647" Count="0" />
+      <LineId Id="638" Count="1" />
+      <LineId Id="496" Count="1" />
+      <LineId Id="499" Count="1" />
+      <LineId Id="615" Count="0" />
+      <LineId Id="501" Count="3" />
+      <LineId Id="512" Count="0" />
+      <LineId Id="511" Count="0" />
+      <LineId Id="505" Count="0" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="618" Count="0" />
+      <LineId Id="620" Count="0" />
+      <LineId Id="508" Count="2" />
+      <LineId Id="1" Count="0" />
+    </LineIds>
+    <LineIds Name="K_Master_Kistler.c_Select_Program">
+      <LineId Id="2" Count="0" />
+      <LineId Id="6" Count="5" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="12" Count="0" />
+    </LineIds>
+    <LineIds Name="K_Master_Kistler.d_Monitor_ProcessForce">
+      <LineId Id="40" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="83" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="37" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="68" Count="6" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="80" Count="1" />
+    </LineIds>
+    <LineIds Name="K_Master_Kistler.f_Pack_DataToSend">
+      <LineId Id="108" Count="0" />
+      <LineId Id="331" Count="1" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="333" Count="4" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="118" Count="8" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="307" Count="6" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="314" Count="0" />
+      <LineId Id="321" Count="0" />
+      <LineId Id="320" Count="0" />
+      <LineId Id="319" Count="0" />
+      <LineId Id="316" Count="0" />
+      <LineId Id="330" Count="0" />
+      <LineId Id="198" Count="0" />
+      <LineId Id="322" Count="6" />
+      <LineId Id="206" Count="0" />
+      <LineId Id="208" Count="8" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="218" Count="0" />
+      <LineId Id="338" Count="0" />
+      <LineId Id="340" Count="0" />
+      <LineId Id="339" Count="0" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="228" Count="8" />
+      <LineId Id="346" Count="0" />
+      <LineId Id="238" Count="0" />
+      <LineId Id="341" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="342" Count="0" />
+      <LineId Id="347" Count="0" />
+      <LineId Id="248" Count="0" />
+      <LineId Id="361" Count="6" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="368" Count="1" />
+      <LineId Id="266" Count="0" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="268" Count="8" />
+      <LineId Id="278" Count="8" />
+      <LineId Id="288" Count="8" />
+      <LineId Id="298" Count="8" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="374" Count="0" />
+      <LineId Id="486" Count="0" />
+      <LineId Id="438" Count="0" />
+      <LineId Id="585" Count="32" />
+      <LineId Id="584" Count="0" />
+      <LineId Id="650" Count="31" />
+      <LineId Id="649" Count="0" />
+      <LineId Id="446" Count="0" />
+      <LineId Id="442" Count="0" />
+      <LineId Id="439" Count="0" />
+      <LineId Id="450" Count="0" />
+      <LineId Id="453" Count="2" />
+      <LineId Id="440" Count="0" />
+      <LineId Id="437" Count="0" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="414" Count="0" />
+      <LineId Id="434" Count="0" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="435" Count="0" />
+      <LineId Id="416" Count="1" />
+      <LineId Id="452" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="451" Count="0" />
+      <LineId Id="371" Count="0" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="436" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="432" Count="0" />
+    </LineIds>
+    <LineIds Name="K_Master_Kistler.g_Manual">
+      <LineId Id="25" Count="1" />
+      <LineId Id="3" Count="1" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="32" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
