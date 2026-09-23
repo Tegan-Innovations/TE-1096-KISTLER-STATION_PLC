@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <POU Name="A_HMI" Id="{8aed360a-d73a-42f6-8825-27c3b619c8cd}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM A_HMI
 VAR
@@ -44,6 +44,10 @@ VAR
 	idx2:INT;
 	idx3:INT; 
 	idx0: INT;
+	
+	fbWritePersistentData		:FB_WritePersistentData;
+	fWritePersistentData		: F_TRIG;
+	
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -57,6 +61,7 @@ ACT_ShutdownAndQuit();
 ACT_StatisticsReset();
 ACT_DataGraph();
 ACT_KisltlerHMI();
+ACT_SavePersistentVariables();
 
 
 ]]></ST>
@@ -303,6 +308,15 @@ END_IF
 											GVL_MODULES.stSmacIO.inStatusWordRotative.12);
 	
 				
+]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="ACT_SavePersistentVariables" Id="{cefdb6b4-8666-42ec-915e-52d05413d6b5}">
+      <Implementation>
+        <ST><![CDATA[fWritePersistentData(CLK := GVL_HMI.nRegionMain = 5);
+
+fbWritePersistentData(	PORT 				:= 851,
+						START 				:= fWritePersistentData.Q,);
 ]]></ST>
       </Implementation>
     </Action>
@@ -647,7 +661,9 @@ END_FOR]]></ST>
       <LineId Id="46" Count="0" />
       <LineId Id="111" Count="0" />
       <LineId Id="69" Count="0" />
-      <LineId Id="155" Count="1" />
+      <LineId Id="155" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="156" Count="0" />
       <LineId Id="70" Count="0" />
       <LineId Id="87" Count="0" />
     </LineIds>
@@ -786,6 +802,12 @@ END_FOR]]></ST>
       <LineId Id="65" Count="0" />
       <LineId Id="26" Count="0" />
       <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="A_HMI.ACT_SavePersistentVariables">
+      <LineId Id="3" Count="1" />
+      <LineId Id="2" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="1" Count="0" />
     </LineIds>
     <LineIds Name="A_HMI.ACT_ScreensNamesSet">
       <LineId Id="2" Count="0" />
