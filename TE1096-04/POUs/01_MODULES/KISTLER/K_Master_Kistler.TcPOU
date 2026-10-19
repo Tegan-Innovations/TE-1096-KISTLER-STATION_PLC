@@ -412,15 +412,21 @@ E_KistlerState.RECORD_CYCLE_DATA://---------------------------------------------
 
 			 			
 
-			stKistlerReport.bKis_Pass := fbForceMonitor.bPass AND bDistancePass;
-			stKistlerReport.bKis_Fail := fbForceMonitor.bFail OR bDistanceFail;
-			stKistlerReport.rKis_HighestRecordedForce := fbForceMonitor.fHighestRecordedForce;
-			stKistlerReport.rKis_LowestRecordedForce := fbForceMonitor.fLowestRecordedForce;
-			stKistlerReport.rKis_DistanceRecord:=FBDistanceMonitor.MaxDistance;
-			stKistlerReport.rKis_Settings_ForceUPPERtreshold := GVL_PERSISTENT.rKistlerForce_UpperLimit;
-			stKistlerReport.rKis_Settings_ForceLOWERtreshold := GVL_PERSISTENT.rKistlerForce_LowerLimit;
-			stKistlerReport.rKis_Settings_StartMeasurePoint := GVL_PERSISTENT.rReservoir_ContactPosition;
-			stKistlerReport.rKis_Settings_ReservoirBottomPoint := GVL_PERSISTENT.rReservoir_BottomPosition;
+			stKistlerReport.bKis_Pass := stReceived.bOkTotal;//fbForceMonitor.bPass AND bDistancePass;
+			stKistlerReport.bKis_Fail := NOT stReceived.bOkTotal;//fbForceMonitor.bFail OR bDistanceFail;
+			//stKistlerReport.rKis_HighestRecordedForce := fbForceMonitor.fHighestRecordedForce;
+			//stKistlerReport.rKis_LowestRecordedForce := fbForceMonitor.fLowestRecordedForce;
+			//stKistlerReport.rKis_DistanceRecord:=FBDistanceMonitor.MaxDistance;
+			//stKistlerReport.rKis_Settings_ForceUPPERtreshold := GVL_PERSISTENT.rKistlerForce_UpperLimit;
+			//stKistlerReport.rKis_Settings_ForceLOWERtreshold := GVL_PERSISTENT.rKistlerForce_LowerLimit;
+			//stKistlerReport.rKis_Settings_StartMeasurePoint := GVL_PERSISTENT.rReservoir_ContactPosition;
+			//stKistlerReport.rKis_Settings_ReservoirBottomPoint := GVL_PERSISTENT.rReservoir_BottomPosition;
+			//--------------------------------------Modification-------------------------------------------------------//
+			//date: 19/10/2026
+			//Data took from tegan wasn't accurate so me (sebastian ulloa) and Jabil engineers decided to take data directly from 
+			//kistler with results (Pass or Fail) included. This means we are not filtering the data from kistler neither saving it.
+			//--------------------------------------------------------------------------------------------------------//
+			
 			
 						IF tonDelaySignals[6].Q THEN
 								eState := E_KistlerState.PRESS_READY; END_IF	
@@ -887,6 +893,8 @@ END_IF
       <LineId Id="576" Count="0" />
       <LineId Id="564" Count="0" />
       <LineId Id="630" Count="0" />
+      <LineId Id="655" Count="3" />
+      <LineId Id="653" Count="1" />
       <LineId Id="554" Count="0" />
       <LineId Id="482" Count="0" />
       <LineId Id="577" Count="0" />
