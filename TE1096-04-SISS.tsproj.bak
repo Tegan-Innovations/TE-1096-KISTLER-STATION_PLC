@@ -1634,7 +1634,7 @@ External Setpoint Generation:
 		</Motion>
 		<Plc>
 			<Project GUID="{A0E46EB5-997A-4D23-B03A-0138169395EF}" Name="TE1096-04" PrjFilePath="TE1096-04\TE1096-04.plcproj" TmcFilePath="TE1096-04\TE1096-04.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="TE1096-04\TE1096-04.tmc" TmcHash="{EB9BE9B4-7423-C991-D28F-D3AD844E58D9}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="TE1096-04\TE1096-04.tmc" TmcHash="{AA64407B-1F6B-1083-7BFB-63B2E8137A1A}">
 					<Name>TE1096-04 Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Vars VarGrpType="1" ContextId="1" AreaNo="16">

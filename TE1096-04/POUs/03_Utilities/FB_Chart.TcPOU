@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.13">
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <POU Name="FB_Chart" Id="{ac2c7207-0838-4f0e-abb9-6013f14619bc}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_Chart
 VAR_INPUT
@@ -17,22 +17,23 @@ END_VAR
 
 VAR
 	IsCapturing : BOOL;                     // TRUE while capturing
-    Timer : TON;                   // Internal timer
+    tonTimer : TON;                   // Internal timer
 	d:INT;
     ind : INT := 1;              // Internal index (start from 1)
 	Endcycletg : R_TRIG;
+	rStartCyc	: R_TRIG;
 	
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[	Endcycletg(CLK:=EndSignal);
 // Start the timer only when StartSignal is TRUE and EndSignal is FALSE
-Timer(IN := IsCapturing, PT := T#40ms);
+tonTimer( PT := T#50MS);
 
 // Main logic
 
-
-IF StartSignal (*AND NOT EndSignal*) THEN
+rStartCyc(CLK := StartSignal);
+IF rStartCyc.Q THEN
 	FOR D := 1 TO 100 DO
         DatosOut[1, d].x := 0.0;  // Poner la coordenada X a 0
         DatosOut[1, d].y := 0.0;  // Poner la coordenada Y a 0
@@ -44,7 +45,7 @@ IF StartSignal (*AND NOT EndSignal*) THEN
 END_IF 
 
 IF IsCapturing AND NOT EndSignal AND NOT StartSignal THEN
-    IF Timer.Q AND ind <= 199 THEN
+    IF tonTimer.Q AND ind <= 199 THEN
         // Store current values in the array
         DatosOut[1,ind].x := DistanceInput;
         DatosOut[1,ind].y := ForceInput;
@@ -52,8 +53,9 @@ IF IsCapturing AND NOT EndSignal AND NOT StartSignal THEN
         ind := ind + 1;
 
         // Reset the timer for the next 1-second interval
-        Timer(IN := FALSE);  // Stop
-        Timer(IN := TRUE);   // Restart
+        tonTimer.IN := FALSE;  // Stop
+      
+	ELSE tonTimer.IN := TRUE;   // Restart
     END_IF
 
 
@@ -63,7 +65,7 @@ ELSIF Endcycletg.Q OR ind > 199 THEN
  
 	ind:=1;
     // Stop the timer
-    Timer(IN := FALSE);
+    tonTimer(IN := FALSE);
 END_IF
 
 bFinished:=Endcycletg.Q;]]></ST>
@@ -82,9 +84,13 @@ bFinished:=Endcycletg.Q;]]></ST>
       <LineId Id="90" Count="0" />
       <LineId Id="89" Count="0" />
       <LineId Id="62" Count="4" />
-      <LineId Id="68" Count="5" />
+      <LineId Id="68" Count="4" />
+      <LineId Id="172" Count="0" />
+      <LineId Id="73" Count="0" />
       <LineId Id="85" Count="0" />
-      <LineId Id="74" Count="8" />
+      <LineId Id="74" Count="6" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="82" Count="0" />
       <LineId Id="112" Count="0" />
       <LineId Id="147" Count="0" />
     </LineIds>
