@@ -1634,7 +1634,7 @@ External Setpoint Generation:
 		</Motion>
 		<Plc>
 			<Project GUID="{A0E46EB5-997A-4D23-B03A-0138169395EF}" Name="TE1096-04" PrjFilePath="TE1096-04\TE1096-04.plcproj" TmcFilePath="TE1096-04\TE1096-04.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="TE1096-04\TE1096-04.tmc" TmcHash="{E0A0088F-B9B6-8346-6132-6659340D7AD1}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="TE1096-04\TE1096-04.tmc" TmcHash="{8F70BD50-5323-1CD8-85FE-EDCC4D4B1420}">
 					<Name>TE1096-04 Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Vars VarGrpType="1" ContextId="1" AreaNo="16">
@@ -1750,14 +1750,14 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>GVL_IO.iE_Stop_Ch1</Name>
-							<Comment><![CDATA[ Channel 1 - E-Stop ch1]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>GVL_IO.nEL6910State</Name>
 							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
 							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iE_Stop_Ch1</Name>
+							<Comment><![CDATA[ Channel 1 - E-Stop ch1]]></Comment>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>GVL_IO.iE_Stop_Ch2</Name>
@@ -1795,14 +1795,14 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>GVL_IO.nEL1918_1State</Name>
-							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
-							<Type>UINT</Type>
-						</Var>
-						<Var>
 							<Name>GVL_IO.iTouchBtn_1_NC</Name>
 							<Comment><![CDATA[ Channel 1 - Safety Touch Button 1 ]]></Comment>
 							<Type>BOOL</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.nEL1918_1State</Name>
+							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
+							<Type>UINT</Type>
 						</Var>
 						<Var>
 							<Name>GVL_IO.iTouchBtn_2_NC</Name>
@@ -1845,14 +1845,14 @@ External Setpoint Generation:
 							<Type>UINT</Type>
 						</Var>
 						<Var>
-							<Name>GVL_IO.iStartButton</Name>
-							<Comment><![CDATA[ Channel 01 - Start Button ]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>GVL_IO.nEL2904_2State</Name>
 							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
 							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iStartButton</Name>
+							<Comment><![CDATA[ Channel 01 - Start Button ]]></Comment>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>GVL_IO.iStopButton</Name>
@@ -1905,14 +1905,14 @@ External Setpoint Generation:
 							<Type>BOOL</Type>
 						</Var>
 						<Var>
-							<Name>GVL_IO.iPuck_PresentSensor</Name>
-							<Comment><![CDATA[ Channel 01 - Puck Fixture present Sensor]]></Comment>
-							<Type>BOOL</Type>
-						</Var>
-						<Var>
 							<Name>GVL_IO.nEL1809_1State</Name>
 							<Comment><![CDATA[ Terminal INFO Data	]]></Comment>
 							<Type>UINT</Type>
+						</Var>
+						<Var>
+							<Name>GVL_IO.iPuck_PresentSensor</Name>
+							<Comment><![CDATA[ Channel 01 - Puck Fixture present Sensor]]></Comment>
+							<Type>BOOL</Type>
 						</Var>
 						<Var>
 							<Name>GVL_IO.iPartA_PresentSensor</Name>
@@ -2241,7 +2241,7 @@ External Setpoint Generation:
 		</Safety>
 		<Io>
 			<Device File="EtherCAT Master.xti" Id="1"/>
-			<Device Id="2" DevType="133" AmsPort="28674" AmsNetId="172.18.233.151.3.1" RemoteName="Device 2 (TC3 EIP Scanner)">
+			<Device Id="2" Disabled="true" DevType="133" AmsPort="28674" AmsNetId="172.18.233.151.3.1" RemoteName="Device 2 (TC3 EIP Scanner)">
 				<Name>Device 2 (TC3 EIP Scanner)</Name>
 				<AddressInfo>
 					<Pnp>
@@ -2251,9 +2251,9 @@ External Setpoint Generation:
 					</Pnp>
 				</AddressInfo>
 				<Image Id="5" AddrType="1" ImageType="3">
-					<Name>Image</Name>
+					<Name>Device 2 (TC3 EIP Scanner)-Image</Name>
 				</Image>
-				<Box Id="15" BoxType="9134">
+				<Box Id="15" Disabled="true" BoxType="9134">
 					<Name>VLC-2-EIP</Name>
 					<Comment><![CDATA[<INFO>
 192.168.7.180, VLC-2-EIP (ProdCode: 58072, Rev: 2.94, Mac: 00:03:19:45:01:01)
@@ -2494,7 +2494,6 @@ C:\TwinCAT\3.1\Config\Io\EtherNetIP\VLC-2-EIP.eds
 	</Project>
 	<Mappings>
 		<MappingInfo Identifier="{00000000-2002-0850-0120-500841000403}" Id="#x02030030"/>
-		<MappingInfo Identifier="{00000000-2002-0850-0120-500850000403}" Id="#x02030070"/>
 		<MappingInfo Identifier="{00000000-0010-0304-3000-040310000403}" Id="#x02030010"/>
 		<MappingInfo Identifier="{00000000-0020-0304-3000-040322000403}" Id="#x02030040"/>
 		<MappingInfo Identifier="{08502002-0020-0304-0020-500820000403}" Id="#x02030050" Watchdog="00000000000000000000000000000000"/>
