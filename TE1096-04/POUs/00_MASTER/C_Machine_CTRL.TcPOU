@@ -354,7 +354,7 @@ END_IF
 CASE eCycleState OF
 						(****************************************************************IDLE********************************)
 E_ProcessCycle.IDLE:	//-----------------------------------------------------------------------------------------------IDLE
-									IF bStartConditions AND GVL_PERSISTENT.bSMACEnable THEN   //**LAA 29092025
+									IF bStartConditions AND GVL_PERSISTENT.bSMACEnable AND NOT GVL_HMI.bPieceReject THEN   //**LAA 29092025
 										eCycleState:=E_ProcessCycle.AXIS_CMD_1;
 										stTotalReport.bKis_Pass								:= FALSE;
 										stTotalReport.bKis_Fail								:= FALSE;
@@ -363,7 +363,7 @@ E_ProcessCycle.IDLE:	//---------------------------------------------------------
 										GVL_IO.qCycleIndicator_RedLED						:= FALSE;
 										GVL_IO.qCycleIndicator_GreenLED						:= FALSE;
 										S_Master_SMAC.bCloseGripper							:= FALSE;
-										ELSIF bStartConditions AND NOT GVL_PERSISTENT.bSMACEnable THEN // *LAA  29092025
+										ELSIF bStartConditions AND NOT GVL_PERSISTENT.bSMACEnable AND NOT GVL_HMI.bPieceReject THEN // *LAA  29092025
 											eCycleState:=E_ProcessCycle.AXIS_CMD_2;
 											stTotalReport.bKis_Pass								:= FALSE;
 											stTotalReport.bKis_Fail								:= FALSE;
@@ -374,7 +374,7 @@ E_ProcessCycle.IDLE:	//---------------------------------------------------------
 											S_Master_SMAC.bCloseGripper							:= FALSE;
 									END_IF
 									 IF NOT bFirstAutoCycle AND GVL_MASTER.bPuck_Present AND
-										NOT tonFirstAutoCycle.Q AND stMachineStatus.bAutoCycle THEN
+										NOT tonFirstAutoCycle.Q AND stMachineStatus.bAutoCycle AND NOT GVL_HMI.bPieceReject THEN
 										eCycleState:=E_ProcessCycle.AXIS_CMD_3;
 										stTotalReport.bKis_Pass								:= FALSE;
 										stTotalReport.bKis_Fail								:= FALSE;
@@ -595,6 +595,8 @@ E_ProcessCycle.STORE_PROC_DATA:	//----------------------------------------------
 	stTotalReport.sDate										:= GVL_MASTER.sSystemDate;
 	stTotalReport.sTime										:= GVL_MASTER.sSystemTime;
 	
+	GVL_HMI.bPieceReject									:= stTotalReport.bKis_Fail;
+	
 	//STATISTICS
 	IF bReservoirPresent AND stTotalReport.bKis_Pass AND NOT bStatisticsFlag[0] THEN
 		GVL_PERSISTENT.nKistlerGoodParts					:= GVL_PERSISTENT.nKistlerGoodParts + 1;
@@ -713,7 +715,7 @@ E_ProcessCycle.RESET_ALL_CMD:	//------------------------------------------------
 											
 											
 											
-
+								
 
 											eCycleState:=E_ProcessCycle.IDLE;
 											
@@ -1092,6 +1094,8 @@ stMachineStatus.bProcessCycle := eCycleState <> E_ProcessCycle.IDLE AND eCycleSt
       <LineId Id="625" Count="0" />
       <LineId Id="627" Count="0" />
       <LineId Id="546" Count="0" />
+      <LineId Id="708" Count="0" />
+      <LineId Id="707" Count="0" />
       <LineId Id="514" Count="0" />
       <LineId Id="537" Count="1" />
       <LineId Id="541" Count="0" />

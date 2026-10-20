@@ -413,7 +413,7 @@ E_KistlerState.RECORD_CYCLE_DATA://---------------------------------------------
 			 			
 
 			stKistlerReport.bKis_Pass := stReceived.bOkTotal;//fbForceMonitor.bPass AND bDistancePass;
-			stKistlerReport.bKis_Fail := NOT stReceived.bOkTotal;//fbForceMonitor.bFail OR bDistanceFail;
+			stKistlerReport.bKis_Fail := stReceived.bNokTotal;//fbForceMonitor.bFail OR bDistanceFail;
 			//stKistlerReport.rKis_HighestRecordedForce := fbForceMonitor.fHighestRecordedForce;
 			//stKistlerReport.rKis_LowestRecordedForce := fbForceMonitor.fLowestRecordedForce;
 			//stKistlerReport.rKis_DistanceRecord:=FBDistanceMonitor.MaxDistance;
