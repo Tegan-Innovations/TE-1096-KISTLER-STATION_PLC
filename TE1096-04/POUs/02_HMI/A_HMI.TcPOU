@@ -59,7 +59,7 @@ ACT_UserConf();
 ACT_Inputs();
 ACT_ShutdownAndQuit();
 ACT_StatisticsReset();
-ACT_DataGraph();
+//ACT_DataGraph();
 ACT_KisltlerHMI();
 ACT_SavePersistentVariables();
 

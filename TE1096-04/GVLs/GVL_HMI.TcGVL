@@ -103,6 +103,7 @@ VAR_GLOBAL
 	bResetKistlerGoodParts				: BOOL;
 	bResetSmacBadParts					: BOOL;
 	bResetKistlerBadParts				: BOOL;
+	bPieceReject						: BOOL;
 	
 	//User Log, Shut down, Quit HMI
 	bQuitHmi						: BOOL;
